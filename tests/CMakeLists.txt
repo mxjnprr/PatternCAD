@@ -17,6 +17,7 @@ add_executable(PatternCADTests
 target_link_libraries(PatternCADTests
     Qt6::Test
     Qt6::Core
+    Qt6::Gui
     Eigen3::Eigen
 )
 

@@ -1,4 +1,8 @@
 <RCC>
+    <!-- Placeholder resource file - icons to be added later -->
+    <!-- Uncomment when actual icon files are available -->
+
+    <!--
     <qresource prefix="/">
         <file>icons/app-icon.png</file>
     </qresource>
@@ -14,4 +18,5 @@
         <file>icons/tool-rectangle.png</file>
         <file>icons/tool-bezier.png</file>
     </qresource>
+    -->
 </RCC>

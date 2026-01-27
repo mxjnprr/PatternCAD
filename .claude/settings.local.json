@@ -5,7 +5,12 @@
       "Bash(find:*)",
       "Bash([ -f ~/.claude/config/bmad/bmad.yaml ])",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(dpkg:*)",
+      "Bash(sudo apt-get:*)",
+      "Bash(sudo apt-get install:*)",
+      "Bash(cmake --build:*)"
     ]
   }
 }

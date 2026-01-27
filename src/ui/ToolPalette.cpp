@@ -39,7 +39,7 @@ void ToolPalette::setupUi()
     // Create button group
     m_buttonGroup = new QButtonGroup(this);
     m_buttonGroup->setExclusive(true);
-    connect(m_buttonGroup, QOverload<int>::of(&QButtonGroup::buttonClicked),
+    connect(m_buttonGroup, &QButtonGroup::idClicked,
             this, &ToolPalette::onToolButtonClicked);
 
     // Title label

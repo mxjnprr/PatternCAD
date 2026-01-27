@@ -26,7 +26,7 @@ void GeometryTest::test_Point2D_distance()
     Point2D p1(0, 0);
     Point2D p2(3, 4);
 
-    double distance = p1.distanceTo(p2);
+    double distance = p1.distanceTo(&p2);
     QCOMPARE(distance, 5.0);
 }
 
