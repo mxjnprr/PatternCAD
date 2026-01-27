@@ -1,0 +1,89 @@
+/**
+ * Canvas.h
+ *
+ * QGraphicsView subclass for pattern editing viewport
+ */
+
+#ifndef PATTERNCAD_CANVAS_H
+#define PATTERNCAD_CANVAS_H
+
+#include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QWheelEvent>
+#include <QMouseEvent>
+
+namespace PatternCAD {
+
+// Forward declarations
+class Document;
+
+namespace UI {
+
+/**
+ * Canvas provides the main editing viewport with:
+ * - Pan and zoom functionality
+ * - Grid display
+ * - Snap-to-grid support
+ * - Interactive drawing and selection
+ * - Real-time tool feedback
+ */
+class Canvas : public QGraphicsView
+{
+    Q_OBJECT
+
+public:
+    explicit Canvas(QWidget* parent = nullptr);
+    ~Canvas();
+
+    // Document
+    Document* document() const;
+    void setDocument(Document* document);
+
+    // View manipulation
+    void zoomIn();
+    void zoomOut();
+    void zoomFit();
+    void zoomReset();
+    void setZoomLevel(double level);
+    double zoomLevel() const;
+
+    // Grid
+    bool gridVisible() const;
+    void setGridVisible(bool visible);
+    bool snapToGrid() const;
+    void setSnapToGrid(bool snap);
+
+    // Coordinate conversion
+    QPointF snapPoint(const QPointF& point) const;
+
+signals:
+    void zoomChanged(double zoom);
+    void cursorPositionChanged(const QPointF& position);
+
+protected:
+    // Event handlers
+    void wheelEvent(QWheelEvent* event) override;
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
+    void drawBackground(QPainter* painter, const QRectF& rect) override;
+
+private:
+    // Private members
+    QGraphicsScene* m_scene;
+    Document* m_document;
+    double m_zoomLevel;
+    bool m_gridVisible;
+    bool m_snapToGrid;
+    QPointF m_lastMousePos;
+
+    // Helper methods
+    void setupScene();
+    void updateGrid();
+    void drawGrid(QPainter* painter, const QRectF& rect);
+};
+
+} // namespace UI
+} // namespace PatternCAD
+
+#endif // PATTERNCAD_CANVAS_H

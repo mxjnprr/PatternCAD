@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(basename:*)",
+      "Bash(find:*)",
+      "Bash([ -f ~/.claude/config/bmad/bmad.yaml ])",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

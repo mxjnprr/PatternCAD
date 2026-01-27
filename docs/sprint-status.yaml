@@ -1,0 +1,1898 @@
+# BMAD Method Sprint Status
+# Generated: 2026-01-27T11:40:36Z
+# Project: PatternCAD
+
+project_name: "PatternCAD"
+sprint_number: 0
+sprint_goal: "Foundation Sprint - Set up build system, project skeleton, and basic infrastructure"
+sprint_start_date: "TBD"
+sprint_end_date: ""
+last_updated: "2026-01-27T11:40:36Z"
+
+# Epic and Story Tracking
+# Total: 8 Epics, 62 Stories (estimated 45-70 range)
+
+epics:
+  # =========================================================================
+  # EPIC-001: Core Drawing and Editing Tools
+  # =========================================================================
+  - id: "epic-001"
+    name: "Core Drawing and Editing Tools"
+    description: "Implement fundamental vector drawing and editing capabilities including basic shapes, bezier curves, and object manipulation with spacebar grab-and-move"
+    priority: "must-have"
+    status: "not-started"
+    estimated_stories: "5-8"
+    actual_stories: 7
+    stories:
+      - id: "story-001-01"
+        name: "Draw basic geometric shapes (Line, Point, Rectangle, Circle)"
+        description: |
+          As a pattern designer, I want to draw basic geometric shapes (lines, points, rectangles, circles)
+          so that I can create the foundation of my pattern pieces.
+
+          Acceptance Criteria:
+          - User can select Line tool (L key) and draw lines by clicking start and end points
+          - User can select Point tool (P key) and place points at specific coordinates
+          - User can select Rectangle tool (R key) and create rectangles by defining opposite corners
+          - User can select Circle tool (C key) and draw circles by defining center and radius
+          - All shapes support numerical input for precise dimensions
+          - Shapes are visually rendered on canvas with clear appearance
+          - Created shapes are added to current active layer
+        status: "not-started"
+        file: "docs/stories/epic-001/story-001-01.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement Tool base class with activate(), deactivate(), mouse events
+          - Create LineTool, PointTool, RectangleTool, CircleTool subclasses
+          - Implement geometry primitives: Line, Point, Rectangle, Circle
+          - Add tools to tool palette
+          - Integrate with canvas mouse event handling
+          - Create QGraphicsItem subclasses for rendering
+        dependencies: ["Sprint 0: Project skeleton and Qt setup"]
+
+      - id: "story-001-02"
+        name: "Draw and edit Bezier curves"
+        description: |
+          As a pattern designer, I want to draw and edit cubic Bezier curves with control points
+          so that I can create smooth curved edges for complex pattern pieces.
+
+          Acceptance Criteria:
+          - User can select Bezier tool (B key) and create curves by defining anchor and control points
+          - User can adjust control points after curve creation by dragging
+          - Curve smoothness is maintained during editing (visual continuity)
+          - Curves render smoothly at all zoom levels (Level of Detail)
+          - Control points are visually distinct (different color, size) and easily selectable
+          - Bezier curves are editable like other geometry objects
+        status: "not-started"
+        file: "docs/stories/epic-001/story-001-02.md"
+        assigned_to: ""
+        estimate: "8 points"
+        actual: ""
+        technical_notes: |
+          - Implement CubicBezier class with evaluate(t), length(), split() methods
+          - Create BezierTool for interactive creation
+          - Implement control point handles as separate QGraphicsItems
+          - Add LOD rendering (fewer segments at low zoom)
+          - Bezier curve evaluation using De Casteljau's algorithm
+          - Handle tangent continuity between connected curves
+        dependencies: ["story-001-01"]
+
+      - id: "story-001-03"
+        name: "Select objects with click and marquee selection"
+        description: |
+          As a pattern designer, I want to select pattern pieces and objects by clicking or marquee selection
+          so that I can edit, move, or transform them.
+
+          Acceptance Criteria:
+          - User can click on any object to select it (single selection)
+          - Selected objects show visual feedback (bounding box, handles, highlight)
+          - User can Shift+Click to add objects to selection (multi-selection)
+          - User can Ctrl+Click to toggle object in/out of selection
+          - User can marquee select by dragging a selection rectangle
+          - Marquee selection selects all objects intersecting the rectangle
+          - Ctrl+A selects all objects on canvas
+          - Escape deselects all objects
+        status: "not-started"
+        file: "docs/stories/epic-001/story-001-03.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement SelectTool with rubber band selection
+          - Add selection state to geometry objects
+          - Create SelectionManager to track selected objects
+          - Implement visual selection feedback (QPen, handles)
+          - Handle selection in QGraphicsView scene
+          - Support bounding box and shape-based selection
+        dependencies: ["story-001-01"]
+
+      - id: "story-001-04"
+        name: "Spacebar grab-and-move interaction"
+        description: |
+          As a pattern designer, I want to use spacebar to grab and move pieces with real-time visual feedback
+          so that I can quickly reposition pattern pieces without switching tools.
+
+          Acceptance Criteria:
+          - When mouse hovers over a piece, pressing spacebar enters grab mode
+          - In grab mode, the piece is selected and follows mouse movement in real-time
+          - The moving piece is fully visible at all times (not just outline)
+          - Pressing spacebar again drops the piece at current mouse position
+          - Pressing Escape during move cancels and returns piece to original position
+          - Grab-and-move works for single pieces and groups
+          - Performance: < 16ms latency (60fps) during movement
+          - Pieces can be placed over other pieces (superposition allowed)
+        status: "not-started"
+        file: "docs/stories/epic-001/story-001-04.md"
+        assigned_to: ""
+        estimate: "8 points"
+        actual: ""
+        technical_notes: |
+          - Implement GrabMoveInteraction state machine
+          - Add spacebar event handling to canvas
+          - Implement hover detection (QGraphicsItem::hoverEnter/Leave)
+          - Create temporary ghost item for visual feedback
+          - Optimize rendering for smooth 60fps movement
+          - Store original position for cancel operation
+          - Handle coordinate transforms correctly
+        dependencies: ["story-001-03"]
+
+      - id: "story-001-05"
+        name: "Edit object properties (position, size, style)"
+        description: |
+          As a pattern designer, I want to edit object properties like position, size, line weight, and color
+          so that I can precisely control the appearance of my pattern pieces.
+
+          Acceptance Criteria:
+          - Selected objects display properties in Properties Panel
+          - User can edit X, Y position with numeric input (with units)
+          - User can edit width, height for applicable objects
+          - User can edit line weight (thickness) from 0.1mm to 5mm
+          - User can edit line color using color picker
+          - User can edit line style (solid, dashed, dotted)
+          - Property changes apply immediately to objects
+          - Property changes are undoable
+          - Multi-selection shows common properties or "Mixed" indicator
+        status: "not-started"
+        file: "docs/stories/epic-001/story-001-05.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement PropertiesPanel QDockWidget
+          - Create property editor widgets (QSpinBox, QDoubleSpinBox, QColorDialog)
+          - Connect property changes to UpdatePropertyCommand
+          - Implement property getter/setter on geometry objects
+          - Handle multi-selection property display
+          - Support unit conversion (mm, cm, inches)
+        dependencies: ["story-001-03"]
+
+      - id: "story-001-06"
+        name: "Move objects by dragging and numeric input"
+        description: |
+          As a pattern designer, I want to move objects by dragging or entering coordinates
+          so that I can position pattern pieces precisely.
+
+          Acceptance Criteria:
+          - User can drag selected objects with mouse (traditional click-drag-release)
+          - Dragging shows real-time visual feedback
+          - User can enter precise X, Y coordinates in Properties Panel
+          - Numeric input moves object to absolute position
+          - Move respects grid snapping if enabled
+          - Move operation is undoable
+          - Multi-object move maintains relative positions
+        status: "not-started"
+        file: "docs/stories/epic-001/story-001-06.md"
+        assigned_to: ""
+        estimate: "3 points"
+        actual: ""
+        technical_notes: |
+          - Implement drag handling in QGraphicsItem
+          - Create MoveObjectsCommand for undo/redo
+          - Add numeric position input to Properties Panel
+          - Handle snapping in move operations
+          - Preserve relative positions in group move
+        dependencies: ["story-001-03", "story-001-05"]
+
+      - id: "story-001-07"
+        name: "Delete objects with Delete key or menu"
+        description: |
+          As a pattern designer, I want to delete selected objects
+          so that I can remove unwanted elements from my pattern.
+
+          Acceptance Criteria:
+          - User can delete selected objects with Delete or Backspace key
+          - User can delete via Edit menu → Delete
+          - Deletion shows confirmation if deleting many objects (>10)
+          - Delete operation is undoable (objects can be restored)
+          - Deleting objects updates layer object count
+          - Dependencies are handled (constraints, parameters referencing deleted objects)
+        status: "not-started"
+        file: "docs/stories/epic-001/story-001-07.md"
+        assigned_to: ""
+        estimate: "3 points"
+        actual: ""
+        technical_notes: |
+          - Implement DeleteObjectsCommand
+          - Handle dependency cleanup (constraints, parameters)
+          - Implement confirmation dialog for bulk delete
+          - Remove objects from layer and scene
+          - Store deleted objects for undo
+        dependencies: ["story-001-03"]
+
+  # =========================================================================
+  # EPIC-002: Parametric Design and Constraint System
+  # =========================================================================
+  - id: "epic-002"
+    name: "Parametric Design and Constraint System"
+    description: "Build parametric design system with parameters, expressions, dependency graph, and geometric constraint solver"
+    priority: "must-have"
+    status: "not-started"
+    estimated_stories: "6-10"
+    actual_stories: 9
+    stories:
+      - id: "story-002-01"
+        name: "Create and manage parameters"
+        description: |
+          As a pattern designer, I want to create named parameters with values and units
+          so that I can define dimensions that can be reused throughout my pattern.
+
+          Acceptance Criteria:
+          - User can create new parameter via Parameters Panel
+          - Each parameter has name, value, unit (mm, cm, inches)
+          - Parameter names must be unique and valid identifiers (alphanumeric + underscore)
+          - User can edit parameter values inline
+          - User can delete parameters (with warning if referenced)
+          - Parameters can be organized into groups/categories
+          - Parameters Panel shows all defined parameters
+        status: "not-started"
+        file: "docs/stories/epic-002/story-002-01.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement Parameter class (name, value, unit, expression, group)
+          - Create ParametersPanel QDockWidget
+          - Implement parameter validation (name uniqueness, value range)
+          - Create AddParameterCommand, DeleteParameterCommand
+          - Store parameters in Project
+        dependencies: []
+
+      - id: "story-002-02"
+        name: "Define parameter expressions with formula parser"
+        description: |
+          As a pattern designer, I want to define parameters using mathematical expressions
+          so that parameters can be calculated from other parameters.
+
+          Acceptance Criteria:
+          - User can enter expression like "waist_width / 2 + seam_allowance"
+          - Expression parser supports: +, -, *, /, (), basic functions (sin, cos, sqrt, etc.)
+          - Expression can reference other parameters by name
+          - Invalid expressions show clear error messages
+          - Expression evaluation respects order of operations
+          - Expression updates automatically when referenced parameters change
+        status: "not-started"
+        file: "docs/stories/epic-002/story-002-02.md"
+        assigned_to: ""
+        estimate: "8 points"
+        actual: ""
+        technical_notes: |
+          - Implement ExpressionParser (recursive descent or use muparser library)
+          - Support operators: +, -, *, /, ^, ()
+          - Support functions: sin, cos, tan, sqrt, abs, min, max
+          - Validate expressions before evaluation
+          - Handle division by zero, invalid operations
+          - Return clear error messages with position
+        dependencies: ["story-002-01"]
+
+      - id: "story-002-03"
+        name: "Build parameter dependency graph"
+        description: |
+          As a developer, I need to track parameter dependencies in a directed graph
+          so that parameter updates propagate correctly to dependent parameters and geometry.
+
+          Acceptance Criteria:
+          - System builds dependency graph from parameter expressions
+          - Graph tracks which parameters depend on which
+          - Graph detects circular dependencies and reports error
+          - Topological sort determines update order
+          - Graph updates incrementally when parameters added/removed/changed
+        status: "not-started"
+        file: "docs/stories/epic-002/story-002-03.md"
+        assigned_to: ""
+        estimate: "8 points"
+        actual: ""
+        technical_notes: |
+          - Implement DependencyGraph class with adjacency list
+          - Implement circular dependency detection (DFS with recursion stack)
+          - Implement topological sort (Kahn's algorithm or DFS)
+          - Store graph in ParametricEngine
+          - Update graph when expressions change
+        dependencies: ["story-002-02"]
+
+      - id: "story-002-04"
+        name: "Propagate parameter updates to geometry"
+        description: |
+          As a pattern designer, when I change a parameter value, I want all dependent geometry to update automatically
+          so that my entire pattern adjusts correctly.
+
+          Acceptance Criteria:
+          - Changing parameter value triggers update propagation
+          - Dependent parameters recalculate in correct order
+          - Geometry objects referencing parameters update positions/dimensions
+          - Update completes in < 500ms for typical patterns (50 objects)
+          - Canvas re-renders to show updated geometry
+          - Update operation is undoable (single undo step)
+        status: "not-started"
+        file: "docs/stories/epic-002/story-002-04.md"
+        assigned_to: ""
+        estimate: "8 points"
+        actual: ""
+        technical_notes: |
+          - Implement ParametricEngine::updateParameter()
+          - Evaluate expressions in topological order
+          - Notify geometry objects via observer pattern
+          - Geometry::updateFromParameters() recalculates positions
+          - Batch updates for performance
+          - Create UpdateParameterCommand for undo
+        dependencies: ["story-002-03"]
+
+      - id: "story-002-05"
+        name: "Apply distance constraints between objects"
+        description: |
+          As a pattern designer, I want to constrain distances between points or lines
+          so that dimensions remain fixed even when I move objects.
+
+          Acceptance Criteria:
+          - User can add distance constraint between two points
+          - User can add distance constraint between point and line
+          - User can specify constraint value (fixed distance)
+          - Constraint is visually indicated (dimension line, lock icon)
+          - Moving constrained objects maintains constraint (solver adjusts)
+          - User can remove constraints
+          - Constraints are saved with project
+        status: "not-started"
+        file: "docs/stories/epic-002/story-002-05.md"
+        assigned_to: ""
+        estimate: "8 points"
+        actual: ""
+        technical_notes: |
+          - Implement Constraint base class
+          - Create DistanceConstraint subclass
+          - Add constraint creation UI (right-click menu or tool)
+          - Implement constraint visualization
+          - Integrate with constraint solver
+          - Create AddConstraintCommand
+        dependencies: ["story-002-04"]
+
+      - id: "story-002-06"
+        name: "Apply angle constraints (parallel, perpendicular, fixed angle)"
+        description: |
+          As a pattern designer, I want to constrain angles between lines
+          so that lines remain parallel, perpendicular, or at fixed angles.
+
+          Acceptance Criteria:
+          - User can constrain two lines to be parallel
+          - User can constrain two lines to be perpendicular
+          - User can constrain lines to fixed angle (e.g., 45°)
+          - Constraints are visually indicated with symbols (∥, ⊥, angle arc)
+          - Solver maintains angle constraints when objects moved
+          - User can remove or disable constraints
+        status: "not-started"
+        file: "docs/stories/epic-002/story-002-06.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Create AngleConstraint subclass (parallel, perpendicular, fixed)
+          - Implement constraint evaluation (error function)
+          - Add visual indicators for angle constraints
+          - Integrate with constraint solver
+        dependencies: ["story-002-05"]
+
+      - id: "story-002-07"
+        name: "Apply coincident and tangent constraints"
+        description: |
+          As a pattern designer, I want to constrain points to be coincident and curves to be tangent
+          so that pattern pieces connect smoothly.
+
+          Acceptance Criteria:
+          - User can constrain two points to be coincident (at same location)
+          - User can constrain curves to be tangent at connection point
+          - Coincident points merge visually
+          - Tangent constraints maintain smooth continuity
+          - Solver enforces constraints during edits
+        status: "not-started"
+        file: "docs/stories/epic-002/story-002-07.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Create CoincidentConstraint subclass
+          - Create TangentConstraint subclass
+          - Implement constraint evaluation for coincident (distance = 0)
+          - Implement tangent constraint (collinear tangent vectors)
+          - Add visual merge for coincident points
+        dependencies: ["story-002-06"]
+
+      - id: "story-002-08"
+        name: "Implement geometric constraint solver"
+        description: |
+          As a developer, I need a constraint solver that adjusts geometry to satisfy constraints
+          so that parametric patterns maintain their geometric relationships.
+
+          Acceptance Criteria:
+          - Solver uses Newton-Raphson iterative method
+          - Solver builds error vector from all constraint violations
+          - Solver computes Jacobian (derivatives) matrix
+          - Solver adjusts geometry to minimize error
+          - Solver converges in < 200ms for typical constraint networks
+          - Solver handles non-convergence gracefully (gradient descent fallback)
+          - Solver detects over-constrained or under-constrained systems
+        status: "not-started"
+        file: "docs/stories/epic-002/story-002-08.md"
+        assigned_to: ""
+        estimate: "13 points"
+        actual: ""
+        technical_notes: |
+          - Implement ConstraintSolver class
+          - Use Eigen library for linear algebra
+          - Implement Newton-Raphson iteration
+          - Compute numerical Jacobian (finite differences)
+          - Add gradient descent fallback
+          - Set convergence criteria (error threshold)
+          - Handle singular matrices
+          - Performance profiling and optimization
+        dependencies: ["story-002-07"]
+
+      - id: "story-002-09"
+        name: "Integrate constraint solver with geometry editing"
+        description: |
+          As a pattern designer, when I move constrained objects, I want the solver to automatically adjust geometry
+          so that all constraints remain satisfied.
+
+          Acceptance Criteria:
+          - Moving constrained objects triggers solver
+          - Solver runs in < 200ms (user doesn't notice delay)
+          - Geometry adjusts to maintain constraints
+          - If solver fails to converge, show warning and keep original positions
+          - Solver operations are undoable
+          - Solver doesn't interfere with normal (unconstrained) editing
+        status: "not-started"
+        file: "docs/stories/epic-002/story-002-09.md"
+        assigned_to: ""
+        estimate: "8 points"
+        actual: ""
+        technical_notes: |
+          - Integrate solver with MoveObjectsCommand
+          - Run solver after geometry modifications
+          - Implement asynchronous solving if needed
+          - Handle solver failure gracefully
+          - Optimize for interactive performance
+          - Add solver status indicator in UI
+        dependencies: ["story-002-08"]
+
+  # =========================================================================
+  # EPIC-003: Transformation and Manipulation Tools
+  # =========================================================================
+  - id: "epic-003"
+    name: "Transformation and Manipulation Tools"
+    description: "Implement transformation tools (rotate, mirror, scale, align) with visual feedback and parametric preservation"
+    priority: "must-have"
+    status: "not-started"
+    estimated_stories: "4-6"
+    actual_stories: 5
+    stories:
+      - id: "story-003-01"
+        name: "Rotate objects with interactive and numeric input"
+        description: |
+          As a pattern designer, I want to rotate pattern pieces around a specified point
+          so that I can orient them correctly.
+
+          Acceptance Criteria:
+          - User can select Rotate tool (Ctrl+R) or from menu
+          - User can drag to rotate selected objects interactively
+          - User can enter exact rotation angle numerically
+          - User can define custom rotation center point (default: selection center)
+          - Rotation shows preview before committing
+          - Rotation preserves object properties and constraints
+          - Rotation is undoable
+          - Shift+Drag snaps rotation to 15° increments
+        status: "not-started"
+        file: "docs/stories/epic-003/story-003-01.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement RotateTool with interactive drag
+          - Create RotateObjectsCommand
+          - Use QTransform for rotation matrix
+          - Implement rotation center selection
+          - Add angle snapping (15° increments with Shift)
+          - Show rotation preview (ghost image or real-time)
+          - Preserve parametric relationships
+        dependencies: ["story-001-03"]
+
+      - id: "story-003-02"
+        name: "Mirror objects along axis"
+        description: |
+          As a pattern designer, I want to create mirrored copies of pattern pieces
+          so that I can quickly create left/right or top/bottom symmetrical pieces.
+
+          Acceptance Criteria:
+          - User can mirror objects horizontally (vertical axis)
+          - User can mirror objects vertically (horizontal axis)
+          - User can define custom mirror axis using two points or a line
+          - Mirrored copy is created as new object (original preserved)
+          - Mirrored objects can optionally maintain parametric link to original
+          - Mirror operation works on single objects or groups
+          - Mirror is undoable
+        status: "not-started"
+        file: "docs/stories/epic-003/story-003-02.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement MirrorTool
+          - Create MirrorObjectsCommand
+          - Implement reflection matrix transformation
+          - Clone objects for mirrored copies
+          - Optional: Link mirrored objects to original for parametric updates
+          - Handle custom axis definition
+        dependencies: ["story-001-03"]
+
+      - id: "story-003-03"
+        name: "Scale objects uniformly and non-uniformly"
+        description: |
+          As a pattern designer, I want to scale pattern pieces by percentage or absolute dimensions
+          so that I can resize patterns while maintaining or adjusting proportions.
+
+          Acceptance Criteria:
+          - User can scale objects by percentage (e.g., 150%)
+          - User can scale uniformly (maintaining proportions)
+          - User can scale non-uniformly (different X and Y scale factors)
+          - User can define scale origin point (default: selection center)
+          - Scale shows preview before committing
+          - Parametric relationships are maintained after scaling
+          - Scale is undoable
+        status: "not-started"
+        file: "docs/stories/epic-003/story-003-03.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement ScaleTool
+          - Create ScaleObjectsCommand
+          - Use QTransform for scaling matrix
+          - Handle uniform vs. non-uniform scaling
+          - Implement scale origin selection
+          - Update parametric values proportionally
+          - Show scale preview
+        dependencies: ["story-001-03"]
+
+      - id: "story-003-04"
+        name: "Align objects relative to each other"
+        description: |
+          As a pattern designer, I want to align multiple objects along edges or centers
+          so that I can organize pattern pieces neatly.
+
+          Acceptance Criteria:
+          - User can align selected objects: left, right, top, bottom edges
+          - User can align centers horizontally or vertically
+          - Alignment reference can be selection bounds or a specific object
+          - Preview shows alignment result before applying
+          - Alignment is undoable
+          - Works with 2+ selected objects
+        status: "not-started"
+        file: "docs/stories/epic-003/story-003-04.md"
+        assigned_to: ""
+        estimate: "3 points"
+        actual: ""
+        technical_notes: |
+          - Implement Align command (not a tool, menu/shortcut action)
+          - Create AlignObjectsCommand
+          - Calculate alignment based on bounding boxes
+          - Offer alignment options in dialog or menu
+          - Move objects to aligned positions
+        dependencies: ["story-001-03"]
+
+      - id: "story-003-05"
+        name: "Distribute objects evenly"
+        description: |
+          As a pattern designer, I want to distribute multiple objects evenly with equal spacing
+          so that I can create orderly layouts.
+
+          Acceptance Criteria:
+          - User can distribute objects horizontally with equal spacing
+          - User can distribute objects vertically with equal spacing
+          - User can specify spacing distance
+          - Distribution works with 3+ selected objects
+          - Distribution is undoable
+        status: "not-started"
+        file: "docs/stories/epic-003/story-003-05.md"
+        assigned_to: ""
+        estimate: "3 points"
+        actual: ""
+        technical_notes: |
+          - Implement Distribute command
+          - Create DistributeObjectsCommand
+          - Calculate equal spacing between objects
+          - Offer horizontal/vertical options
+          - Move objects to distributed positions
+        dependencies: ["story-001-03"]
+
+  # =========================================================================
+  # EPIC-004: Professional Pattern Features
+  # =========================================================================
+  - id: "epic-004"
+    name: "Professional Pattern Features"
+    description: "Implement pattern-specific features: seam allowance, notches, match points, and grading"
+    priority: "must-have"
+    status: "not-started"
+    estimated_stories: "6-9"
+    actual_stories: 7
+    stories:
+      - id: "story-004-01"
+        name: "Add seam allowance automatically"
+        description: |
+          As a pattern designer, I want to automatically add seam allowance around pattern piece edges
+          so that I don't have to manually offset every edge.
+
+          Acceptance Criteria:
+          - User can specify seam allowance width (mm, cm, inches)
+          - Seam allowance is added as offset outline around pattern piece
+          - Corner handling options: miter, round, bevel
+          - User can exclude specific edges from seam allowance
+          - Seam allowance is visually distinct (different line style/color)
+          - Seam allowance updates automatically if pattern shape changes
+          - Seam allowance can be toggled on/off per pattern
+        status: "not-started"
+        file: "docs/stories/epic-004/story-004-01.md"
+        assigned_to: ""
+        estimate: "8 points"
+        actual: ""
+        technical_notes: |
+          - Implement OffsetAlgorithm using Clipper or Boost.Geometry
+          - Create SeamAllowance class
+          - Add seam allowance UI (Properties Panel)
+          - Handle corner types (miter, round, bevel)
+          - Render seam allowance as separate QGraphicsItem
+          - Update when pattern geometry changes (observer)
+          - Create AddSeamAllowanceCommand
+        dependencies: []
+
+      - id: "story-004-02"
+        name: "Add and manage notches"
+        description: |
+          As a pattern designer, I want to add notches to pattern edges
+          so that I can mark assembly points and alignment guides.
+
+          Acceptance Criteria:
+          - User can place notches on pattern edges (click to place)
+          - Notch styles available: V-notch, slit, dot
+          - Notches snap to edges and curves
+          - Notch depth and style are configurable
+          - User can edit, move, or delete notches
+          - Notches are saved with pattern
+          - Notches export correctly to DXF, SVG, PDF
+        status: "not-started"
+        file: "docs/stories/epic-004/story-004-02.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement Notch class (position, style, depth)
+          - Create NotchTool for placing notches
+          - Implement snap-to-edge logic
+          - Render notches as QGraphicsItems
+          - Add notch editing (move, delete)
+          - Store notches in Pattern
+        dependencies: []
+
+      - id: "story-004-03"
+        name: "Add and manage match points"
+        description: |
+          As a pattern designer, I want to add match points with labels
+          so that I can indicate where pieces should be aligned during assembly.
+
+          Acceptance Criteria:
+          - User can place match points on pattern edges
+          - Match points have labels (e.g., "A", "B", "1", "2")
+          - Match points snap to edges, curves, and vertices
+          - User can link match points between pieces to show relationships
+          - Match points are visually distinct (circle, cross, label)
+          - User can edit or delete match points
+          - Match points are saved and exported
+        status: "not-started"
+        file: "docs/stories/epic-004/story-004-03.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement MatchPoint class (position, label, linked points)
+          - Create MatchPointTool
+          - Implement snap-to-edge logic
+          - Render match points with labels
+          - Add linking UI (right-click to link)
+          - Store match points and links
+        dependencies: []
+
+      - id: "story-004-04"
+        name: "Define size grading rules"
+        description: |
+          As a pattern designer, I want to define grading rules for multiple sizes
+          so that I can specify how patterns scale across size range.
+
+          Acceptance Criteria:
+          - User can define size range (e.g., XS, S, M, L, XL)
+          - User can specify base size (e.g., M)
+          - User can define grading rules: which parameters change per size
+          - Grading rules specify increments (e.g., +2cm waist per size)
+          - User can define different increments for different dimensions
+          - Grading rules are saved with project
+        status: "not-started"
+        file: "docs/stories/epic-004/story-004-04.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement GradeRule class (parameter, increments per size)
+          - Create Grading UI dialog or panel
+          - Store grading rules in Pattern or Project
+          - Validate grading rules (parameters exist, increments valid)
+        dependencies: ["story-002-01"]
+
+      - id: "story-004-05"
+        name: "Generate graded pattern sizes"
+        description: |
+          As a pattern designer, I want to generate all graded sizes from grading rules
+          so that I can produce patterns for entire size range.
+
+          Acceptance Criteria:
+          - User can trigger "Generate Graded Sizes" command
+          - System creates pattern copy for each size
+          - Grading rules are applied to adjust parameters
+          - Parametric system updates geometry for each size
+          - All sizes can be generated in < 5 seconds
+          - Preview shows all graded sizes overlaid or side-by-side
+          - Generated sizes are saved as separate patterns
+        status: "not-started"
+        file: "docs/stories/epic-004/story-004-05.md"
+        assigned_to: ""
+        estimate: "8 points"
+        actual: ""
+        technical_notes: |
+          - Implement GradingAlgorithm::grade()
+          - Clone base pattern for each size
+          - Apply parameter adjustments per grading rules
+          - Trigger parametric update for each pattern
+          - Resolve constraints for each size
+          - Add all graded patterns to project
+          - Create GradePatternCommand
+        dependencies: ["story-004-04"]
+
+      - id: "story-004-06"
+        name: "Scale entire pattern proportionally"
+        description: |
+          As a pattern designer, I want to scale entire pattern by percentage or to fit specific dimensions
+          so that I can resize patterns while maintaining all parametric relationships.
+
+          Acceptance Criteria:
+          - User can scale pattern by percentage (e.g., 110%)
+          - User can scale pattern to fit specific dimensions (e.g., "make width = 50cm")
+          - All parametric relationships are maintained after scaling
+          - Constraints remain valid after scaling
+          - Seam allowances and notches scale appropriately
+          - Scale operation is undoable
+        status: "not-started"
+        file: "docs/stories/epic-004/story-004-06.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement ScalePatternCommand (different from object scale)
+          - Scale all parameters by factor
+          - Update geometry via parametric system
+          - Resolve constraints after scaling
+          - Scale seam allowance widths and notch depths
+        dependencies: ["story-002-04", "story-004-01"]
+
+      - id: "story-004-07"
+        name: "Duplicate and copy patterns"
+        description: |
+          As a pattern designer, I want to duplicate existing patterns
+          so that I can create variations or mirror pieces.
+
+          Acceptance Criteria:
+          - User can duplicate pattern via menu or Ctrl+D
+          - Duplicated pattern is copy with all geometry, parameters, constraints
+          - Duplicated pattern has unique name (e.g., "Pattern 1 Copy")
+          - User can choose whether to link parameters to original
+          - Duplication is undoable
+        status: "not-started"
+        file: "docs/stories/epic-004/story-004-07.md"
+        assigned_to: ""
+        estimate: "3 points"
+        actual: ""
+        technical_notes: |
+          - Implement Pattern::clone() method
+          - Deep copy all geometry, parameters, constraints
+          - Generate unique name
+          - Optional: Parameter linking for shared parameters
+          - Create DuplicatePatternCommand
+        dependencies: []
+
+  # =========================================================================
+  # EPIC-005: Layout, Nesting, and Isolation
+  # =========================================================================
+  - id: "epic-005"
+    name: "Layout, Nesting, and Isolation"
+    description: "Implement layout sheets, manual placement with smart guides, automatic nesting, and isolation mode for performance"
+    priority: "must-have"
+    status: "not-started"
+    estimated_stories: "5-8"
+    actual_stories: 6
+    stories:
+      - id: "story-005-01"
+        name: "Create and manage layout sheets"
+        description: |
+          As a pattern designer, I want to define layout sheets with specific dimensions
+          so that I can arrange pattern pieces on material for cutting.
+
+          Acceptance Criteria:
+          - User can create layout sheet with width and height (with units)
+          - User can define multiple sheets within same project
+          - Layout sheet displays with visual boundary on canvas
+          - Sheet dimensions can be edited
+          - User can switch between sheets (tabs or dropdown)
+          - Sheets are saved with project
+        status: "not-started"
+        file: "docs/stories/epic-005/story-005-01.md"
+        assigned_to: ""
+        estimate: "3 points"
+        actual: ""
+        technical_notes: |
+          - Implement LayoutSheet class (width, height, name)
+          - Render sheet boundary as QGraphicsRectItem
+          - Add sheet management UI (create, delete, switch)
+          - Store sheets in Project
+        dependencies: []
+
+      - id: "story-005-02"
+        name: "Manual placement with grid and snapping"
+        description: |
+          As a pattern designer, I want to manually place pattern pieces on layout with grid and snapping
+          so that I can position pieces precisely.
+
+          Acceptance Criteria:
+          - Grid overlay can be toggled on/off (G key)
+          - Grid spacing is configurable (default: 10mm)
+          - Snap-to-grid can be enabled/disabled (Ctrl+Shift+G)
+          - Smart guides show when piece edges align with other pieces or sheet boundaries
+          - Smart guides show: edge-to-edge, center-to-center, equal spacing
+          - Snap distance is configurable (default: 2-5mm depending on zoom)
+          - Pieces can be placed using spacebar grab-and-move
+          - Ruler indicators show measurements along sheet edges
+        status: "not-started"
+        file: "docs/stories/epic-005/story-005-02.md"
+        assigned_to: ""
+        estimate: "8 points"
+        actual: ""
+        technical_notes: |
+          - Implement grid rendering in QGraphicsScene
+          - Implement snap-to-grid logic in move operations
+          - Implement SmartGuides system (detect alignment)
+          - Render smart guide lines temporarily
+          - Add ruler QGraphicsItems at sheet edges
+          - Integrate with spacebar grab-and-move
+        dependencies: ["story-005-01", "story-001-04"]
+
+      - id: "story-005-03"
+        name: "Lock pieces in place"
+        description: |
+          As a pattern designer, I want to lock pieces in place on layout
+          so that they don't move accidentally while I arrange other pieces.
+
+          Acceptance Criteria:
+          - User can lock individual pieces (right-click → Lock)
+          - Locked pieces are visually indicated (lock icon or different color)
+          - Locked pieces cannot be moved or selected
+          - User can unlock pieces (right-click → Unlock)
+          - User can lock/unlock all pieces with single command
+          - Lock state is saved with project
+        status: "not-started"
+        file: "docs/stories/epic-005/story-005-03.md"
+        assigned_to: ""
+        estimate: "3 points"
+        actual: ""
+        technical_notes: |
+          - Add locked flag to Pattern or PatternItem
+          - Disable selection and move for locked items
+          - Render lock indicator
+          - Add lock/unlock commands
+        dependencies: ["story-005-02"]
+
+      - id: "story-005-04"
+        name: "Automatic nesting with greedy algorithm"
+        description: |
+          As a pattern designer, I want to automatically nest pattern pieces on material
+          so that I can minimize material waste.
+
+          Acceptance Criteria:
+          - User can trigger "Auto Nest" command
+          - User can specify material dimensions
+          - User can specify minimum spacing/gap between pieces
+          - User can define grain direction constraints per piece
+          - User can lock rotation or allow specific rotations (0°, 90°, 180°, 270°)
+          - Greedy nesting algorithm runs in < 10 seconds for 20-50 pieces
+          - System displays material utilization percentage
+          - Result can be manually adjusted after nesting
+          - Nesting is undoable
+        status: "not-started"
+        file: "docs/stories/epic-005/story-005-04.md"
+        assigned_to: ""
+        estimate: "13 points"
+        actual: ""
+        technical_notes: |
+          - Implement NestingAlgorithm with greedy placement
+          - Sort pieces by area (largest first)
+          - Try rotations if allowed
+          - Place at first valid position (bottom-left heuristic)
+          - Check spacing constraints
+          - Calculate utilization percentage
+          - Run in QThread to avoid blocking UI
+          - Create NestPiecesCommand
+        dependencies: ["story-005-02"]
+
+      - id: "story-005-05"
+        name: "Isolation mode for working with subset of pieces"
+        description: |
+          As a pattern designer, I want to isolate selected pieces to work on them without visual clutter
+          so that I can focus on specific pieces in projects with hundreds of pieces.
+
+          Acceptance Criteria:
+          - User selects pieces and presses Tab to enter isolation mode
+          - Only selected pieces remain visible on canvas
+          - All other pieces are hidden (not deleted)
+          - Visual indicator shows isolation mode is active (status bar message, border color)
+          - Status bar shows "Isolation: N pieces"
+          - User can edit isolated pieces normally (all tools work)
+          - User presses Shift+Tab to exit isolation mode
+          - All pieces become visible again
+          - Isolation mode toggle is instant (< 100ms)
+          - Canvas rendering is fast in isolation mode (only isolated pieces rendered)
+        status: "not-started"
+        file: "docs/stories/epic-005/story-005-05.md"
+        assigned_to: ""
+        estimate: "8 points"
+        actual: ""
+        technical_notes: |
+          - Implement IsolationManager class
+          - Store isolated items set
+          - Hide/show items based on isolation state
+          - Add Tab/Shift+Tab keyboard handling
+          - Show isolation indicator in status bar
+          - Optimize rendering (only render visible items)
+          - Performance target: < 100ms switch time
+        dependencies: []
+
+      - id: "story-005-06"
+        name: "Calculate and display material utilization"
+        description: |
+          As a pattern designer, I want to see material utilization percentage and waste area
+          so that I can assess efficiency of my layout.
+
+          Acceptance Criteria:
+          - System calculates total area of all placed pieces
+          - System calculates layout sheet area
+          - System displays utilization percentage: (pieces area / sheet area) × 100%
+          - System displays total used area and waste area
+          - Metrics update in real-time as pieces are moved
+          - Metrics are displayed in layout status panel or status bar
+        status: "not-started"
+        file: "docs/stories/epic-005/story-005-06.md"
+        assigned_to: ""
+        estimate: "3 points"
+        actual: ""
+        technical_notes: |
+          - Implement area calculation for patterns
+          - Sum all pattern areas on sheet
+          - Calculate utilization percentage
+          - Display metrics in UI (status bar or panel)
+          - Update metrics when pieces move or layout changes
+        dependencies: ["story-005-01"]
+
+  # =========================================================================
+  # EPIC-006: Measurement and Dimensioning
+  # =========================================================================
+  - id: "epic-006"
+    name: "Measurement and Dimensioning"
+    description: "Implement measurement tools for distances, angles, perimeters, areas, and optional dimension annotations"
+    priority: "must-have"
+    status: "not-started"
+    estimated_stories: "3-5"
+    actual_stories: 4
+    stories:
+      - id: "story-006-01"
+        name: "Measure distances between points and along paths"
+        description: |
+          As a pattern designer, I want to measure distances between points and along curves
+          so that I can verify pattern dimensions are correct.
+
+          Acceptance Criteria:
+          - User can select Measure tool (D key)
+          - User clicks two points to measure straight-line distance
+          - User can measure distance along polyline or curve (total path length)
+          - Measurement displays in current unit system (mm, cm, inches)
+          - Measurement shows live preview while moving cursor
+          - Measurements can be saved as temporary or persistent annotations
+          - User can clear all measurements or individual measurements
+        status: "not-started"
+        file: "docs/stories/epic-006/story-006-01.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement MeasureTool
+          - Calculate straight-line distance (Euclidean)
+          - Calculate path length along curves (arc length)
+          - Render measurement line and text label
+          - Store measurements in Measurement panel
+          - Create Measurement class
+        dependencies: []
+
+      - id: "story-006-02"
+        name: "Measure angles between lines"
+        description: |
+          As a pattern designer, I want to measure angles between lines or at vertices
+          so that I can verify angular relationships.
+
+          Acceptance Criteria:
+          - User can measure angle between two lines (3-point angle: vertex + 2 points)
+          - User can measure angle at any vertex automatically
+          - Angle displays in degrees with decimal precision
+          - Option to display in radians if needed
+          - Angle arc is rendered visually
+        status: "not-started"
+        file: "docs/stories/epic-006/story-006-02.md"
+        assigned_to: ""
+        estimate: "3 points"
+        actual: ""
+        technical_notes: |
+          - Extend MeasureTool for angle measurement
+          - Calculate angle from three points
+          - Render angle arc and text
+          - Support degrees and radians
+        dependencies: ["story-006-01"]
+
+      - id: "story-006-03"
+        name: "Measure perimeter and area of shapes"
+        description: |
+          As a pattern designer, I want to measure perimeter and area of pattern pieces
+          so that I can calculate material requirements and verify sizes.
+
+          Acceptance Criteria:
+          - User can measure perimeter of closed shapes automatically
+          - User can measure area of closed shapes (polygons, complex curves)
+          - Perimeter calculation handles curves accurately (not just straight segments)
+          - Area calculation handles curves accurately (numerical integration)
+          - Area displays in current unit² (mm², cm², inch²)
+          - Measurements can be saved to Measurement panel
+        status: "not-started"
+        file: "docs/stories/epic-006/story-006-03.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement perimeter calculation for closed polylines
+          - Implement area calculation (Green's theorem or triangulation)
+          - Handle bezier curves (numerical integration)
+          - Display results with proper units
+          - Add to Measurement panel
+        dependencies: ["story-006-01"]
+
+      - id: "story-006-04"
+        name: "Unit system conversion"
+        description: |
+          As a pattern designer, I want to switch between metric and imperial units
+          so that I can work in my preferred measurement system.
+
+          Acceptance Criteria:
+          - User can set default unit system in preferences: mm, cm, inches
+          - All measurements display in current unit system
+          - Switching units converts all displayed values automatically
+          - Precision is preserved during conversion
+          - Parameters, dimensions, measurements all update to new units
+          - Grid spacing updates to new units
+        status: "not-started"
+        file: "docs/stories/epic-006/story-006-04.md"
+        assigned_to: ""
+        estimate: "3 points"
+        actual: ""
+        technical_notes: |
+          - Implement Unit enum (mm, cm, inches)
+          - Store unit preference in Project settings
+          - Implement conversion functions
+          - Update all UI displays when units change
+          - Trigger UI refresh on unit change
+        dependencies: []
+
+  # =========================================================================
+  # EPIC-007: File Operations and Interoperability
+  # =========================================================================
+  - id: "epic-007"
+    name: "File Operations and Interoperability"
+    description: "Implement file import/export (DXF, SVG, PDF), native project format, and auto-save with recovery"
+    priority: "must-have"
+    status: "not-started"
+    estimated_stories: "8-12"
+    actual_stories: 11
+    stories:
+      - id: "story-007-01"
+        name: "Design and implement native JSON file format"
+        description: |
+          As a developer, I need to design a native file format for saving complete project state
+          so that all data (geometry, parameters, constraints, settings) can be persisted.
+
+          Acceptance Criteria:
+          - File format is JSON-based for readability and debuggability
+          - Format includes version number for future compatibility
+          - Format stores: metadata, settings, parameters, layers, patterns, geometry, constraints
+          - Format is documented with specification
+          - Format supports forward/backward compatibility strategy
+          - File extension: .patterncad
+        status: "not-started"
+        file: "docs/stories/epic-007/story-007-01.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Design JSON schema
+          - Document file format specification
+          - Define versioning strategy
+          - Use Qt JSON classes (QJsonDocument, QJsonObject)
+          - Write format spec document
+        dependencies: []
+
+      - id: "story-007-02"
+        name: "Save project to native format"
+        description: |
+          As a pattern designer, I want to save my project to a file
+          so that I can preserve my work and continue later.
+
+          Acceptance Criteria:
+          - User can save via File → Save (Ctrl+S)
+          - User can Save As to create new file (Ctrl+Shift+S)
+          - All project data is saved: geometry, parameters, constraints, layers, settings
+          - File save is atomic (write to temp file, then rename)
+          - Save operation completes in < 1 second for typical project (< 5MB)
+          - Failed saves don't corrupt existing file
+          - Save dialog remembers last used directory
+          - File path is stored as "current file" for future saves
+        status: "not-started"
+        file: "docs/stories/epic-007/story-007-02.md"
+        assigned_to: ""
+        estimate: "8 points"
+        actual: ""
+        technical_notes: |
+          - Implement NativeFormat::exportFile()
+          - Serialize Project to QJsonObject
+          - Write JSON to file atomically (temp + rename)
+          - Handle file I/O errors gracefully
+          - Update window title with filename
+          - Mark project as "saved" (no unsaved changes)
+        dependencies: ["story-007-01"]
+
+      - id: "story-007-03"
+        name: "Load project from native format"
+        description: |
+          As a pattern designer, I want to open saved project files
+          so that I can continue working on previous projects.
+
+          Acceptance Criteria:
+          - User can open via File → Open (Ctrl+O)
+          - File browser filters for .patterncad files
+          - All project data is restored: geometry, parameters, constraints, layers, settings
+          - Load restores view state (zoom, pan, layer visibility)
+          - Load operation completes in < 2 seconds for typical project
+          - Corrupted files show clear error message
+          - Load validates file format version
+          - Recent files list updates with opened file
+        status: "not-started"
+        file: "docs/stories/epic-007/story-007-03.md"
+        assigned_to: ""
+        estimate: "8 points"
+        actual: ""
+        technical_notes: |
+          - Implement NativeFormat::importFile()
+          - Parse JSON and deserialize to Project
+          - Validate file version compatibility
+          - Restore all project state
+          - Handle parse errors gracefully
+          - Update recent files list
+        dependencies: ["story-007-02"]
+
+      - id: "story-007-04"
+        name: "Auto-save with background saving"
+        description: |
+          As a pattern designer, I want automatic background saving
+          so that my work is protected from crashes or power loss.
+
+          Acceptance Criteria:
+          - Auto-save is enabled by default (can be disabled in preferences)
+          - Auto-save interval is configurable: 1, 2, 5, 10, 15, 30 minutes (default: 5 min)
+          - Auto-save runs in background thread (non-blocking)
+          - User can continue working during auto-save
+          - Auto-save only happens if document has unsaved changes
+          - Auto-save creates separate file: {projectname}-{timestamp}.autosave
+          - System keeps last 5-10 auto-save versions (configurable)
+          - Status bar shows "Auto-saved" notification briefly
+          - Auto-save is fast: < 500ms for typical project
+        status: "not-started"
+        file: "docs/stories/epic-007/story-007-04.md"
+        assigned_to: ""
+        estimate: "8 points"
+        actual: ""
+        technical_notes: |
+          - Implement AutoSaveManager class
+          - Use QTimer for periodic trigger
+          - Save in QThread to avoid blocking UI
+          - Create timestamped auto-save files
+          - Implement FIFO cleanup (keep last N versions)
+          - Show notification in status bar
+        dependencies: ["story-007-02"]
+
+      - id: "story-007-05"
+        name: "Auto-save recovery on startup"
+        description: |
+          As a pattern designer, when application crashes, I want to recover my work from auto-save
+          so that I don't lose progress.
+
+          Acceptance Criteria:
+          - On application startup, system checks for auto-save files
+          - If recovery files found, recovery dialog appears automatically
+          - Recovery dialog shows: filename, timestamp, file size for each recovery file
+          - User can select which recovery file to restore
+          - User can choose to discard recovery files and start fresh
+          - Restored file opens as unsaved (requires Save As)
+          - Recovery files are kept until manually deleted or project saved
+        status: "not-started"
+        file: "docs/stories/epic-007/story-007-05.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Scan for .autosave files on startup
+          - Implement RecoveryDialog
+          - Display recovery options to user
+          - Load selected recovery file
+          - Cleanup or preserve recovery files based on user choice
+        dependencies: ["story-007-04"]
+
+      - id: "story-007-06"
+        name: "Import DXF files"
+        description: |
+          As a pattern designer, I want to import patterns from DXF files
+          so that I can use patterns created in other CAD tools.
+
+          Acceptance Criteria:
+          - User can import DXF files via File → Import → DXF
+          - System supports DXF R12 and later versions (R2018+)
+          - Supported entities: LINE, CIRCLE, ARC, POLYLINE, LWPOLYLINE, SPLINE, POINT
+          - Import preserves layer information
+          - Import handles multiple units: mm, cm, inches (with auto-detection)
+          - User can override unit interpretation if needed
+          - Import creates new layer(s) named after source file
+          - Large DXF files show progress indicator
+          - Import errors are reported clearly with entity details
+        status: "not-started"
+        file: "docs/stories/epic-007/story-007-06.md"
+        assigned_to: ""
+        estimate: "13 points"
+        actual: ""
+        technical_notes: |
+          - Use libdxfrw or implement custom DXF R12 parser
+          - Map DXF entities to PatternCAD geometry
+          - Handle unit conversion
+          - Create layers from DXF layers
+          - Show progress dialog for large files
+          - Handle parse errors gracefully
+          - Implement DXFFormat class
+        dependencies: []
+
+      - id: "story-007-07"
+        name: "Export to DXF format"
+        description: |
+          As a pattern designer, I want to export patterns to DXF format
+          so that I can use them in other CAD tools or send to cutting machines.
+
+          Acceptance Criteria:
+          - User can export to DXF via File → Export → DXF
+          - Export to DXF R12 for maximum compatibility
+          - Exported entities: LINE, CIRCLE, ARC, POLYLINE, SPLINE as appropriate
+          - Export preserves layer structure and names
+          - Export handles units correctly (user specifies: mm, cm, inches)
+          - User can choose which layers to export
+          - Export produces clean geometry without duplicates
+          - Bezier curves converted to DXF SPLINE entities
+          - Export tested with AutoCAD, QCAD, LibreCAD
+        status: "not-started"
+        file: "docs/stories/epic-007/story-007-07.md"
+        assigned_to: ""
+        estimate: "13 points"
+        actual: ""
+        technical_notes: |
+          - Implement DXF R12 writer using libdxfrw or custom
+          - Map PatternCAD geometry to DXF entities
+          - Handle layer export
+          - Convert bezier curves to splines
+          - Set correct units in DXF header
+          - Test compatibility with target tools
+        dependencies: []
+
+      - id: "story-007-08"
+        name: "Import SVG files"
+        description: |
+          As a pattern designer, I want to import patterns from SVG files
+          so that I can use vector graphics created in design tools.
+
+          Acceptance Criteria:
+          - User can import SVG files via File → Import → SVG
+          - System supports SVG 1.1 and 2.0
+          - Supported elements: path, line, circle, ellipse, rect, polygon, polyline
+          - Import handles SVG transforms (translate, rotate, scale)
+          - Import respects SVG viewBox for proper scaling
+          - User can specify import scale if SVG lacks units
+          - Bezier curves and paths converted to editable curves
+          - Grouped objects imported as grouped or separate layers
+          - Import preserves stroke width and colors where applicable
+        status: "not-started"
+        file: "docs/stories/epic-007/story-007-08.md"
+        assigned_to: ""
+        estimate: "13 points"
+        actual: ""
+        technical_notes: |
+          - Use Qt SVG module for parsing
+          - Parse SVG path data to geometry
+          - Handle SVG transforms
+          - Map SVG elements to PatternCAD geometry
+          - Handle viewBox scaling
+          - Import stroke properties
+          - Implement SVGFormat class
+        dependencies: []
+
+      - id: "story-007-09"
+        name: "Export to SVG format"
+        description: |
+          As a pattern designer, I want to export patterns to SVG format
+          so that I can use them in vector graphics tools or web applications.
+
+          Acceptance Criteria:
+          - User can export to SVG via File → Export → SVG
+          - Export to SVG 1.1 format
+          - Exported elements: path, line, circle, ellipse as appropriate
+          - Export includes proper viewBox and dimensions for accurate scaling
+          - User can specify SVG units: px, mm, cm, inches
+          - Layers exported as SVG groups with IDs
+          - Export preserves stroke width, colors, fill properties
+          - Bezier curves exported as SVG cubic bezier commands
+          - Export produces clean, readable SVG (formatted, not minified)
+          - Export tested with Inkscape, Illustrator, web browsers
+        status: "not-started"
+        file: "docs/stories/epic-007/story-007-09.md"
+        assigned_to: ""
+        estimate: "8 points"
+        actual: ""
+        technical_notes: |
+          - Use Qt SVG or custom SVG writer
+          - Map PatternCAD geometry to SVG elements
+          - Set viewBox correctly
+          - Export layers as groups
+          - Preserve styles
+          - Format output for readability
+        dependencies: []
+
+      - id: "story-007-10"
+        name: "Export to PDF format"
+        description: |
+          As a pattern designer, I want to export patterns to PDF format
+          so that I can print, plot, or share patterns as documents.
+
+          Acceptance Criteria:
+          - User can export to PDF via File → Export → PDF
+          - User can specify page size: A4, A3, A2, A1, A0, Letter, Tabloid, custom
+          - User can choose orientation: portrait or landscape
+          - Export can fit pattern to page or use exact scale (1:1, 1:2, custom)
+          - Multi-page export: large patterns split across pages with alignment marks
+          - User can choose what to include: pattern only, dimensions, annotations, grid
+          - PDF preserves vector quality (not rasterized)
+          - Export includes metadata: title, author, creation date, scale
+          - Export tested with Adobe Reader, plotting software
+        status: "not-started"
+        file: "docs/stories/epic-007/story-007-10.md"
+        assigned_to: ""
+        estimate: "8 points"
+        actual: ""
+        technical_notes: |
+          - Use QPdfWriter for PDF generation
+          - Render scene to QPainter on PDF
+          - Handle page sizes and orientations
+          - Implement multi-page splitting
+          - Add alignment marks for multi-page
+          - Set PDF metadata
+        dependencies: []
+
+      - id: "story-007-11"
+        name: "Recent files list"
+        description: |
+          As a pattern designer, I want quick access to recently opened files
+          so that I can easily return to current projects.
+
+          Acceptance Criteria:
+          - Application maintains list of last 10-20 opened files
+          - Recent files accessible from File → Recent Files menu
+          - Menu shows filename and full path
+          - Clicking recent file opens it
+          - Non-existent files are removed from list gracefully (with error message)
+          - Recent files list persists across application restarts
+        status: "not-started"
+        file: "docs/stories/epic-007/story-007-11.md"
+        assigned_to: ""
+        estimate: "2 points"
+        actual: ""
+        technical_notes: |
+          - Store recent files in QSettings
+          - Update list on file open/save
+          - Check file existence before opening
+          - Add to File menu dynamically
+          - Limit list to N entries (FIFO)
+        dependencies: ["story-007-03"]
+
+  # =========================================================================
+  # EPIC-008: User Interface and Cross-Platform Foundation
+  # =========================================================================
+  - id: "epic-008"
+    name: "User Interface and Cross-Platform Foundation"
+    description: "Build application UI framework, multi-panel workspace, keyboard shortcuts, layer management, undo/redo system, and cross-platform support"
+    priority: "must-have"
+    status: "not-started"
+    estimated_stories: "8-12"
+    actual_stories: 12
+    stories:
+      - id: "story-008-01"
+        name: "Create main window with menu bar and status bar"
+        description: |
+          As a pattern designer, I want a professional application window with menus and status information
+          so that I can access all features and see application status.
+
+          Acceptance Criteria:
+          - Application has main window (QMainWindow)
+          - Menu bar with: File, Edit, View, Draw, Modify, Tools, Window, Help
+          - Status bar shows: cursor coordinates, zoom percentage, tool hint, file status
+          - Window title shows: "PatternCAD - {filename}" or "PatternCAD - Untitled"
+          - Window has application icon
+          - Window remembers size and position across sessions
+          - Window supports full-screen mode (F11)
+        status: "not-started"
+        file: "docs/stories/epic-008/story-008-01.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement MainWindow class (QMainWindow subclass)
+          - Create menu bar with menu structure
+          - Create status bar with labels
+          - Add application icon
+          - Save/restore window geometry in QSettings
+        dependencies: []
+
+      - id: "story-008-02"
+        name: "Implement canvas with pan and zoom"
+        description: |
+          As a pattern designer, I want a canvas where I can view and edit patterns with smooth pan and zoom
+          so that I can work at different scales and navigate large patterns.
+
+          Acceptance Criteria:
+          - Central widget is canvas (QGraphicsView + QGraphicsScene)
+          - User can pan by middle-mouse drag, two-finger trackpad, or Hand tool (H)
+          - User can zoom with mouse wheel, pinch gesture, or keyboard (+/-)
+          - Zoom range: 10% to 1000% with smooth interpolation
+          - Zoom to Fit All (F key) frames all objects
+          - Zoom to Selection (Shift+F) frames selected objects
+          - Zoom to 100% (Ctrl+0) shows actual size
+          - Pan and zoom are smooth (60fps target)
+          - Canvas shows origin point (0,0) with visual indicator
+          - Canvas displays current zoom percentage in status bar
+        status: "not-started"
+        file: "docs/stories/epic-008/story-008-02.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement PatternCanvas (QGraphicsView subclass)
+          - Implement PatternScene (QGraphicsScene subclass)
+          - Handle mouse wheel for zoom
+          - Handle middle-mouse drag for pan
+          - Implement zoom to fit, zoom to selection
+          - Optimize rendering for smooth 60fps
+          - Add origin indicator item
+        dependencies: ["story-008-01"]
+
+      - id: "story-008-03"
+        name: "Create tool palette with drawing tools"
+        description: |
+          As a pattern designer, I want a tool palette with visual icons
+          so that I can quickly select drawing and editing tools.
+
+          Acceptance Criteria:
+          - Tool palette is vertical toolbar on left side (or dockable)
+          - Tools include: Select, Line, Circle, Rectangle, Arc, Bezier, Point, Move, Measure
+          - Each tool has clear icon and tooltip showing name and keyboard shortcut
+          - Active tool is visually highlighted
+          - Tools organized into groups (can be collapsed/expanded)
+          - Toolbar remembers position across sessions
+          - User can hide/show toolbar (View menu)
+        status: "not-started"
+        file: "docs/stories/epic-008/story-008-03.md"
+        assigned_to: ""
+        estimate: "3 points"
+        actual: ""
+        technical_notes: |
+          - Create ToolPalette (QToolBar or QDockWidget)
+          - Add QAction for each tool with icon and shortcut
+          - Implement tool selection logic
+          - Highlight active tool
+          - Save toolbar state in QSettings
+        dependencies: ["story-008-01"]
+
+      - id: "story-008-04"
+        name: "Create properties panel"
+        description: |
+          As a pattern designer, I want a properties panel that shows selected object properties
+          so that I can view and edit object attributes.
+
+          Acceptance Criteria:
+          - Properties panel is dockable widget on right side
+          - Panel shows properties of selected object(s)
+          - Properties include: Position (X, Y), Size (W, H), Rotation, Line weight, Color
+          - Properties organized into collapsible sections
+          - Numeric properties have input fields with unit notation
+          - Properties update dynamically when selection changes
+          - Multi-selection shows common properties or "Mixed" indicator
+          - Panel can be hidden/shown (View menu)
+        status: "not-started"
+        file: "docs/stories/epic-008/story-008-04.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement PropertiesPanel (QDockWidget)
+          - Use QFormLayout for property editors
+          - Connect to selection changes
+          - Update property widgets when selection changes
+          - Handle multi-selection display
+        dependencies: ["story-008-01"]
+
+      - id: "story-008-05"
+        name: "Create layers panel"
+        description: |
+          As a pattern designer, I want a layers panel to organize pattern pieces
+          so that I can manage visibility and grouping of objects.
+
+          Acceptance Criteria:
+          - Layers panel is dockable widget
+          - Panel shows list of all layers
+          - Each layer shows: visibility toggle (eye icon), lock toggle, color, name, object count
+          - User can create, rename, delete layers
+          - User can reorder layers by drag-and-drop
+          - Current active layer is highlighted
+          - Right-click shows context menu: Rename, Delete, Merge, Properties
+          - Panel can be hidden/shown (View menu)
+        status: "not-started"
+        file: "docs/stories/epic-008/story-008-05.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement LayersPanel (QDockWidget)
+          - Use QTreeWidget or QListWidget for layer list
+          - Implement drag-and-drop reordering
+          - Add layer creation/deletion/rename dialogs
+          - Connect to LayerManager
+        dependencies: ["story-008-01"]
+
+      - id: "story-008-06"
+        name: "Create parameters panel"
+        description: |
+          As a pattern designer, I want a parameters panel to view and edit all parameters
+          so that I can manage parametric dimensions.
+
+          Acceptance Criteria:
+          - Parameters panel is dockable widget
+          - Panel shows all defined parameters in table format
+          - Columns: Name, Value, Unit, Expression, Group
+          - User can edit parameters inline
+          - User can add, delete parameters
+          - Panel shows parameter dependencies (which params use which)
+          - Panel can be hidden/shown (View menu)
+          - Panel updates when parameters change
+        status: "not-started"
+        file: "docs/stories/epic-008/story-008-06.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement ParametersPanel (QDockWidget)
+          - Use QTableWidget or custom model/view
+          - Connect to ParametricEngine
+          - Implement inline editing
+          - Show dependency information
+        dependencies: ["story-008-01"]
+
+      - id: "story-008-07"
+        name: "Implement comprehensive keyboard shortcuts"
+        description: |
+          As a pattern designer, I want keyboard shortcuts for all common operations
+          so that I can work efficiently without constantly using menus.
+
+          Acceptance Criteria:
+          - Standard shortcuts work: Ctrl+N (New), Ctrl+O (Open), Ctrl+S (Save), Ctrl+Z (Undo), Ctrl+Y (Redo)
+          - Tool shortcuts: L (Line), C (Circle), R (Rectangle), A (Arc), B (Bezier), P (Point), S (Select), M (Move), D (Measure)
+          - View shortcuts: F (Fit All), Shift+F (Fit Selection), +/- (Zoom), G (Toggle Grid)
+          - Edit shortcuts: Delete/Backspace (Delete), Ctrl+D (Duplicate), Ctrl+A (Select All), Escape (Deselect)
+          - Special: Spacebar (Grab-and-move), Tab (Isolation mode), Shift+Tab (Exit isolation)
+          - All shortcuts are documented in Help → Keyboard Shortcuts
+          - Shortcuts don't conflict with OS shortcuts
+        status: "not-started"
+        file: "docs/stories/epic-008/story-008-07.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Add QShortcut or QAction shortcuts for all commands
+          - Document shortcuts in help dialog
+          - Test shortcuts on Linux and Windows
+          - Ensure no OS conflicts
+        dependencies: ["story-008-01"]
+
+      - id: "story-008-08"
+        name: "Implement undo/redo system with unlimited history"
+        description: |
+          As a pattern designer, I want unlimited undo/redo for all operations
+          so that I can freely experiment and revert mistakes.
+
+          Acceptance Criteria:
+          - All editing operations support undo: create, delete, modify, move, rotate, etc.
+          - Property changes are undoable
+          - Undo via Ctrl+Z, Redo via Ctrl+Y (or Ctrl+Shift+Z)
+          - Undo/redo via Edit menu
+          - Menu shows current undo/redo action: "Undo Move Object" (not just "Undo")
+          - Undo history depth unlimited (limited by memory ~200MB)
+          - Undo/redo is fast: < 50ms for typical operations, < 200ms for complex
+          - History cleared on file open (not persisted)
+        status: "not-started"
+        file: "docs/stories/epic-008/story-008-08.md"
+        assigned_to: ""
+        estimate: "8 points"
+        actual: ""
+        technical_notes: |
+          - Implement Command base class (execute, undo, description)
+          - Implement CommandManager with undo/redo stacks
+          - All operations wrapped in commands
+          - Store deltas (changes) not full copies
+          - Update menu text with current action
+          - Clear history on file load
+        dependencies: []
+
+      - id: "story-008-09"
+        name: "Layer system implementation"
+        description: |
+          As a developer, I need to implement layer system for organizing objects
+          so that users can manage visibility and grouping.
+
+          Acceptance Criteria:
+          - Implement Layer class (name, color, visible, locked, zOrder)
+          - Implement LayerManager class (CRUD operations)
+          - Objects are assigned to layers
+          - Layer visibility affects object rendering
+          - Layer lock prevents selection and editing
+          - Layer z-order affects drawing order
+          - Layers are saved/loaded with project
+        status: "not-started"
+        file: "docs/stories/epic-008/story-008-09.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement Layer class
+          - Implement LayerManager class
+          - Add layer assignment to geometry objects
+          - Implement visibility/lock logic in rendering
+          - Integrate with scene graph (QGraphicsItem)
+        dependencies: []
+
+      - id: "story-008-10"
+        name: "Grid overlay and snap-to-grid"
+        description: |
+          As a pattern designer, I want optional grid overlay and snap-to-grid
+          so that I can align objects precisely.
+
+          Acceptance Criteria:
+          - Grid overlay can be toggled on/off (G key or View menu)
+          - Grid spacing is configurable in preferences (default: 10mm)
+          - Grid appears as dots or lines (user preference)
+          - Grid auto-scales based on zoom level (larger spacing at low zoom)
+          - Snap-to-grid can be toggled (Ctrl+Shift+G)
+          - When snap enabled, objects snap to grid during move/create
+          - Grid and snap settings are saved in project
+        status: "not-started"
+        file: "docs/stories/epic-008/story-008-10.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement grid rendering in QGraphicsScene
+          - Add grid QGraphicsItem (draws grid pattern)
+          - Implement snap logic in move and create operations
+          - Add grid preferences to settings
+          - Auto-scale grid based on zoom
+        dependencies: ["story-008-02"]
+
+      - id: "story-008-11"
+        name: "Cross-platform build and packaging"
+        description: |
+          As a developer, I need build system and packaging for Linux and Windows
+          so that users can install and run PatternCAD on both platforms.
+
+          Acceptance Criteria:
+          - CMake build system configured for Qt project
+          - Project builds on Linux (Ubuntu 20.04+, Fedora, Manjaro)
+          - Project builds on Windows (Windows 10/11)
+          - Linux packaging: AppImage, .deb, .rpm
+          - Windows packaging: NSIS installer, portable .zip
+          - Build includes all dependencies (Qt, libraries)
+          - CI/CD pipeline builds for both platforms
+          - Installation creates file associations (.patterncad)
+        status: "not-started"
+        file: "docs/stories/epic-008/story-008-11.md"
+        assigned_to: ""
+        estimate: "13 points"
+        actual: ""
+        technical_notes: |
+          - Create CMakeLists.txt
+          - Set up vcpkg or Conan for dependencies
+          - Configure linuxdeploy for AppImage
+          - Create .deb and .rpm packaging scripts
+          - Create NSIS installer script for Windows
+          - Set up GitHub Actions or GitLab CI
+          - Test builds on target platforms
+        dependencies: []
+
+      - id: "story-008-12"
+        name: "Application preferences and settings"
+        description: |
+          As a pattern designer, I want to configure application preferences
+          so that I can customize behavior to my workflow.
+
+          Acceptance Criteria:
+          - Preferences dialog accessible via Edit → Preferences (or File → Settings on Windows)
+          - Settings include: Default units (mm/cm/inches), Grid spacing, Auto-save interval
+          - Settings include: UI theme (light/dark if supported), Language (for future i18n)
+          - Settings are persisted across sessions (QSettings)
+          - Settings include: Undo history memory limit, Recent files count
+          - Apply/OK/Cancel buttons work correctly
+          - Settings are organized into categories/tabs
+        status: "not-started"
+        file: "docs/stories/epic-008/story-008-12.md"
+        assigned_to: ""
+        estimate: "5 points"
+        actual: ""
+        technical_notes: |
+          - Implement PreferencesDialog
+          - Use QSettings for persistence
+          - Organize settings into tabs: General, Editor, File I/O, Advanced
+          - Implement setting getters/setters
+          - Apply settings on dialog accept
+        dependencies: ["story-008-01"]
+
+# Sprint Metrics
+metrics:
+  total_epics: 8
+  total_stories: 62
+  stories_completed: 0
+  stories_in_progress: 0
+  stories_not_started: 62
+  estimated_total_points: 382
+
+# Story Point Summary by Epic
+epic_story_points:
+  epic-001: 37  # Core Drawing (7 stories)
+  epic-002: 62  # Parametric System (9 stories)
+  epic-003: 21  # Transformations (5 stories)
+  epic-004: 39  # Pattern Features (7 stories)
+  epic-005: 38  # Layout & Nesting (6 stories)
+  epic-006: 16  # Measurement (4 stories)
+  epic-007: 101 # File I/O (11 stories)
+  epic-008: 68  # UI Foundation (12 stories)
+
+# Implementation Phases (Recommended Sequence)
+phases:
+  - phase: 0
+    name: "Sprint 0: Foundation"
+    duration: "2-3 weeks"
+    epics: ["epic-008-partial"]
+    stories: ["story-008-01", "story-008-02", "story-008-08", "story-008-11"]
+    goal: "Set up build system, basic Qt application, window, canvas, undo system"
+
+  - phase: 1
+    name: "Phase 1: Core Drawing"
+    duration: "3-4 weeks"
+    epics: ["epic-001", "epic-008-partial"]
+    stories: ["epic-001-all", "story-008-03", "story-008-04", "story-008-07"]
+    goal: "Implement all drawing tools, selection, spacebar grab-and-move"
+
+  - phase: 2
+    name: "Phase 2: Transformations"
+    duration: "2-3 weeks"
+    epics: ["epic-003"]
+    stories: ["epic-003-all"]
+    goal: "Rotate, mirror, scale, align, distribute"
+
+  - phase: 3
+    name: "Phase 3: Parametric System"
+    duration: "4-5 weeks"
+    epics: ["epic-002", "epic-008-partial"]
+    stories: ["epic-002-all", "story-008-06"]
+    goal: "Parameters, expressions, constraints, solver"
+
+  - phase: 4
+    name: "Phase 4: Pattern Features"
+    duration: "4-5 weeks"
+    epics: ["epic-004"]
+    stories: ["epic-004-all"]
+    goal: "Seam allowance, notches, grading"
+
+  - phase: 5
+    name: "Phase 5: Layout & Isolation"
+    duration: "3-4 weeks"
+    epics: ["epic-005", "epic-008-partial"]
+    stories: ["epic-005-all", "story-008-05", "story-008-09", "story-008-10"]
+    goal: "Layout sheets, nesting, isolation mode, layers"
+
+  - phase: 6
+    name: "Phase 6: Measurement"
+    duration: "2-3 weeks"
+    epics: ["epic-006"]
+    stories: ["epic-006-all"]
+    goal: "Measurement tools, unit conversion"
+
+  - phase: 7
+    name: "Phase 7: File I/O"
+    duration: "5-6 weeks"
+    epics: ["epic-007", "epic-008-partial"]
+    stories: ["epic-007-all", "story-008-12"]
+    goal: "Native format, DXF, SVG, PDF, auto-save, preferences"
+
+  - phase: 8
+    name: "Phase 8: Polish & Testing"
+    duration: "3-4 weeks"
+    epics: []
+    stories: []
+    goal: "Bug fixes, performance optimization, testing, documentation"
+
+total_estimated_duration: "30-40 weeks (7-9 months)"
+
+# Notes
+notes: |
+  - Total 62 stories estimated at 382 story points
+  - Average 6.2 points per story
+  - Epic-007 (File I/O) is largest with 101 points
+  - Epic-002 (Parametric System) is second largest with 62 points (most complex)
+  - Recommended to tackle in 8 phases as outlined above
+  - Sprint 0 focuses on infrastructure (build, Qt setup, basic window)
+  - Each phase builds on previous phases
+  - Some stories from Epic-008 (UI Foundation) are distributed across phases as needed
+  - Isolation mode (story-005-05) is critical for handling 300-500 pieces
+  - Auto-save (story-007-04/05) is critical for reliability
+  - Constraint solver (story-002-08) is most technically complex story

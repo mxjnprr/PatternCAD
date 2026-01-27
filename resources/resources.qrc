@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/app-icon.png</file>
+    </qresource>
+    <qresource prefix="/icons">
+        <file>icons/file-new.png</file>
+        <file>icons/file-open.png</file>
+        <file>icons/file-save.png</file>
+        <file>icons/edit-undo.png</file>
+        <file>icons/edit-redo.png</file>
+        <file>icons/tool-select.png</file>
+        <file>icons/tool-line.png</file>
+        <file>icons/tool-circle.png</file>
+        <file>icons/tool-rectangle.png</file>
+        <file>icons/tool-bezier.png</file>
+    </qresource>
+</RCC>

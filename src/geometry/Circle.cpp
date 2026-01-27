@@ -1,0 +1,146 @@
+/**
+ * Circle.cpp
+ *
+ * Implementation of Circle class
+ */
+
+#include "Circle.h"
+#include <QPainter>
+#include <QtMath>
+
+namespace PatternCAD {
+namespace Geometry {
+
+Circle::Circle(QObject* parent)
+    : GeometryObject(parent)
+    , m_center(0.0, 0.0)
+    , m_radius(10.0)
+{
+    m_name = "Circle";
+}
+
+Circle::Circle(const QPointF& center, double radius, QObject* parent)
+    : GeometryObject(parent)
+    , m_center(center)
+    , m_radius(qAbs(radius))
+{
+    m_name = "Circle";
+}
+
+Circle::~Circle()
+{
+}
+
+ObjectType Circle::type() const
+{
+    return ObjectType::Circle;
+}
+
+QString Circle::typeName() const
+{
+    return "Circle";
+}
+
+QPointF Circle::center() const
+{
+    return m_center;
+}
+
+void Circle::setCenter(const QPointF& center)
+{
+    if (m_center != center) {
+        m_center = center;
+        notifyChanged();
+    }
+}
+
+double Circle::radius() const
+{
+    return m_radius;
+}
+
+void Circle::setRadius(double radius)
+{
+    double newRadius = qAbs(radius);
+    if (m_radius != newRadius) {
+        m_radius = newRadius;
+        notifyChanged();
+    }
+}
+
+double Circle::diameter() const
+{
+    return m_radius * 2.0;
+}
+
+double Circle::area() const
+{
+    return M_PI * m_radius * m_radius;
+}
+
+double Circle::circumference() const
+{
+    return 2.0 * M_PI * m_radius;
+}
+
+bool Circle::containsPoint(const QPointF& point) const
+{
+    QPointF delta = point - m_center;
+    double distance = qSqrt(delta.x() * delta.x() + delta.y() * delta.y());
+    return distance <= m_radius;
+}
+
+double Circle::distanceToPoint(const QPointF& point) const
+{
+    QPointF delta = point - m_center;
+    double distance = qSqrt(delta.x() * delta.x() + delta.y() * delta.y());
+    return qAbs(distance - m_radius);
+}
+
+QRectF Circle::boundingRect() const
+{
+    return QRectF(m_center.x() - m_radius,
+                  m_center.y() - m_radius,
+                  m_radius * 2.0,
+                  m_radius * 2.0);
+}
+
+bool Circle::contains(const QPointF& point) const
+{
+    return distanceToPoint(point) <= HIT_TOLERANCE;
+}
+
+void Circle::translate(const QPointF& delta)
+{
+    setCenter(m_center + delta);
+}
+
+void Circle::draw(QPainter* painter) const
+{
+    if (!m_visible) {
+        return;
+    }
+
+    painter->save();
+
+    // Set color and style based on selection state
+    QColor color = m_selected ? Qt::red : Qt::black;
+    QPen pen(color, m_selected ? 2 : 1);
+    painter->setPen(pen);
+    painter->setBrush(Qt::NoBrush);
+
+    // Draw circle
+    painter->drawEllipse(m_center, m_radius, m_radius);
+
+    // Draw center point if selected
+    if (m_selected) {
+        painter->setBrush(color);
+        double pointSize = 4.0;
+        painter->drawEllipse(m_center, pointSize, pointSize);
+    }
+
+    painter->restore();
+}
+
+} // namespace Geometry
+} // namespace PatternCAD
