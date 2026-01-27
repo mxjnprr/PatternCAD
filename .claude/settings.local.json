@@ -10,7 +10,13 @@
       "Bash(dpkg:*)",
       "Bash(sudo apt-get:*)",
       "Bash(sudo apt-get install:*)",
-      "Bash(cmake --build:*)"
+      "Bash(cmake --build:*)",
+      "Bash(export DISPLAY=$DISPLAY:-:0)",
+      "Bash(./PatternCAD:*)",
+      "Bash(QT_QPA_PLATFORM=offscreen timeout 2 ./PatternCAD:*)",
+      "Bash(echo:*)",
+      "Bash(chmod:*)",
+      "Bash(ls:*)"
     ]
   }
 }
