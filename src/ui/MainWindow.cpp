@@ -176,7 +176,7 @@ void MainWindow::setupMenuBar()
     editMenu->addAction(tr("&Redo"), this, &MainWindow::onEditRedo, QKeySequence(tr("Ctrl+Shift+Z")));
     editMenu->addSeparator();
     editMenu->addAction(tr("Select &All"), this, &MainWindow::onEditSelectAll, QKeySequence::SelectAll);
-    editMenu->addAction(tr("&Deselect"), this, &MainWindow::onEditDeselect, QKeySequence(tr("Escape")));
+    editMenu->addAction(tr("&Deselect"), this, &MainWindow::onEditDeselect);
     editMenu->addSeparator();
     editMenu->addAction(tr("&Delete"), this, &MainWindow::onEditDelete, QKeySequence::Delete);
 
@@ -212,8 +212,8 @@ void MainWindow::setupMenuBar()
     connect(selectToolAction, &QAction::triggered, [this]() { onToolSelected("Select"); });
     addAction(selectToolAction);
 
-    QAction* lineToolAction = new QAction(tr("&Line Tool"), this);
-    lineToolAction->setShortcut(QKeySequence(Qt::Key_L));
+    QAction* lineToolAction = new QAction(tr("L&ine Tool"), this);
+    lineToolAction->setShortcut(QKeySequence(Qt::Key_I));
     connect(lineToolAction, &QAction::triggered, [this]() { onToolSelected("Line"); });
     addAction(lineToolAction);
 
@@ -524,7 +524,9 @@ void MainWindow::onViewZoomFit()
 void MainWindow::onViewZoomSelection()
 {
     if (m_canvas) {
-        m_canvas->zoomToSelection();
+        // TODO: Implement Canvas::zoomToSelection() - for now use zoomFit
+        m_canvas->zoomFit();
+        statusBar()->showMessage(tr("Zoom to selection (using fit for now)"), 2000);
     }
 }
 
@@ -559,7 +561,7 @@ void MainWindow::onEditDelete()
     Document* document = m_canvas->document();
     if (!document) return;
 
-    const QList<GeometryObject*> selected = document->selectedObjects();
+    const QList<Geometry::GeometryObject*> selected = document->selectedObjects();
     if (selected.isEmpty()) {
         statusBar()->showMessage(tr("No objects selected"), 2000);
         return;
