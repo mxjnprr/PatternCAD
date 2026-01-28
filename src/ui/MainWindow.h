@@ -12,10 +12,15 @@
 
 // Forward declarations
 class QLabel;
+class QDockWidget;
 
 namespace PatternCAD {
 
 class Project;
+
+namespace Tools {
+    class Tool;
+}
 
 namespace UI {
 
@@ -56,22 +61,38 @@ private slots:
     void onFileSave();
     void onFileSaveAs();
     void onFileExit();
+    void onFileOpenRecent();
 
     // Edit menu
     void onEditUndo();
     void onEditRedo();
+    void onEditDelete();
+    void onEditSelectAll();
+    void onEditDeselect();
 
     // View menu
     void onViewZoomIn();
     void onViewZoomOut();
     void onViewZoomFit();
+    void onViewZoomSelection();
+    void onViewZoomActual();
+    void onViewToggleGrid();
+    void onViewToggleSnap();
 
     // Help menu
+    void onHelpKeyboardShortcuts();
     void onHelpAbout();
+
+    // Tool selection
+    void onToolSelected(const QString& toolName);
+    void returnToSelectTool();
 
     // Project changes
     void onProjectChanged(Project* project);
     void onProjectModified(bool modified);
+
+    // Dimension input
+    void onDimensionInputRequested(const QString& mode, double initialLength, double initialAngle);
 
 private:
     // UI setup
@@ -80,12 +101,16 @@ private:
     void setupToolBar();
     void setupStatusBar();
     void setupDockWidgets();
+    void setupWindowMenu();
     void loadSettings();
     void saveSettings();
 
     // Helper methods
     void updateWindowTitle();
     bool promptSaveChanges();
+    void updateRecentFiles(const QString& filepath);
+    void updateRecentFilesMenu();
+    QString getDefaultDirectory() const;
 
     // UI Components
     Canvas* m_canvas;
@@ -93,10 +118,28 @@ private:
     PropertiesPanel* m_propertiesPanel;
     LayersPanel* m_layersPanel;
 
+    // Dock widgets
+    QDockWidget* m_toolsDock;
+    QDockWidget* m_propertiesDock;
+    QDockWidget* m_layersDock;
+
+    // Tool management
+    QMap<QString, Tools::Tool*> m_tools;
+    Tools::Tool* m_currentTool;
+
+    // Dimension input
+    QString m_currentDimensionMode;
+
     // Status bar widgets
     QLabel* m_statusLabel;
     QLabel* m_cursorLabel;
     QLabel* m_zoomLabel;
+    class DimensionInputOverlay* m_dimensionInput;
+
+    // Recent files
+    QMenu* m_recentFilesMenu;
+    QList<QAction*> m_recentFileActions;
+    static const int MaxRecentFiles = 10;
 };
 
 } // namespace UI
