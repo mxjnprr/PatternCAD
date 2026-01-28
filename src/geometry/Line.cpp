@@ -167,7 +167,7 @@ void Line::translate(const QPointF& delta)
     notifyChanged();
 }
 
-void Line::draw(QPainter* painter) const
+void Line::draw(QPainter* painter, const QColor& color) const
 {
     if (!m_visible) {
         return;
@@ -175,17 +175,15 @@ void Line::draw(QPainter* painter) const
 
     painter->save();
 
-    // Set color and style based on selection state
-    QColor color = m_selected ? Qt::red : Qt::black;
-    QPen pen(color, m_selected ? 2 : 1);
-    painter->setPen(pen);
+    // Use object's pen properties
+    painter->setPen(createPen(color));
 
     // Draw line
     painter->drawLine(m_start, m_end);
 
     // Draw endpoints if selected
     if (m_selected) {
-        painter->setBrush(color);
+        painter->setBrush(Qt::red);
         double pointSize = 4.0;
         painter->drawEllipse(m_start, pointSize, pointSize);
         painter->drawEllipse(m_end, pointSize, pointSize);

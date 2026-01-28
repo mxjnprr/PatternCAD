@@ -154,11 +154,11 @@ epics:
           - Property changes apply immediately to objects
           - Property changes are undoable
           - Multi-selection shows common properties or "Mixed" indicator
-        status: "in-progress"
+        status: "completed"
         file: "docs/stories/epic-001/story-001-05.md"
         assigned_to: ""
         estimate: "5 points"
-        actual: ""
+        actual: "5 points"
         technical_notes: |
           - Implement PropertiesPanel QDockWidget
           - Create property editor widgets (QSpinBox, QDoubleSpinBox, QColorDialog)
@@ -1800,8 +1800,8 @@ epics:
 metrics:
   total_epics: 8
   total_stories: 62
-  stories_completed: 11
-  stories_in_progress: 5
+  stories_completed: 12
+  stories_in_progress: 4
   stories_not_started: 46
   estimated_total_points: 382
 

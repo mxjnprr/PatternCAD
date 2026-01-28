@@ -13,9 +13,13 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QPushButton>
 #include <QList>
 
 namespace PatternCAD {
+
+class Document;
 
 // Forward declarations
 namespace Geometry {
@@ -40,6 +44,9 @@ public:
     explicit PropertiesPanel(QWidget* parent = nullptr);
     ~PropertiesPanel();
 
+    // Document
+    void setDocument(Document* document);
+
     // Selection
     void setSelectedObjects(const QList<Geometry::GeometryObject*>& objects);
     void clearSelection();
@@ -49,6 +56,7 @@ signals:
 
 private slots:
     void onPropertyEdited();
+    void onColorButtonClicked();
 
 private:
     // UI setup
@@ -62,13 +70,19 @@ private:
     QFormLayout* m_formLayout;
     QWidget* m_formWidget;
     QLabel* m_titleLabel;
+    Document* m_document;
     QList<Geometry::GeometryObject*> m_selectedObjects;
 
     // Property widgets (examples)
     QLineEdit* m_nameEdit;
     QComboBox* m_layerCombo;
-    QLineEdit* m_xPositionEdit;
-    QLineEdit* m_yPositionEdit;
+    QDoubleSpinBox* m_xPositionEdit;
+    QDoubleSpinBox* m_yPositionEdit;
+    QDoubleSpinBox* m_widthEdit;
+    QDoubleSpinBox* m_heightEdit;
+    QDoubleSpinBox* m_lineWeightEdit;
+    QPushButton* m_lineColorButton;
+    QComboBox* m_lineStyleCombo;
 };
 
 } // namespace UI

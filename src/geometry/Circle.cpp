@@ -115,7 +115,7 @@ void Circle::translate(const QPointF& delta)
     setCenter(m_center + delta);
 }
 
-void Circle::draw(QPainter* painter) const
+void Circle::draw(QPainter* painter, const QColor& color) const
 {
     if (!m_visible) {
         return;
@@ -123,10 +123,8 @@ void Circle::draw(QPainter* painter) const
 
     painter->save();
 
-    // Set color and style based on selection state
-    QColor color = m_selected ? Qt::red : Qt::black;
-    QPen pen(color, m_selected ? 2 : 1);
-    painter->setPen(pen);
+    // Use object's pen properties
+    painter->setPen(createPen(color));
     painter->setBrush(Qt::NoBrush);
 
     // Draw circle
@@ -134,7 +132,7 @@ void Circle::draw(QPainter* painter) const
 
     // Draw center point if selected
     if (m_selected) {
-        painter->setBrush(color);
+        painter->setBrush(Qt::red);
         double pointSize = 4.0;
         painter->drawEllipse(m_center, pointSize, pointSize);
     }

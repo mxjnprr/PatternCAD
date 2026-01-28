@@ -70,6 +70,7 @@ MainWindow::MainWindow(QWidget* parent)
     Document* document = new Document(this);
     m_canvas->setDocument(document);
     m_layersPanel->setDocument(document);
+    m_propertiesPanel->setDocument(document);
 
     // Initialize tools
     m_tools["Select"] = new Tools::SelectTool(this);

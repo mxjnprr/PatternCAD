@@ -167,7 +167,7 @@ void Rectangle::translate(const QPointF& delta)
     setTopLeft(m_topLeft + delta);
 }
 
-void Rectangle::draw(QPainter* painter) const
+void Rectangle::draw(QPainter* painter, const QColor& color) const
 {
     if (!m_visible) {
         return;
@@ -175,10 +175,8 @@ void Rectangle::draw(QPainter* painter) const
 
     painter->save();
 
-    // Set color and style based on selection state
-    QColor color = m_selected ? Qt::red : Qt::black;
-    QPen pen(color, m_selected ? 2 : 1);
-    painter->setPen(pen);
+    // Use object's pen properties
+    painter->setPen(createPen(color));
     painter->setBrush(Qt::NoBrush);
 
     // Draw rectangle
@@ -186,7 +184,7 @@ void Rectangle::draw(QPainter* painter) const
 
     // Draw corner points if selected
     if (m_selected) {
-        painter->setBrush(color);
+        painter->setBrush(Qt::red);
         double pointSize = 4.0;
         painter->drawEllipse(topLeft(), pointSize, pointSize);
         painter->drawEllipse(topRight(), pointSize, pointSize);

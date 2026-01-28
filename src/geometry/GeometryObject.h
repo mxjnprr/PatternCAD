@@ -12,6 +12,7 @@
 #include <QPointF>
 #include <QRectF>
 #include <QPainter>
+#include <QColor>
 #include <memory>
 
 namespace PatternCAD {
@@ -67,13 +68,32 @@ public:
     bool isLocked() const;
     void setLocked(bool locked);
 
+    QString layer() const;
+    void setLayer(const QString& layer);
+
+    // Style properties
+    double lineWeight() const;
+    void setLineWeight(double weight);
+
+    QColor lineColor() const;
+    void setLineColor(const QColor& color);
+
+    enum class LineStyle {
+        Solid,
+        Dashed,
+        Dotted
+    };
+
+    LineStyle lineStyle() const;
+    void setLineStyle(LineStyle style);
+
     // Geometry
     virtual QRectF boundingRect() const = 0;
     virtual bool contains(const QPointF& point) const = 0;
     virtual void translate(const QPointF& delta) = 0;
 
     // Drawing
-    virtual void draw(QPainter* painter) const = 0;
+    virtual void draw(QPainter* painter, const QColor& color = Qt::black) const = 0;
 
     // Serialization (to be implemented)
     // virtual QJsonObject toJson() const = 0;
@@ -86,13 +106,18 @@ signals:
 protected:
     QString m_id;
     QString m_name;
+    QString m_layer;
     bool m_visible;
     bool m_selected;
     bool m_locked;
+    double m_lineWeight;
+    QColor m_lineColor;
+    LineStyle m_lineStyle;
 
     // Helper methods
     void notifyChanged();
     QString generateId() const;
+    QPen createPen(const QColor& layerColor) const;
 };
 
 } // namespace Geometry
