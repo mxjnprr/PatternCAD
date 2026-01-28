@@ -16,6 +16,7 @@
 #include <QPainterPath>
 #include <QMenu>
 #include <QInputDialog>
+#include <QMessageBox>
 #include <QWidget>
 #include <QFontMetrics>
 #include <cmath>
@@ -754,6 +755,18 @@ void SelectTool::keyPressEvent(QKeyEvent* event)
             if (m_document) {
                 auto selected = m_document->selectedObjects();
                 if (!selected.isEmpty()) {
+                    // Confirmation for bulk delete
+                    if (selected.size() > 10) {
+                        QWidget* parentWidget = m_canvas ? m_canvas->parentWidget() : nullptr;
+                        QMessageBox::StandardButton reply = QMessageBox::question(parentWidget,
+                            QObject::tr("Delete Objects"),
+                            QObject::tr("Delete %1 selected objects?").arg(selected.size()),
+                            QMessageBox::Yes | QMessageBox::No);
+                        if (reply != QMessageBox::Yes) {
+                            return;
+                        }
+                    }
+
                     m_document->removeObjects(selected);
                     m_hoveredObject = nullptr;
                     showStatusMessage(QString("Deleted %1 object(s)").arg(selected.size()));

@@ -10,6 +10,11 @@
 #include <QLabel>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QColorDialog>
+#include <QPushButton>
+#include <QPixmap>
+#include <QPainter>
+#include <QRandomGenerator>
 
 namespace PatternCAD {
 namespace UI {
@@ -21,6 +26,7 @@ LayersPanel::LayersPanel(QWidget* parent)
     , m_addButton(nullptr)
     , m_removeButton(nullptr)
     , m_renameButton(nullptr)
+    , m_colorButton(nullptr)
     , m_document(nullptr)
     , m_activeLayer("Default")
 {
@@ -50,6 +56,8 @@ void LayersPanel::setupUi()
             this, &LayersPanel::onLayerSelectionChanged);
     connect(m_layerList, &QListWidget::itemChanged,
             this, &LayersPanel::onLayerItemChanged);
+    connect(m_layerList, &QListWidget::itemDoubleClicked,
+            this, &LayersPanel::onLayerDoubleClicked);
     m_layout->addWidget(m_layerList);
 
     // Button layout
@@ -76,6 +84,12 @@ void LayersPanel::setupUi()
             this, &LayersPanel::onRenameLayer);
     buttonLayout->addWidget(m_renameButton);
 
+    m_colorButton = new QPushButton("Color", this);
+    m_colorButton->setToolTip("Change Layer Color");
+    connect(m_colorButton, &QPushButton::clicked,
+            this, &LayersPanel::onChangeColor);
+    buttonLayout->addWidget(m_colorButton);
+
     buttonLayout->addStretch();
     m_layout->addLayout(buttonLayout);
 
@@ -93,14 +107,41 @@ Document* LayersPanel::document() const
 
 void LayersPanel::setDocument(Document* document)
 {
-    m_document = document;
-    refreshLayers();
+    // Disconnect old document if any
+    if (m_document) {
+        disconnect(m_document, nullptr, this, nullptr);
+    }
 
-    // TODO: Connect document signals for layer changes
+    m_document = document;
+
+    // Connect document signals
+    if (m_document) {
+        connect(m_document, &Document::layerAdded,
+                this, &LayersPanel::refreshLayers);
+        connect(m_document, &Document::layerRemoved,
+                this, &LayersPanel::refreshLayers);
+        connect(m_document, &Document::layerRenamed,
+                this, [this](const QString&, const QString&) {
+            refreshLayers();
+        });
+        connect(m_document, &Document::activeLayerChanged,
+                this, [this](const QString& layerName) {
+            m_activeLayer = layerName;
+            refreshLayers();
+        });
+        connect(m_document, &Document::objectAdded,
+                this, &LayersPanel::refreshLayers);
+        connect(m_document, &Document::objectRemoved,
+                this, &LayersPanel::refreshLayers);
+    }
+
+    refreshLayers();
 }
 
 void LayersPanel::refreshLayers()
 {
+    // Block signals during refresh to avoid triggering change events
+    m_layerList->blockSignals(true);
     m_layerList->clear();
 
     if (!m_document) {
@@ -109,18 +150,36 @@ void LayersPanel::refreshLayers()
         defaultItem->setFlags(defaultItem->flags() | Qt::ItemIsUserCheckable);
         defaultItem->setCheckState(Qt::Checked);
         defaultItem->setSelected(true);
+        m_layerList->blockSignals(false);
         return;
     }
 
-    // TODO: Load layers from document
-    // for (const auto& layer : document->layers()) {
-    //     QListWidgetItem* item = new QListWidgetItem(layer->name(), m_layerList);
-    //     item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-    //     item->setCheckState(layer->isVisible() ? Qt::Checked : Qt::Unchecked);
-    //     if (layer->name() == m_activeLayer) {
-    //         item->setSelected(true);
-    //     }
-    // }
+    // Load layers from document
+    for (const QString& layerName : m_document->layers()) {
+        QListWidgetItem* item = new QListWidgetItem(m_layerList);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setCheckState(m_document->isLayerVisible(layerName) ? Qt::Checked : Qt::Unchecked);
+
+        // Create colored icon for the layer
+        QColor layerColor = m_document->layerColor(layerName);
+        QPixmap pixmap(16, 16);
+        pixmap.fill(layerColor);
+        QPainter painter(&pixmap);
+        painter.setPen(Qt::black);
+        painter.drawRect(0, 0, 15, 15);
+        item->setIcon(QIcon(pixmap));
+
+        // Count objects on this layer
+        int objectCount = m_document->objectsOnLayer(layerName).size();
+        item->setText(QString("%1 (%2)").arg(layerName).arg(objectCount));
+
+        if (layerName == m_document->activeLayer()) {
+            item->setSelected(true);
+            m_activeLayer = layerName;
+        }
+    }
+
+    m_layerList->blockSignals(false);
 }
 
 void LayersPanel::updateLayerList()
@@ -139,24 +198,33 @@ void LayersPanel::onAddLayer()
                                               &ok);
 
     if (ok && !layerName.isEmpty()) {
-        // Check if layer already exists
-        for (int i = 0; i < m_layerList->count(); ++i) {
-            if (m_layerList->item(i)->text() == layerName) {
+        // Add layer to document (which will trigger refresh via signal)
+        if (m_document) {
+            // Check if layer already exists
+            if (m_document->layers().contains(layerName)) {
                 QMessageBox::warning(this, "Layer Exists",
                                    "A layer with this name already exists.");
                 return;
             }
+
+            // Generate a random color for the new layer
+            int hue = QRandomGenerator::global()->bounded(360);
+            QColor newColor = QColor::fromHsv(hue, 200, 200);
+            m_document->addLayer(layerName, newColor);
+        } else {
+            // No document: add to UI only
+            for (int i = 0; i < m_layerList->count(); ++i) {
+                if (m_layerList->item(i)->text() == layerName) {
+                    QMessageBox::warning(this, "Layer Exists",
+                                       "A layer with this name already exists.");
+                    return;
+                }
+            }
+
+            QListWidgetItem* item = new QListWidgetItem(layerName, m_layerList);
+            item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+            item->setCheckState(Qt::Checked);
         }
-
-        // Add new layer
-        QListWidgetItem* item = new QListWidgetItem(layerName, m_layerList);
-        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        item->setCheckState(Qt::Checked);
-
-        // TODO: Add layer to document
-        // if (m_document) {
-        //     m_document->addLayer(layerName);
-        // }
     }
 }
 
@@ -182,12 +250,12 @@ void LayersPanel::onRemoveLayer()
                                        QMessageBox::Yes | QMessageBox::No);
 
     if (result == QMessageBox::Yes) {
-        // TODO: Remove layer from document
-        // if (m_document) {
-        //     m_document->removeLayer(layerName);
-        // }
-
-        delete currentItem;
+        // Remove layer from document (which will trigger refresh via signal)
+        if (m_document) {
+            m_document->removeLayer(layerName);
+        } else {
+            delete currentItem;
+        }
     }
 }
 
@@ -210,26 +278,32 @@ void LayersPanel::onRenameLayer()
                                            &ok);
 
     if (ok && !newName.isEmpty() && newName != oldName) {
-        // Check if new name already exists
-        for (int i = 0; i < m_layerList->count(); ++i) {
-            if (m_layerList->item(i)->text() == newName) {
+        // Rename layer in document (which will trigger refresh via signal)
+        if (m_document) {
+            // Check if new name already exists
+            if (m_document->layers().contains(newName)) {
                 QMessageBox::warning(this, "Layer Exists",
                                    "A layer with this name already exists.");
                 return;
             }
-        }
 
-        // Rename layer
-        currentItem->setText(newName);
+            m_document->renameLayer(oldName, newName);
+        } else {
+            // No document: rename in UI only
+            for (int i = 0; i < m_layerList->count(); ++i) {
+                if (m_layerList->item(i)->text() == newName) {
+                    QMessageBox::warning(this, "Layer Exists",
+                                       "A layer with this name already exists.");
+                    return;
+                }
+            }
 
-        // TODO: Rename layer in document
-        // if (m_document) {
-        //     m_document->renameLayer(oldName, newName);
-        // }
+            currentItem->setText(newName);
 
-        if (m_activeLayer == oldName) {
-            m_activeLayer = newName;
-            emit activeLayerChanged(newName);
+            if (m_activeLayer == oldName) {
+                m_activeLayer = newName;
+                emit activeLayerChanged(newName);
+            }
         }
     }
 }
@@ -238,8 +312,15 @@ void LayersPanel::onLayerSelectionChanged()
 {
     QListWidgetItem* currentItem = m_layerList->currentItem();
     if (currentItem) {
-        m_activeLayer = currentItem->text();
-        emit activeLayerChanged(m_activeLayer);
+        QString layerName = currentItem->text();
+        m_activeLayer = layerName;
+
+        // Update document's active layer
+        if (m_document) {
+            m_document->setActiveLayer(layerName);
+        }
+
+        emit activeLayerChanged(layerName);
     }
 }
 
@@ -247,12 +328,47 @@ void LayersPanel::onLayerItemChanged(QListWidgetItem* item)
 {
     if (item) {
         bool visible = (item->checkState() == Qt::Checked);
-        emit layerVisibilityChanged(item->text(), visible);
+        QString layerName = item->text();
 
-        // TODO: Update layer visibility in document
-        // if (m_document) {
-        //     m_document->setLayerVisible(item->text(), visible);
-        // }
+        // Update layer visibility in document
+        if (m_document) {
+            m_document->setLayerVisible(layerName, visible);
+        }
+
+        emit layerVisibilityChanged(layerName, visible);
+    }
+}
+
+void LayersPanel::onChangeColor()
+{
+    QListWidgetItem* currentItem = m_layerList->currentItem();
+    if (!currentItem) {
+        QMessageBox::information(this, "No Selection",
+                                "Please select a layer to change color.");
+        return;
+    }
+
+    QString layerName = currentItem->text();
+    QColor currentColor = m_document ? m_document->layerColor(layerName) : Qt::black;
+
+    QColor newColor = QColorDialog::getColor(currentColor, this, "Choose Layer Color");
+    if (newColor.isValid() && m_document) {
+        m_document->setLayerColor(layerName, newColor);
+        refreshLayers();
+    }
+}
+
+void LayersPanel::onLayerDoubleClicked(QListWidgetItem* item)
+{
+    if (item) {
+        QString layerName = item->text();
+        QColor currentColor = m_document ? m_document->layerColor(layerName) : Qt::black;
+
+        QColor newColor = QColorDialog::getColor(currentColor, this, "Choose Layer Color");
+        if (newColor.isValid() && m_document) {
+            m_document->setLayerColor(layerName, newColor);
+            refreshLayers();
+        }
     }
 }
 

@@ -123,11 +123,11 @@ epics:
           - Grab-and-move works for single pieces and groups
           - Performance: < 16ms latency (60fps) during movement
           - Pieces can be placed over other pieces (superposition allowed)
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-001/story-001-04.md"
         assigned_to: ""
         estimate: "8 points"
-        actual: ""
+        actual: "8 points"
         technical_notes: |
           - Implement GrabMoveInteraction state machine
           - Add spacebar event handling to canvas
@@ -208,11 +208,11 @@ epics:
           - Delete operation is undoable (objects can be restored)
           - Deleting objects updates layer object count
           - Dependencies are handled (constraints, parameters referencing deleted objects)
-        status: "in-progress"
+        status: "completed"
         file: "docs/stories/epic-001/story-001-07.md"
         assigned_to: ""
         estimate: "3 points"
-        actual: ""
+        actual: "3 points"
         technical_notes: |
           - Implement DeleteObjectsCommand
           - Handle dependency cleanup (constraints, parameters)
@@ -1800,9 +1800,9 @@ epics:
 metrics:
   total_epics: 8
   total_stories: 62
-  stories_completed: 9
-  stories_in_progress: 6
-  stories_not_started: 47
+  stories_completed: 11
+  stories_in_progress: 5
+  stories_not_started: 46
   estimated_total_points: 382
 
 # Story Point Summary by Epic
