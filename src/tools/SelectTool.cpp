@@ -719,14 +719,23 @@ void SelectTool::keyPressEvent(QKeyEvent* event)
         // Check if a vertex is selected/hovered first
         Geometry::GeometryObject* targetObject = nullptr;
         int targetIndex = -1;
+        bool vertexHandled = false;
 
         if ((m_mode == SelectMode::DraggingVertex || m_mode == SelectMode::VertexSelected) && m_selectedVertexObject) {
             targetObject = m_selectedVertexObject;
             targetIndex = m_selectedVertexIndex;
-        } else if (m_hoveredVertexIndex >= 0) {
-            // Find the object containing the hovered vertex
-            findVertexAt(m_currentPoint, &targetObject);
-            targetIndex = m_hoveredVertexIndex;
+        } else if (m_hoveredVertexIndex >= 0 && m_document) {
+            // Find the object containing the hovered vertex among selected objects
+            auto selected = m_document->selectedObjects();
+            for (auto* obj : selected) {
+                if (auto* polyline = dynamic_cast<Geometry::Polyline*>(obj)) {
+                    if (m_hoveredVertexIndex < polyline->vertices().size()) {
+                        targetObject = obj;
+                        targetIndex = m_hoveredVertexIndex;
+                        break;
+                    }
+                }
+            }
         }
 
         // If a vertex is selected/hovered, delete the vertex instead of the object
@@ -749,8 +758,12 @@ void SelectTool::keyPressEvent(QKeyEvent* event)
                     m_constrainedSegmentIndex = -1;
                     showStatusMessage(QString("Vertex deleted"));
                 }
+                vertexHandled = true;
             }
-        } else {
+        }
+
+        // Only delete objects if no vertex was handled
+        if (!vertexHandled && targetObject == nullptr) {
             // No vertex selected - delete selected objects instead
             if (m_document) {
                 auto selected = m_document->selectedObjects();
@@ -2690,6 +2703,18 @@ QPointF SelectTool::constrainVertexWithLockedSegments(const QPointF& newPos, Geo
 
     // Case 4: No locked segments → free movement
     return newPos;
+}
+
+bool SelectTool::hasVertexTargeted() const
+{
+    // Check if a vertex is selected or hovered
+    if ((m_mode == SelectMode::DraggingVertex || m_mode == SelectMode::VertexSelected) && m_selectedVertexObject) {
+        return true;
+    }
+    if (m_hoveredVertexIndex >= 0) {
+        return true;
+    }
+    return false;
 }
 
 } // namespace Tools

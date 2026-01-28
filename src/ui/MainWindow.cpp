@@ -560,6 +560,24 @@ void MainWindow::onViewToggleSnap()
 // Edit menu slots
 void MainWindow::onEditDelete()
 {
+    // First, check if the active tool is SelectTool and has a vertex targeted
+    // If so, let the tool handle the deletion
+    if (m_canvas && m_canvas->activeTool()) {
+        Tools::Tool* activeTool = m_canvas->activeTool();
+        if (activeTool->name() == "Select") {
+            // Cast to SelectTool to check if vertex is targeted
+            Tools::SelectTool* selectTool = dynamic_cast<Tools::SelectTool*>(activeTool);
+            if (selectTool && selectTool->hasVertexTargeted()) {
+                // Let SelectTool handle the vertex deletion
+                // Create a fake key event and pass it to the tool
+                QKeyEvent deleteEvent(QEvent::KeyPress, Qt::Key_Delete, Qt::NoModifier);
+                selectTool->keyPressEvent(&deleteEvent);
+                return;
+            }
+        }
+    }
+
+    // No vertex targeted, proceed with normal object deletion
     Document* document = m_canvas->document();
     if (!document) return;
 

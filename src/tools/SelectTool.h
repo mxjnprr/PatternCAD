@@ -62,6 +62,9 @@ public:
     // Apply dimension to selected segment
     void applySegmentLength(double lengthInMm, double angleDegrees, UI::ResizeMode mode);
 
+    // Check if a vertex is currently targeted (selected or hovered)
+    bool hasVertexTargeted() const;
+
     // Segment identification for multi-segment locking
     struct SegmentKey {
         Geometry::GeometryObject* object;
