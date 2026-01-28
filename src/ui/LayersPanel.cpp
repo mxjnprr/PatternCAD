@@ -6,6 +6,7 @@
 
 #include "LayersPanel.h"
 #include "core/Document.h"
+#include "geometry/GeometryObject.h"
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QInputDialog>
@@ -15,6 +16,7 @@
 #include <QPixmap>
 #include <QPainter>
 #include <QRandomGenerator>
+#include <QMenu>
 
 namespace PatternCAD {
 namespace UI {
@@ -52,6 +54,16 @@ void LayersPanel::setupUi()
     // Layer list
     m_layerList = new QListWidget(this);
     m_layerList->setSelectionMode(QAbstractItemView::SingleSelection);
+
+    // Enable drag-and-drop reordering
+    m_layerList->setDragDropMode(QAbstractItemView::InternalMove);
+    m_layerList->setDefaultDropAction(Qt::MoveAction);
+
+    // Enable context menu
+    m_layerList->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_layerList, &QWidget::customContextMenuRequested,
+            this, &LayersPanel::onLayerContextMenu);
+
     connect(m_layerList, &QListWidget::itemSelectionChanged,
             this, &LayersPanel::onLayerSelectionChanged);
     connect(m_layerList, &QListWidget::itemChanged,
@@ -160,6 +172,11 @@ void LayersPanel::refreshLayers()
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(m_document->isLayerVisible(layerName) ? Qt::Checked : Qt::Unchecked);
 
+        // Store layer name and lock state in user data
+        item->setData(Qt::UserRole, layerName);
+        bool isLocked = m_document->isLayerLocked(layerName);
+        item->setData(Qt::UserRole + 1, isLocked);
+
         // Create colored icon for the layer
         QColor layerColor = m_document->layerColor(layerName);
         QPixmap pixmap(16, 16);
@@ -171,7 +188,14 @@ void LayersPanel::refreshLayers()
 
         // Count objects on this layer
         int objectCount = m_document->objectsOnLayer(layerName).size();
-        item->setText(QString("%1 (%2)").arg(layerName).arg(objectCount));
+        QString displayText = QString("%1 (%2)").arg(layerName).arg(objectCount);
+
+        // Add lock indicator if locked
+        if (isLocked) {
+            displayText += " 🔒";
+        }
+
+        item->setText(displayText);
 
         if (layerName == m_document->activeLayer()) {
             item->setSelected(true);
@@ -361,7 +385,10 @@ void LayersPanel::onChangeColor()
 void LayersPanel::onLayerDoubleClicked(QListWidgetItem* item)
 {
     if (item) {
-        QString layerName = item->text();
+        QString layerName = item->data(Qt::UserRole).toString();
+        if (layerName.isEmpty()) {
+            layerName = item->text().split(" (")[0]; // Extract name before count
+        }
         QColor currentColor = m_document ? m_document->layerColor(layerName) : Qt::black;
 
         QColor newColor = QColorDialog::getColor(currentColor, this, "Choose Layer Color");
@@ -370,6 +397,140 @@ void LayersPanel::onLayerDoubleClicked(QListWidgetItem* item)
             refreshLayers();
         }
     }
+}
+
+void LayersPanel::onLayerContextMenu(const QPoint& pos)
+{
+    QListWidgetItem* item = m_layerList->itemAt(pos);
+    if (!item || !m_document) {
+        return;
+    }
+
+    QString layerName = item->data(Qt::UserRole).toString();
+    bool isLocked = item->data(Qt::UserRole + 1).toBool();
+
+    QMenu contextMenu(this);
+
+    // Rename action
+    QAction* renameAction = contextMenu.addAction("Rename Layer");
+    connect(renameAction, &QAction::triggered, this, &LayersPanel::onRenameLayer);
+
+    // Delete action
+    QAction* deleteAction = contextMenu.addAction("Delete Layer");
+    connect(deleteAction, &QAction::triggered, this, &LayersPanel::onRemoveLayer);
+
+    contextMenu.addSeparator();
+
+    // Lock/Unlock toggle
+    QAction* lockAction = contextMenu.addAction(isLocked ? "Unlock Layer" : "Lock Layer");
+    connect(lockAction, &QAction::triggered, this, [this, item, layerName, isLocked]() {
+        if (m_document) {
+            m_document->setLayerLocked(layerName, !isLocked);
+            emit layerLockChanged(layerName, !isLocked);
+            refreshLayers();
+        }
+    });
+
+    contextMenu.addSeparator();
+
+    // Merge Down action
+    int currentRow = m_layerList->row(item);
+    QAction* mergeDownAction = contextMenu.addAction("Merge Down");
+    mergeDownAction->setEnabled(currentRow < m_layerList->count() - 1);
+    connect(mergeDownAction, &QAction::triggered, this, &LayersPanel::onMergeDown);
+
+    // Duplicate Layer action
+    QAction* duplicateAction = contextMenu.addAction("Duplicate Layer");
+    connect(duplicateAction, &QAction::triggered, this, &LayersPanel::onDuplicateLayer);
+
+    contextMenu.addSeparator();
+
+    // Select All Objects action
+    QAction* selectAllAction = contextMenu.addAction("Select All Objects");
+    connect(selectAllAction, &QAction::triggered, this, &LayersPanel::onSelectAllObjects);
+
+    contextMenu.exec(m_layerList->mapToGlobal(pos));
+}
+
+void LayersPanel::onMergeDown()
+{
+    QListWidgetItem* currentItem = m_layerList->currentItem();
+    if (!currentItem || !m_document) {
+        return;
+    }
+
+    int currentRow = m_layerList->row(currentItem);
+    if (currentRow >= m_layerList->count() - 1) {
+        QMessageBox::information(this, "Cannot Merge", "Cannot merge the bottom layer.");
+        return;
+    }
+
+    QString currentLayerName = currentItem->data(Qt::UserRole).toString();
+    QListWidgetItem* nextItem = m_layerList->item(currentRow + 1);
+    QString nextLayerName = nextItem->data(Qt::UserRole).toString();
+
+    QMessageBox::StandardButton reply = QMessageBox::question(
+        this,
+        "Merge Layers",
+        QString("Merge layer '%1' into '%2'?").arg(currentLayerName, nextLayerName),
+        QMessageBox::Yes | QMessageBox::No
+    );
+
+    if (reply == QMessageBox::Yes) {
+        // Move all objects from current layer to next layer
+        auto objects = m_document->objectsOnLayer(currentLayerName);
+        for (auto* obj : objects) {
+            obj->setLayer(nextLayerName);
+        }
+
+        // Remove the current layer
+        m_document->removeLayer(currentLayerName);
+        refreshLayers();
+    }
+}
+
+void LayersPanel::onDuplicateLayer()
+{
+    QListWidgetItem* currentItem = m_layerList->currentItem();
+    if (!currentItem || !m_document) {
+        return;
+    }
+
+    QString layerName = currentItem->data(Qt::UserRole).toString();
+    QString newLayerName = layerName + " Copy";
+
+    // Ensure unique name
+    int copyNum = 1;
+    while (m_document->layers().contains(newLayerName)) {
+        newLayerName = QString("%1 Copy %2").arg(layerName).arg(++copyNum);
+    }
+
+    // Add new layer with same color
+    QColor layerColor = m_document->layerColor(layerName);
+    m_document->addLayer(newLayerName, layerColor);
+
+    // Note: Objects are not duplicated, only the layer itself
+    // If you want to duplicate objects too, you'd need to implement that here
+
+    refreshLayers();
+}
+
+void LayersPanel::onSelectAllObjects()
+{
+    QListWidgetItem* currentItem = m_layerList->currentItem();
+    if (!currentItem || !m_document) {
+        return;
+    }
+
+    QString layerName = currentItem->data(Qt::UserRole).toString();
+    QList<Geometry::GeometryObject*> layerObjects = m_document->objectsOnLayer(layerName);
+
+    if (layerObjects.isEmpty()) {
+        QMessageBox::information(this, "No Objects", "This layer has no objects.");
+        return;
+    }
+
+    m_document->setSelectedObjects(layerObjects);
 }
 
 } // namespace UI

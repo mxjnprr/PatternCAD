@@ -46,13 +46,20 @@ public:
 signals:
     void activeLayerChanged(const QString& layerName);
     void layerVisibilityChanged(const QString& layerName, bool visible);
+    void layerLockChanged(const QString& layerName, bool locked);
 
 private slots:
     void onAddLayer();
     void onRemoveLayer();
     void onRenameLayer();
+    void onChangeColor();
     void onLayerSelectionChanged();
     void onLayerItemChanged(QListWidgetItem* item);
+    void onLayerDoubleClicked(QListWidgetItem* item);
+    void onLayerContextMenu(const QPoint& pos);
+    void onMergeDown();
+    void onDuplicateLayer();
+    void onSelectAllObjects();
 
 private:
     // UI setup
@@ -65,6 +72,7 @@ private:
     QPushButton* m_addButton;
     QPushButton* m_removeButton;
     QPushButton* m_renameButton;
+    QPushButton* m_colorButton;
     Document* m_document;
     QString m_activeLayer;
 };

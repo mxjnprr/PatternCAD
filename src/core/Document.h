@@ -10,6 +10,9 @@
 #include <QObject>
 #include <QString>
 #include <QList>
+#include <QMap>
+#include <QColor>
+#include <QUndoStack>
 #include <memory>
 
 namespace PatternCAD {
@@ -45,6 +48,7 @@ public:
     // Objects management
     void addObject(Geometry::GeometryObject* object);
     void removeObject(Geometry::GeometryObject* object);
+    void removeObjects(const QList<Geometry::GeometryObject*>& objects);
     QList<Geometry::GeometryObject*> objects() const;
     QList<Geometry::GeometryObject*> objectsOnLayer(const QString& layerName) const;
 
@@ -56,17 +60,31 @@ public:
 
     // Layers
     QStringList layers() const;
-    void addLayer(const QString& layerName);
+    void addLayer(const QString& layerName, const QColor& color = Qt::black);
     void removeLayer(const QString& layerName);
     void renameLayer(const QString& oldName, const QString& newName);
     QString activeLayer() const;
     void setActiveLayer(const QString& layerName);
+    bool isLayerVisible(const QString& layerName) const;
+    void setLayerVisible(const QString& layerName, bool visible);
+    QColor layerColor(const QString& layerName) const;
+    void setLayerColor(const QString& layerName, const QColor& color);
+    bool isLayerLocked(const QString& layerName) const;
+    void setLayerLocked(const QString& layerName, bool locked);
 
-    // Undo/Redo (to be implemented)
-    // void undo();
-    // void redo();
-    // bool canUndo() const;
-    // bool canRedo() const;
+    // Undo/Redo
+    QUndoStack* undoStack() const { return m_undoStack; }
+    void undo();
+    void redo();
+    bool canUndo() const;
+    bool canRedo() const;
+
+    // Direct object operations (used by commands - do not use directly)
+    void addObjectDirect(Geometry::GeometryObject* object);
+    void removeObjectDirect(Geometry::GeometryObject* object);
+
+    // Notify that an object has changed (for external modifications)
+    void notifyObjectChanged(Geometry::GeometryObject* object);
 
     // File operations
     bool save(const QString& filepath);
@@ -84,6 +102,7 @@ signals:
     void layerRemoved(const QString& layerName);
     void layerRenamed(const QString& oldName, const QString& newName);
     void activeLayerChanged(const QString& layerName);
+    void layerVisibilityChanged(const QString& layerName, bool visible);
 
 private:
     // Private members
@@ -92,7 +111,11 @@ private:
     QList<Geometry::GeometryObject*> m_objects;
     QList<Geometry::GeometryObject*> m_selectedObjects;
     QStringList m_layers;
+    QMap<QString, bool> m_layerVisibility;
+    QMap<QString, bool> m_layerLocked;
+    QMap<QString, QColor> m_layerColors;
     QString m_activeLayer;
+    QUndoStack* m_undoStack;
 
     // Helper methods
     void notifyModified();
