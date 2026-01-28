@@ -5,9 +5,9 @@
 project_name: "PatternCAD"
 sprint_number: 0
 sprint_goal: "Foundation Sprint - Set up build system, project skeleton, and basic infrastructure"
-sprint_start_date: "TBD"
+sprint_start_date: "2026-01-15"
 sprint_end_date: ""
-last_updated: "2026-01-27T11:40:36Z"
+last_updated: "2026-01-28T15:30:00Z"
 
 # Epic and Story Tracking
 # Total: 8 Epics, 62 Stories (estimated 45-70 range)
@@ -20,7 +20,7 @@ epics:
     name: "Core Drawing and Editing Tools"
     description: "Implement fundamental vector drawing and editing capabilities including basic shapes, bezier curves, and object manipulation with spacebar grab-and-move"
     priority: "must-have"
-    status: "not-started"
+    status: "in-progress"
     estimated_stories: "5-8"
     actual_stories: 7
     stories:
@@ -38,11 +38,11 @@ epics:
           - All shapes support numerical input for precise dimensions
           - Shapes are visually rendered on canvas with clear appearance
           - Created shapes are added to current active layer
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-001/story-001-01.md"
         assigned_to: ""
         estimate: "5 points"
-        actual: ""
+        actual: "5 points"
         technical_notes: |
           - Implement Tool base class with activate(), deactivate(), mouse events
           - Create LineTool, PointTool, RectangleTool, CircleTool subclasses
@@ -65,11 +65,11 @@ epics:
           - Curves render smoothly at all zoom levels (Level of Detail)
           - Control points are visually distinct (different color, size) and easily selectable
           - Bezier curves are editable like other geometry objects
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-001/story-001-02.md"
         assigned_to: ""
         estimate: "8 points"
-        actual: ""
+        actual: "8 points"
         technical_notes: |
           - Implement CubicBezier class with evaluate(t), length(), split() methods
           - Create BezierTool for interactive creation
@@ -94,11 +94,11 @@ epics:
           - Marquee selection selects all objects intersecting the rectangle
           - Ctrl+A selects all objects on canvas
           - Escape deselects all objects
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-001/story-001-03.md"
         assigned_to: ""
         estimate: "5 points"
-        actual: ""
+        actual: "5 points"
         technical_notes: |
           - Implement SelectTool with rubber band selection
           - Add selection state to geometry objects
@@ -154,7 +154,7 @@ epics:
           - Property changes apply immediately to objects
           - Property changes are undoable
           - Multi-selection shows common properties or "Mixed" indicator
-        status: "not-started"
+        status: "in-progress"
         file: "docs/stories/epic-001/story-001-05.md"
         assigned_to: ""
         estimate: "5 points"
@@ -182,11 +182,11 @@ epics:
           - Move respects grid snapping if enabled
           - Move operation is undoable
           - Multi-object move maintains relative positions
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-001/story-001-06.md"
         assigned_to: ""
         estimate: "3 points"
-        actual: ""
+        actual: "3 points"
         technical_notes: |
           - Implement drag handling in QGraphicsItem
           - Create MoveObjectsCommand for undo/redo
@@ -208,7 +208,7 @@ epics:
           - Delete operation is undoable (objects can be restored)
           - Deleting objects updates layer object count
           - Dependencies are handled (constraints, parameters referencing deleted objects)
-        status: "not-started"
+        status: "in-progress"
         file: "docs/stories/epic-001/story-001-07.md"
         assigned_to: ""
         estimate: "3 points"
@@ -1456,7 +1456,7 @@ epics:
     name: "User Interface and Cross-Platform Foundation"
     description: "Build application UI framework, multi-panel workspace, keyboard shortcuts, layer management, undo/redo system, and cross-platform support"
     priority: "must-have"
-    status: "not-started"
+    status: "in-progress"
     estimated_stories: "8-12"
     actual_stories: 12
     stories:
@@ -1474,11 +1474,11 @@ epics:
           - Window has application icon
           - Window remembers size and position across sessions
           - Window supports full-screen mode (F11)
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-008/story-008-01.md"
         assigned_to: ""
         estimate: "5 points"
-        actual: ""
+        actual: "5 points"
         technical_notes: |
           - Implement MainWindow class (QMainWindow subclass)
           - Create menu bar with menu structure
@@ -1504,7 +1504,7 @@ epics:
           - Pan and zoom are smooth (60fps target)
           - Canvas shows origin point (0,0) with visual indicator
           - Canvas displays current zoom percentage in status bar
-        status: "not-started"
+        status: "in-progress"
         file: "docs/stories/epic-008/story-008-02.md"
         assigned_to: ""
         estimate: "5 points"
@@ -1533,7 +1533,7 @@ epics:
           - Tools organized into groups (can be collapsed/expanded)
           - Toolbar remembers position across sessions
           - User can hide/show toolbar (View menu)
-        status: "not-started"
+        status: "in-progress"
         file: "docs/stories/epic-008/story-008-03.md"
         assigned_to: ""
         estimate: "3 points"
@@ -1561,7 +1561,7 @@ epics:
           - Properties update dynamically when selection changes
           - Multi-selection shows common properties or "Mixed" indicator
           - Panel can be hidden/shown (View menu)
-        status: "not-started"
+        status: "in-progress"
         file: "docs/stories/epic-008/story-008-04.md"
         assigned_to: ""
         estimate: "5 points"
@@ -1589,11 +1589,11 @@ epics:
           - Current active layer is highlighted
           - Right-click shows context menu: Rename, Delete, Merge, Properties
           - Panel can be hidden/shown (View menu)
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-008/story-008-05.md"
         assigned_to: ""
         estimate: "5 points"
-        actual: ""
+        actual: "5 points"
         technical_notes: |
           - Implement LayersPanel (QDockWidget)
           - Use QTreeWidget or QListWidget for layer list
@@ -1644,11 +1644,11 @@ epics:
           - Special: Spacebar (Grab-and-move), Tab (Isolation mode), Shift+Tab (Exit isolation)
           - All shortcuts are documented in Help → Keyboard Shortcuts
           - Shortcuts don't conflict with OS shortcuts
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-008/story-008-07.md"
-        assigned_to: ""
+        assigned_to: "dev"
         estimate: "5 points"
-        actual: ""
+        actual: "5 points"
         technical_notes: |
           - Add QShortcut or QAction shortcuts for all commands
           - Document shortcuts in help dialog
@@ -1671,11 +1671,11 @@ epics:
           - Undo history depth unlimited (limited by memory ~200MB)
           - Undo/redo is fast: < 50ms for typical operations, < 200ms for complex
           - History cleared on file open (not persisted)
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-008/story-008-08.md"
         assigned_to: ""
         estimate: "8 points"
-        actual: ""
+        actual: "8 points"
         technical_notes: |
           - Implement Command base class (execute, undo, description)
           - Implement CommandManager with undo/redo stacks
@@ -1699,11 +1699,11 @@ epics:
           - Layer lock prevents selection and editing
           - Layer z-order affects drawing order
           - Layers are saved/loaded with project
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-008/story-008-09.md"
         assigned_to: ""
         estimate: "5 points"
-        actual: ""
+        actual: "5 points"
         technical_notes: |
           - Implement Layer class
           - Implement LayerManager class
@@ -1726,7 +1726,7 @@ epics:
           - Snap-to-grid can be toggled (Ctrl+Shift+G)
           - When snap enabled, objects snap to grid during move/create
           - Grid and snap settings are saved in project
-        status: "not-started"
+        status: "in-progress"
         file: "docs/stories/epic-008/story-008-10.md"
         assigned_to: ""
         estimate: "5 points"
@@ -1800,9 +1800,9 @@ epics:
 metrics:
   total_epics: 8
   total_stories: 62
-  stories_completed: 0
-  stories_in_progress: 0
-  stories_not_started: 62
+  stories_completed: 9
+  stories_in_progress: 6
+  stories_not_started: 47
   estimated_total_points: 382
 
 # Story Point Summary by Epic
