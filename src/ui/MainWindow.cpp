@@ -526,16 +526,16 @@ void MainWindow::onViewZoomFit()
 void MainWindow::onViewZoomSelection()
 {
     if (m_canvas) {
-        // TODO: Implement Canvas::zoomToSelection() - for now use zoomFit
-        m_canvas->zoomFit();
-        statusBar()->showMessage(tr("Zoom to selection (using fit for now)"), 2000);
+        m_canvas->zoomToSelection();
+        statusBar()->showMessage(tr("Zoom to selection"), 2000);
     }
 }
 
 void MainWindow::onViewZoomActual()
 {
     if (m_canvas) {
-        m_canvas->setZoomLevel(1.0);  // 100% zoom
+        m_canvas->zoomToActual();  // 100% zoom
+        statusBar()->showMessage(tr("Zoom 100%"), 2000);
     }
 }
 

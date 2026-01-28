@@ -49,6 +49,8 @@ public:
     void zoomIn();
     void zoomOut();
     void zoomFit();
+    void zoomToSelection();
+    void zoomToActual();  // 100% zoom
     void zoomReset();
     void setZoomLevel(double level);
     double zoomLevel() const;
@@ -93,10 +95,15 @@ private:
     bool m_snapToGrid;
     QPointF m_lastMousePos;
 
+    // Pan state
+    bool m_isPanning;
+    QPoint m_panStartPos;
+
     // Helper methods
     void setupScene();
     void updateGrid();
     void drawGrid(QPainter* painter, const QRectF& rect);
+    void drawOriginIndicator(QPainter* painter);
 };
 
 } // namespace UI

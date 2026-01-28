@@ -26,6 +26,7 @@ Canvas::Canvas(QWidget* parent)
     , m_zoomLevel(1.0)
     , m_gridVisible(true)
     , m_snapToGrid(true)
+    , m_isPanning(false)
 {
     setupScene();
 
@@ -101,6 +102,40 @@ void Canvas::zoomFit()
 {
     // TODO: Fit view to content bounds
     fitInView(sceneRect(), Qt::KeepAspectRatio);
+}
+
+void Canvas::zoomToSelection()
+{
+    if (!m_document) return;
+
+    auto selected = m_document->selectedObjects();
+    if (selected.isEmpty()) return;
+
+    // Calculate bounding rect of all selected objects
+    QRectF bounds;
+    for (auto* obj : selected) {
+        QRectF objBounds = obj->boundingRect();
+        if (bounds.isNull()) {
+            bounds = objBounds;
+        } else {
+            bounds = bounds.united(objBounds);
+        }
+    }
+
+    if (!bounds.isNull()) {
+        // Add some margin (10%)
+        bounds = bounds.adjusted(-bounds.width() * 0.1, -bounds.height() * 0.1,
+                                 bounds.width() * 0.1, bounds.height() * 0.1);
+        fitInView(bounds, Qt::KeepAspectRatio);
+        // Update zoom level based on transform
+        m_zoomLevel = transform().m11();
+        emit zoomChanged(m_zoomLevel);
+    }
+}
+
+void Canvas::zoomToActual()
+{
+    setZoomLevel(1.0);
 }
 
 void Canvas::zoomReset()
@@ -213,6 +248,15 @@ void Canvas::mousePressEvent(QMouseEvent* event)
 {
     m_lastMousePos = mapToScene(event->pos());
 
+    // Middle mouse button or H key + left button for panning
+    if (event->button() == Qt::MiddleButton) {
+        m_isPanning = true;
+        m_panStartPos = event->pos();
+        setCursor(Qt::ClosedHandCursor);
+        event->accept();
+        return;
+    }
+
     if (m_activeTool) {
         m_activeTool->mousePressEvent(event);
     }
@@ -227,6 +271,16 @@ void Canvas::mouseMoveEvent(QMouseEvent* event)
 
     emit cursorPositionChanged(scenePos);
 
+    // Handle panning
+    if (m_isPanning) {
+        QPoint delta = event->pos() - m_panStartPos;
+        horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
+        verticalScrollBar()->setValue(verticalScrollBar()->value() - delta.y());
+        m_panStartPos = event->pos();
+        event->accept();
+        return;
+    }
+
     if (m_activeTool) {
         m_activeTool->mouseMoveEvent(event);
         viewport()->update(); // Update to show tool preview
@@ -237,6 +291,18 @@ void Canvas::mouseMoveEvent(QMouseEvent* event)
 
 void Canvas::mouseReleaseEvent(QMouseEvent* event)
 {
+    // End panning
+    if (event->button() == Qt::MiddleButton && m_isPanning) {
+        m_isPanning = false;
+        if (m_activeTool) {
+            setCursor(m_activeTool->cursor());
+        } else {
+            setCursor(Qt::ArrowCursor);
+        }
+        event->accept();
+        return;
+    }
+
     if (m_activeTool) {
         m_activeTool->mouseReleaseEvent(event);
     }
@@ -274,6 +340,9 @@ void Canvas::drawBackground(QPainter* painter, const QRectF& rect)
     if (m_gridVisible) {
         drawGrid(painter, rect);
     }
+
+    // Draw origin indicator
+    drawOriginIndicator(painter);
 }
 
 void Canvas::drawForeground(QPainter* painter, const QRectF& rect)
@@ -343,6 +412,27 @@ void Canvas::drawGrid(QPainter* painter, const QRectF& rect)
     painter->setPen(axisPen);
     painter->drawLine(QPointF(0, rect.top()), QPointF(0, rect.bottom()));
     painter->drawLine(QPointF(rect.left(), 0), QPointF(rect.right(), 0));
+}
+
+void Canvas::drawOriginIndicator(QPainter* painter)
+{
+    // Draw a visible indicator at (0,0)
+    painter->save();
+
+    // Draw crosshair at origin
+    double size = 20.0 / m_zoomLevel;  // Size scales with zoom
+    QPen originPen(QColor(255, 0, 0), 2.0 / m_zoomLevel);  // Red, width scales with zoom
+    painter->setPen(originPen);
+
+    // Draw cross
+    painter->drawLine(QPointF(-size, 0), QPointF(size, 0));
+    painter->drawLine(QPointF(0, -size), QPointF(0, size));
+
+    // Draw circle at center
+    painter->setBrush(Qt::NoBrush);
+    painter->drawEllipse(QPointF(0, 0), size * 0.3, size * 0.3);
+
+    painter->restore();
 }
 
 } // namespace UI
