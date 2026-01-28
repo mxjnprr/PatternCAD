@@ -384,8 +384,29 @@ void Canvas::updateGrid()
 
 void Canvas::drawGrid(QPainter* painter, const QRectF& rect)
 {
-    // TODO: Get grid spacing from document/project
-    double gridSpacing = 10.0;
+    // Base grid spacing in scene units (mm)
+    double baseGridSpacing = 10.0;
+
+    // Auto-scale grid based on zoom level to maintain readable spacing
+    // Target: keep grid spacing between 10-50 pixels on screen
+    double minVisiblePixels = 10.0;
+    double maxVisiblePixels = 50.0;
+
+    // Calculate actual grid spacing with auto-scaling
+    double gridSpacing = baseGridSpacing;
+    double screenSpacing = gridSpacing * m_zoomLevel;
+
+    // If spacing too small, increase by powers of 2
+    while (screenSpacing < minVisiblePixels && gridSpacing < 10000.0) {
+        gridSpacing *= 2.0;
+        screenSpacing = gridSpacing * m_zoomLevel;
+    }
+
+    // If spacing too large, decrease by powers of 2
+    while (screenSpacing > maxVisiblePixels && gridSpacing > 0.1) {
+        gridSpacing /= 2.0;
+        screenSpacing = gridSpacing * m_zoomLevel;
+    }
 
     // Calculate grid bounds
     int left = static_cast<int>(std::floor(rect.left() / gridSpacing));
@@ -393,8 +414,13 @@ void Canvas::drawGrid(QPainter* painter, const QRectF& rect)
     int top = static_cast<int>(std::floor(rect.top() / gridSpacing));
     int bottom = static_cast<int>(std::ceil(rect.bottom() / gridSpacing));
 
-    // Draw grid lines
-    QPen gridPen(QColor(220, 220, 220));
+    // Draw grid lines with alpha based on spacing level
+    int alpha = 100;
+    if (gridSpacing != baseGridSpacing) {
+        // Lighter color for scaled grid lines
+        alpha = 60;
+    }
+    QPen gridPen(QColor(220, 220, 220, alpha));
     painter->setPen(gridPen);
 
     for (int i = left; i <= right; ++i) {
@@ -407,8 +433,8 @@ void Canvas::drawGrid(QPainter* painter, const QRectF& rect)
         painter->drawLine(QPointF(rect.left(), y), QPointF(rect.right(), y));
     }
 
-    // Draw axes
-    QPen axisPen(QColor(180, 180, 180), 2);
+    // Draw axes (always visible, darker)
+    QPen axisPen(QColor(180, 180, 180), 2.0 / m_zoomLevel);
     painter->setPen(axisPen);
     painter->drawLine(QPointF(0, rect.top()), QPointF(0, rect.bottom()));
     painter->drawLine(QPointF(rect.left(), 0), QPointF(rect.right(), 0));

@@ -1726,11 +1726,11 @@ epics:
           - Snap-to-grid can be toggled (Ctrl+Shift+G)
           - When snap enabled, objects snap to grid during move/create
           - Grid and snap settings are saved in project
-        status: "in-progress"
+        status: "completed"
         file: "docs/stories/epic-008/story-008-10.md"
         assigned_to: ""
         estimate: "5 points"
-        actual: ""
+        actual: "5 points"
         technical_notes: |
           - Implement grid rendering in QGraphicsScene
           - Add grid QGraphicsItem (draws grid pattern)
