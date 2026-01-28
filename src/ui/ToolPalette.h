@@ -57,6 +57,8 @@ private:
                                    const QString& iconPath,
                                    const QString& tooltip,
                                    int id);
+    QIcon createToolIcon(const QString& toolType);
+    void addGroupSeparator(const QString& groupName);
 
     // Private members
     QVBoxLayout* m_layout;
@@ -68,7 +70,7 @@ private:
     QToolButton* m_lineButton;
     QToolButton* m_circleButton;
     QToolButton* m_rectangleButton;
-    QToolButton* m_bezierButton;
+    QToolButton* m_polylineButton;
 };
 
 } // namespace UI

@@ -1533,11 +1533,11 @@ epics:
           - Tools organized into groups (can be collapsed/expanded)
           - Toolbar remembers position across sessions
           - User can hide/show toolbar (View menu)
-        status: "in-progress"
+        status: "completed"
         file: "docs/stories/epic-008/story-008-03.md"
-        assigned_to: ""
+        assigned_to: "dev"
         estimate: "3 points"
-        actual: ""
+        actual: "3 points"
         technical_notes: |
           - Create ToolPalette (QToolBar or QDockWidget)
           - Add QAction for each tool with icon and shortcut
@@ -1800,8 +1800,8 @@ epics:
 metrics:
   total_epics: 8
   total_stories: 62
-  stories_completed: 14
-  stories_in_progress: 2
+  stories_completed: 15
+  stories_in_progress: 1
   stories_not_started: 46
   estimated_total_points: 382
 
