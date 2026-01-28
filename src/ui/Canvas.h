@@ -17,7 +17,13 @@ namespace PatternCAD {
 // Forward declarations
 class Document;
 
+namespace Tools {
+    class Tool;
+}
+
 namespace UI {
+
+class DimensionRenderer;
 
 /**
  * Canvas provides the main editing viewport with:
@@ -56,22 +62,32 @@ public:
     // Coordinate conversion
     QPointF snapPoint(const QPointF& point) const;
 
+    // Tool management
+    void setActiveTool(Tools::Tool* tool);
+    Tools::Tool* activeTool() const;
+
 signals:
     void zoomChanged(double zoom);
     void cursorPositionChanged(const QPointF& position);
+    void escapePressed();
 
 protected:
     // Event handlers
+    bool event(QEvent* event) override;
     void wheelEvent(QWheelEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
     void drawBackground(QPainter* painter, const QRectF& rect) override;
+    void drawForeground(QPainter* painter, const QRectF& rect) override;
 
 private:
     // Private members
     QGraphicsScene* m_scene;
     Document* m_document;
+    Tools::Tool* m_activeTool;
+    DimensionRenderer* m_dimensionRenderer;
     double m_zoomLevel;
     bool m_gridVisible;
     bool m_snapToGrid;

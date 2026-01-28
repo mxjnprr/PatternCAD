@@ -130,6 +130,7 @@ void MainWindow::setupUi()
             .arg(pos.x(), 0, 'f', 1)
             .arg(pos.y(), 0, 'f', 1));
     });
+    connect(m_canvas, &Canvas::escapePressed, this, &MainWindow::returnToSelectTool);
 
     // Setup UI components
     setupMenuBar();
