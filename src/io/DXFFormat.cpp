@@ -725,15 +725,94 @@ void DXFFormat::writePolyline(QTextStream& stream, const Geometry::GeometryObjec
     QVector<Geometry::PolylineVertex> vertices = polyline->vertices();
     if (vertices.isEmpty()) return;
 
-    // Use LWPOLYLINE (lightweight polyline) for DXF R14+
+    // Collect all points including curve approximations
+    QList<QPointF> allPoints;
+    int n = vertices.size();
+
+    for (int i = 0; i < n; ++i) {
+        int nextIdx = (i + 1) % n;
+
+        // If we're at the last vertex and not closed, don't process to first
+        if (!polyline->isClosed() && i == n - 1) {
+            allPoints.append(vertices[i].position);
+            break;
+        }
+
+        const Geometry::PolylineVertex& current = vertices[i];
+        const Geometry::PolylineVertex& next = vertices[nextIdx];
+
+        // Add current vertex
+        allPoints.append(current.position);
+
+        // Check if segment is curved
+        bool needsCurve = (current.type == Geometry::VertexType::Smooth) ||
+                          (next.type == Geometry::VertexType::Smooth);
+
+        if (needsCurve) {
+            QPointF p1 = current.position;
+            QPointF p2 = next.position;
+
+            // Distance between points for scaling control points
+            QPointF segment = p2 - p1;
+            double dist = std::sqrt(segment.x() * segment.x() + segment.y() * segment.y());
+            double controlDistance = dist / 3.0;
+
+            // Calculate control points for cubic Bezier
+            QPointF c1, c2;
+
+            // Determine control point c1 (outgoing from current)
+            if (current.type == Geometry::VertexType::Smooth && current.tangent != QPointF()) {
+                c1 = p1 + current.tangent * controlDistance * current.outgoingTension;
+            } else if (current.type == Geometry::VertexType::Smooth) {
+                int prevIdx = (i - 1 + n) % n;
+                QPointF p0 = vertices[prevIdx].position;
+                if (!polyline->isClosed() && i == 0) p0 = p1;
+                c1 = p1 + (p2 - p0) * (current.outgoingTension / 3.0);
+            } else {
+                c1 = p1 + (p2 - p1) * 0.01;
+            }
+
+            // Determine control point c2 (incoming to next)
+            if (next.type == Geometry::VertexType::Smooth && next.tangent != QPointF()) {
+                c2 = p2 - next.tangent * controlDistance * next.incomingTension;
+            } else if (next.type == Geometry::VertexType::Smooth) {
+                int nextNextIdx = (i + 2) % n;
+                QPointF p3 = vertices[nextNextIdx].position;
+                if (!polyline->isClosed() && nextIdx == n - 1) p3 = p2;
+                c2 = p2 - (p3 - p1) * (next.incomingTension / 3.0);
+            } else {
+                c2 = p2 - (p2 - p1) * 0.01;
+            }
+
+            // Approximate cubic Bezier with line segments
+            const int segments = 10;
+            for (int j = 1; j <= segments; ++j) {
+                double t = static_cast<double>(j) / segments;
+                double t2 = t * t;
+                double t3 = t2 * t;
+                double mt = 1.0 - t;
+                double mt2 = mt * mt;
+                double mt3 = mt2 * mt;
+
+                QPointF point = p1 * mt3 + c1 * 3.0 * mt2 * t + c2 * 3.0 * mt * t2 + p2 * t3;
+
+                // Don't add the last point as it will be added as the next vertex
+                if (j < segments) {
+                    allPoints.append(point);
+                }
+            }
+        }
+    }
+
+    // Write as LWPOLYLINE
     writePair(stream, 0, "LWPOLYLINE");
     writePair(stream, 8, obj->layer());
-    writePair(stream, 90, static_cast<int>(vertices.size()));  // Number of vertices
-    writePair(stream, 70, polyline->isClosed() ? 1 : 0);  // Closed flag
+    writePair(stream, 90, static_cast<int>(allPoints.size()));
+    writePair(stream, 70, polyline->isClosed() ? 1 : 0);
 
-    for (const auto& vertex : vertices) {
-        writePair(stream, 10, vertex.position.x());
-        writePair(stream, 20, vertex.position.y());
+    for (const QPointF& point : allPoints) {
+        writePair(stream, 10, point.x());
+        writePair(stream, 20, point.y());
     }
 }
 
