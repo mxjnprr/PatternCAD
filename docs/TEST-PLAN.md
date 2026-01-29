@@ -428,12 +428,23 @@ cd /path/to/PatternCAD/build
 1. Dessiner objets
 2. Lock le layer
 3. Essayer de sélectionner objets
+4. Essayer de modifier vertices
+5. Essayer de supprimer objets
 
 **Critère de succès:**
-- Objets non-sélectionnables
-- Pas de modification possible
+- Objets non-sélectionnables ✅
+- Vertices non-modifiables ✅
+- Aucune modification possible (move, delete, transform) ✅
+- Message "Cannot modify object on locked layer" affiché ✅
 
 **Statut:** ⏳ À tester
+
+**Implémentation:**
+- Checks ajoutés dans SelectTool pour tous les types d'interactions:
+  - Sélection d'objets (clic, rectangle, Space)
+  - Sélection de vertices/segments/handles
+  - Modifications (G, T, Delete keys)
+  - Transformations (rotation, mirror, scale héritent de la sélection bloquée)
 
 ---
 
