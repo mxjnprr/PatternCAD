@@ -228,6 +228,7 @@ void MainWindow::setupMenuBar()
     // Export submenu
     QMenu* exportMenu = fileMenu->addMenu(tr("&Export"));
     exportMenu->addAction(tr("Export as &SVG..."), this, &MainWindow::onFileExportSVG);
+    exportMenu->addAction(tr("Export as &DXF..."), this, &MainWindow::onFileExportDXF);
     exportMenu->addAction(tr("Export as &PDF..."), this, &MainWindow::onFileExportPDF);
 
     fileMenu->addSeparator();
@@ -715,6 +716,44 @@ void MainWindow::onFileExportSVG()
                            tr("Failed to export SVG file: %1\n%2")
                            .arg(filepath)
                            .arg(svgFormat.lastError()));
+        statusBar()->showMessage(tr("Export failed"), 3000);
+    }
+}
+
+void MainWindow::onFileExportDXF()
+{
+    QString filepath = QFileDialog::getSaveFileName(
+        this,
+        tr("Export as DXF"),
+        getDefaultDirectory(),
+        tr("DXF Files (*.dxf)")
+    );
+
+    if (filepath.isEmpty()) {
+        return;
+    }
+
+    // Add extension if not present
+    if (!filepath.endsWith(".dxf", Qt::CaseInsensitive)) {
+        filepath += ".dxf";
+    }
+
+    Document* document = m_canvas->document();
+    if (!document) {
+        statusBar()->showMessage(tr("Error: No document available"), 3000);
+        return;
+    }
+
+    statusBar()->showMessage(tr("Exporting to DXF..."));
+
+    IO::DXFFormat dxfFormat;
+    if (dxfFormat.exportFile(filepath, document)) {
+        statusBar()->showMessage(tr("Exported to DXF: %1").arg(filepath), 3000);
+    } else {
+        QMessageBox::warning(this, tr("Export Failed"),
+                           tr("Failed to export DXF file: %1\n%2")
+                           .arg(filepath)
+                           .arg(dxfFormat.lastError()));
         statusBar()->showMessage(tr("Export failed"), 3000);
     }
 }

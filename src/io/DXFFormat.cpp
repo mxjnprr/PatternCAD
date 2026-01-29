@@ -11,6 +11,8 @@
 #include "geometry/Line.h"
 #include "geometry/Circle.h"
 #include "geometry/Polyline.h"
+#include "geometry/Rectangle.h"
+#include "geometry/CubicBezier.h"
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>
@@ -50,7 +52,10 @@ FormatType DXFFormat::formatType() const
 
 FormatCapability DXFFormat::capabilities() const
 {
-    return FormatCapability::Import; // Export not yet implemented
+    return static_cast<FormatCapability>(
+        static_cast<int>(FormatCapability::Import) |
+        static_cast<int>(FormatCapability::Export)
+    );
 }
 
 bool DXFFormat::importFile(const QString& filepath, Document* document)
@@ -86,10 +91,40 @@ bool DXFFormat::importFile(const QString& filepath, Document* document)
 
 bool DXFFormat::exportFile(const QString& filepath, const Document* document)
 {
-    Q_UNUSED(filepath);
-    Q_UNUSED(document);
-    setError("DXF export not yet implemented");
-    return false;
+    if (!document) {
+        setError("Invalid document pointer");
+        return false;
+    }
+
+    clearError();
+    reportProgress(0);
+
+    // Open file for writing
+    QFile file(filepath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        setError(QString("Failed to open file for writing: %1").arg(file.errorString()));
+        return false;
+    }
+
+    QTextStream stream(&file);
+    reportProgress(10);
+
+    // Write DXF sections
+    writeHeader(stream);
+    reportProgress(30);
+
+    writeTables(stream, document);
+    reportProgress(50);
+
+    writeEntities(stream, document);
+    reportProgress(90);
+
+    // Write EOF
+    writePair(stream, 0, "EOF");
+
+    file.close();
+    reportProgress(100);
+    return true;
 }
 
 QString DXFFormat::readPair(QTextStream& stream, int& code)
@@ -523,6 +558,255 @@ QString DXFFormat::getString(const DXFEntity& entity, int code, const QString& d
         return defaultValue;
     }
     return values.first();
+}
+
+// ============================================================================
+// Export helper methods
+// ============================================================================
+
+void DXFFormat::writePair(QTextStream& stream, int code, const QString& value) const
+{
+    stream << code << "\n" << value << "\n";
+}
+
+void DXFFormat::writePair(QTextStream& stream, int code, int value) const
+{
+    stream << code << "\n" << value << "\n";
+}
+
+void DXFFormat::writePair(QTextStream& stream, int code, double value) const
+{
+    stream << code << "\n" << value << "\n";
+}
+
+void DXFFormat::writeHeader(QTextStream& stream) const
+{
+    writePair(stream, 0, "SECTION");
+    writePair(stream, 2, "HEADER");
+
+    // Set units to millimeters (DXF code 4 = mm)
+    writePair(stream, 9, "$INSUNITS");
+    writePair(stream, 70, 4);
+
+    // Set measurement system to metric
+    writePair(stream, 9, "$MEASUREMENT");
+    writePair(stream, 70, 1);
+
+    writePair(stream, 0, "ENDSEC");
+}
+
+void DXFFormat::writeTables(QTextStream& stream, const Document* document) const
+{
+    writePair(stream, 0, "SECTION");
+    writePair(stream, 2, "TABLES");
+
+    // Write layer table
+    writePair(stream, 0, "TABLE");
+    writePair(stream, 2, "LAYER");
+
+    // Get all unique layers from objects
+    QSet<QString> layers;
+    for (const auto* obj : document->objects()) {
+        layers.insert(obj->layer());
+    }
+
+    // Write each layer definition
+    for (const QString& layerName : layers) {
+        writePair(stream, 0, "LAYER");
+        writePair(stream, 2, layerName);
+        writePair(stream, 70, 0);  // Standard flags
+
+        // Get layer color from document
+        QColor layerColor = document->layerColor(layerName);
+        // Convert RGB to DXF color index (simplified - use color index 7 for white/default)
+        int colorIndex = 7;  // Default white
+        if (layerColor.isValid()) {
+            // Simple color mapping (can be improved)
+            if (layerColor == Qt::red) colorIndex = 1;
+            else if (layerColor == Qt::yellow) colorIndex = 2;
+            else if (layerColor == Qt::green) colorIndex = 3;
+            else if (layerColor == Qt::cyan) colorIndex = 4;
+            else if (layerColor == Qt::blue) colorIndex = 5;
+            else if (layerColor == Qt::magenta) colorIndex = 6;
+        }
+        writePair(stream, 62, colorIndex);
+
+        writePair(stream, 6, "CONTINUOUS");  // Linetype
+    }
+
+    writePair(stream, 0, "ENDTAB");
+    writePair(stream, 0, "ENDSEC");
+}
+
+void DXFFormat::writeEntities(QTextStream& stream, const Document* document) const
+{
+    writePair(stream, 0, "SECTION");
+    writePair(stream, 2, "ENTITIES");
+
+    // Write each object based on its type
+    for (const auto* obj : document->objects()) {
+        if (!obj->isVisible()) {
+            continue;  // Skip invisible objects
+        }
+
+        using namespace Geometry;
+        switch (obj->type()) {
+            case ObjectType::Line:
+                writeLine(stream, obj);
+                break;
+            case ObjectType::Circle:
+                writeCircle(stream, obj);
+                break;
+            case ObjectType::Polyline:
+            case ObjectType::Polygon:
+                writePolyline(stream, obj);
+                break;
+            case ObjectType::Rectangle:
+                writeRectangle(stream, obj);
+                break;
+            case ObjectType::CubicBezier:
+                writeCubicBezier(stream, obj);
+                break;
+            case ObjectType::Point:
+                writePoint(stream, obj);
+                break;
+            case ObjectType::Arc:
+                // Arc not yet implemented in geometry classes
+                qWarning() << "DXFFormat::writeEntities - Arc export not yet supported";
+                break;
+            default:
+                qWarning() << "DXFFormat::writeEntities - Unknown object type";
+                break;
+        }
+    }
+
+    writePair(stream, 0, "ENDSEC");
+}
+
+void DXFFormat::writeLine(QTextStream& stream, const Geometry::GeometryObject* obj) const
+{
+    const auto* line = dynamic_cast<const Geometry::Line*>(obj);
+    if (!line) return;
+
+    QPointF start = line->start();
+    QPointF end = line->end();
+
+    writePair(stream, 0, "LINE");
+    writePair(stream, 8, obj->layer());  // Layer name
+    writePair(stream, 10, start.x());    // Start X
+    writePair(stream, 20, start.y());    // Start Y
+    writePair(stream, 30, 0.0);          // Start Z
+    writePair(stream, 11, end.x());      // End X
+    writePair(stream, 21, end.y());      // End Y
+    writePair(stream, 31, 0.0);          // End Z
+}
+
+void DXFFormat::writeCircle(QTextStream& stream, const Geometry::GeometryObject* obj) const
+{
+    const auto* circle = dynamic_cast<const Geometry::Circle*>(obj);
+    if (!circle) return;
+
+    QPointF center = circle->center();
+    double radius = circle->radius();
+
+    writePair(stream, 0, "CIRCLE");
+    writePair(stream, 8, obj->layer());
+    writePair(stream, 10, center.x());   // Center X
+    writePair(stream, 20, center.y());   // Center Y
+    writePair(stream, 30, 0.0);          // Center Z
+    writePair(stream, 40, radius);       // Radius
+}
+
+void DXFFormat::writePolyline(QTextStream& stream, const Geometry::GeometryObject* obj) const
+{
+    const auto* polyline = dynamic_cast<const Geometry::Polyline*>(obj);
+    if (!polyline) return;
+
+    QVector<Geometry::PolylineVertex> vertices = polyline->vertices();
+    if (vertices.isEmpty()) return;
+
+    // Use LWPOLYLINE (lightweight polyline) for DXF R14+
+    writePair(stream, 0, "LWPOLYLINE");
+    writePair(stream, 8, obj->layer());
+    writePair(stream, 90, static_cast<int>(vertices.size()));  // Number of vertices
+    writePair(stream, 70, polyline->isClosed() ? 1 : 0);  // Closed flag
+
+    for (const auto& vertex : vertices) {
+        writePair(stream, 10, vertex.position.x());
+        writePair(stream, 20, vertex.position.y());
+    }
+}
+
+void DXFFormat::writeRectangle(QTextStream& stream, const Geometry::GeometryObject* obj) const
+{
+    const auto* rect = dynamic_cast<const Geometry::Rectangle*>(obj);
+    if (!rect) return;
+
+    // Get rectangle corners
+    QPointF topLeft = rect->topLeft();
+    QPointF bottomRight = rect->bottomRight();
+
+    // Write as closed LWPOLYLINE
+    writePair(stream, 0, "LWPOLYLINE");
+    writePair(stream, 8, obj->layer());
+    writePair(stream, 90, 4);  // 4 vertices
+    writePair(stream, 70, 1);  // Closed
+
+    // Top-left
+    writePair(stream, 10, topLeft.x());
+    writePair(stream, 20, topLeft.y());
+
+    // Top-right
+    writePair(stream, 10, bottomRight.x());
+    writePair(stream, 20, topLeft.y());
+
+    // Bottom-right
+    writePair(stream, 10, bottomRight.x());
+    writePair(stream, 20, bottomRight.y());
+
+    // Bottom-left
+    writePair(stream, 10, topLeft.x());
+    writePair(stream, 20, bottomRight.y());
+}
+
+void DXFFormat::writeCubicBezier(QTextStream& stream, const Geometry::GeometryObject* obj) const
+{
+    const auto* bezier = dynamic_cast<const Geometry::CubicBezier*>(obj);
+    if (!bezier) return;
+
+    // For now, approximate Bezier curve with line segments
+    // A proper implementation would use DXF SPLINE entity
+    QList<QPointF> points;
+    const int segments = 20;
+    for (int i = 0; i <= segments; ++i) {
+        double t = static_cast<double>(i) / segments;
+        points.append(bezier->pointAt(t));
+    }
+
+    // Write as LWPOLYLINE
+    writePair(stream, 0, "LWPOLYLINE");
+    writePair(stream, 8, obj->layer());
+    writePair(stream, 90, static_cast<int>(points.size()));
+    writePair(stream, 70, 0);  // Not closed
+
+    for (const QPointF& point : points) {
+        writePair(stream, 10, point.x());
+        writePair(stream, 20, point.y());
+    }
+}
+
+void DXFFormat::writePoint(QTextStream& stream, const Geometry::GeometryObject* obj) const
+{
+    const auto* point = dynamic_cast<const Geometry::Point2D*>(obj);
+    if (!point) return;
+
+    QPointF pos = point->position();
+
+    writePair(stream, 0, "POINT");
+    writePair(stream, 8, obj->layer());
+    writePair(stream, 10, pos.x());
+    writePair(stream, 20, pos.y());
+    writePair(stream, 30, 0.0);
 }
 
 } // namespace IO

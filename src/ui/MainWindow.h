@@ -66,6 +66,7 @@ private slots:
     void onFileImportSVG();
     void onFileImportDXF();
     void onFileExportSVG();
+    void onFileExportDXF();
     void onFileExportPDF();
     void onFileExit();
     void onFileOpenRecent();

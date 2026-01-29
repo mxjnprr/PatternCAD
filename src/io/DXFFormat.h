@@ -70,10 +70,27 @@ private:
     void processLWPolyline(const DXFEntity& entity, Document* document);
     void processPoint(const DXFEntity& entity, Document* document);
 
-    // Utility
+    // Utility (import)
     QString readPair(QTextStream& stream, int& code);
     double getDouble(const DXFEntity& entity, int code, double defaultValue = 0.0) const;
     QString getString(const DXFEntity& entity, int code, const QString& defaultValue = "") const;
+
+    // Export helpers
+    void writePair(QTextStream& stream, int code, const QString& value) const;
+    void writePair(QTextStream& stream, int code, int value) const;
+    void writePair(QTextStream& stream, int code, double value) const;
+
+    void writeHeader(QTextStream& stream) const;
+    void writeTables(QTextStream& stream, const Document* document) const;
+    void writeEntities(QTextStream& stream, const Document* document) const;
+
+    // Entity writers
+    void writeLine(QTextStream& stream, const Geometry::GeometryObject* obj) const;
+    void writeCircle(QTextStream& stream, const Geometry::GeometryObject* obj) const;
+    void writePolyline(QTextStream& stream, const Geometry::GeometryObject* obj) const;
+    void writeRectangle(QTextStream& stream, const Geometry::GeometryObject* obj) const;
+    void writeCubicBezier(QTextStream& stream, const Geometry::GeometryObject* obj) const;
+    void writePoint(QTextStream& stream, const Geometry::GeometryObject* obj) const;
 };
 
 } // namespace IO
