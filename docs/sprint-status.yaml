@@ -7,7 +7,7 @@ sprint_number: 0
 sprint_goal: "Foundation Sprint - Set up build system, project skeleton, and basic infrastructure"
 sprint_start_date: "2026-01-15"
 sprint_end_date: ""
-last_updated: "2026-01-29T15:40:13Z"
+last_updated: "2026-01-29T16:04:24Z"
 
 # Epic and Story Tracking
 # Total: 8 Epics, 62 Stories (estimated 45-70 range)
@@ -1286,11 +1286,11 @@ epics:
           - Import creates new layer(s) named after source file
           - Large DXF files show progress indicator
           - Import errors are reported clearly with entity details
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-007/story-007-06.md"
         assigned_to: ""
         estimate: "13 points"
-        actual: ""
+        actual: "13 points"
         technical_notes: |
           - Use libdxfrw or implement custom DXF R12 parser
           - Map DXF entities to PatternCAD geometry
@@ -1800,9 +1800,9 @@ epics:
 metrics:
   total_epics: 8
   total_stories: 62
-  stories_completed: 17
+  stories_completed: 18
   stories_in_progress: 1
-  stories_not_started: 44
+  stories_not_started: 43
   estimated_total_points: 382
 
 # Story Point Summary by Epic
