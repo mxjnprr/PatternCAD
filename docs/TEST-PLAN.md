@@ -161,39 +161,19 @@ cd /path/to/PatternCAD/build
 
 ---
 
-### TEST-12: Rectangle Tool ⏳
-**À tester:**
-- Dessiner un rectangle
+### TEST-12: Rectangle Tool ❌ SUPPRIMÉ
+**Raison:** Rectangles standalone inutiles dans une application de design de patrons. Les pièces nécessitent des **contours fermés modifiables** (polylignes fermées).
 
-**Procédure:**
-1. Touche R
-2. Clic coin 1
-3. Glisser
-4. Clic coin 2
+**Note:** La classe géométrique `Rectangle` est conservée en interne. Elle sera réintégrée plus tard comme "internal" pour marquages rectangulaires, etc. à l'intérieur des pièces.
 
-**Critère de succès:**
-- Rectangle visible
-- Dimensions affichées
-
-**Statut:** ⏳ À tester
+**Statut:** ❌ Supprimé (pas de test nécessaire)
 
 ---
 
-### TEST-13: Rectangle Tool - Mode carré ⏳
-**À tester:**
-- Shift pour forcer un carré
+### TEST-13: Rectangle Tool - Mode carré ❌ SUPPRIMÉ
+**Raison:** Dépendance de TEST-12 (Rectangle Tool supprimé)
 
-**Procédure:**
-1. Touche R
-2. Clic coin 1
-3. Maintenir Shift
-4. Glisser
-5. Clic
-
-**Critère de succès:**
-- Forme carrée (W = H)
-
-**Statut:** ⏳ À tester
+**Statut:** ❌ Supprimé
 
 ---
 
@@ -580,11 +560,11 @@ cd /path/to/PatternCAD/build
 
 ## Résumé
 
-**Total tests:** 29 (5 supprimés)
+**Total tests:** 27 (7 supprimés)
 **Réussis:** 6 ✅
 **Échoués:** 0 ❌
-**Supprimés:** 5 ❌ (Point Tool + Line Tool + 2 tests Line dépendants + Circle Tool)
-**Non testés:** 23 ⏳
+**Supprimés:** 7 ❌ (Point Tool + Line Tool + 2 tests Line dépendants + Circle Tool + Rectangle Tool + 1 test Rectangle dépendant)
+**Non testés:** 21 ⏳
 
 ---
 
