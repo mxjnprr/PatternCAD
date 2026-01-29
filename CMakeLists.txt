@@ -67,6 +67,7 @@ set(SOURCES
     src/tools/ScaleTool.cpp
     src/io/FileFormat.cpp
     src/io/NativeFormat.cpp
+    src/io/SVGFormat.cpp
 )
 
 set(HEADERS
@@ -105,6 +106,7 @@ set(HEADERS
     src/tools/ScaleTool.h
     src/io/FileFormat.h
     src/io/NativeFormat.h
+    src/io/SVGFormat.h
 )
 
 # Resources

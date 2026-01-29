@@ -21,6 +21,7 @@
 #include "../core/Units.h"
 #include "../core/AutoSaveManager.h"
 #include "../core/SettingsManager.h"
+#include "../io/SVGFormat.h"
 #include "../tools/SelectTool.h"
 #include "../tools/PolylineTool.h"
 #include "../tools/AddPointOnContourTool.h"
@@ -204,6 +205,11 @@ void MainWindow::setupMenuBar()
     fileMenu->addSeparator();
     fileMenu->addAction(tr("&Save"), this, &MainWindow::onFileSave, QKeySequence::Save);
     fileMenu->addAction(tr("Save &As..."), this, &MainWindow::onFileSaveAs, QKeySequence::SaveAs);
+
+    // Export submenu
+    QMenu* exportMenu = fileMenu->addMenu(tr("&Export"));
+    exportMenu->addAction(tr("Export as &SVG..."), this, &MainWindow::onFileExportSVG);
+
     fileMenu->addSeparator();
     fileMenu->addAction(tr("E&xit"), this, &MainWindow::onFileExit, QKeySequence::Quit);
 
@@ -577,6 +583,44 @@ void MainWindow::onFileSave()
 void MainWindow::onFileSaveAs()
 {
     saveFileAs();
+}
+
+void MainWindow::onFileExportSVG()
+{
+    QString filepath = QFileDialog::getSaveFileName(
+        this,
+        tr("Export as SVG"),
+        getDefaultDirectory(),
+        tr("SVG Files (*.svg)")
+    );
+
+    if (filepath.isEmpty()) {
+        return;
+    }
+
+    // Add extension if not present
+    if (!filepath.endsWith(".svg", Qt::CaseInsensitive)) {
+        filepath += ".svg";
+    }
+
+    Document* document = m_canvas->document();
+    if (!document) {
+        statusBar()->showMessage(tr("Error: No document available"), 3000);
+        return;
+    }
+
+    statusBar()->showMessage(tr("Exporting to SVG..."));
+
+    IO::SVGFormat svgFormat;
+    if (svgFormat.exportFile(filepath, document)) {
+        statusBar()->showMessage(tr("Exported to SVG: %1").arg(filepath), 3000);
+    } else {
+        QMessageBox::warning(this, tr("Export Failed"),
+                           tr("Failed to export SVG file: %1\n%2")
+                           .arg(filepath)
+                           .arg(svgFormat.lastError()));
+        statusBar()->showMessage(tr("Export failed"), 3000);
+    }
 }
 
 void MainWindow::onFileExit()
