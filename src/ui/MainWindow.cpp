@@ -1195,6 +1195,7 @@ void MainWindow::saveFile()
         statusBar()->showMessage(tr("Saving %1...").arg(project->filepath()));
 
         if (document->save(project->filepath())) {
+            updateRecentFiles(project->filepath());
             updateWindowTitle();
             statusBar()->showMessage(tr("Saved %1").arg(project->filepath()), 3000);
         } else {
@@ -1370,6 +1371,7 @@ void MainWindow::updateRecentFilesMenu()
         m_recentFileActions[i]->setData(filepath);
         m_recentFileActions[i]->setVisible(true);
         m_recentFileActions[i]->setStatusTip(filepath);
+        m_recentFileActions[i]->setToolTip(filepath);
     }
 
     // Hide unused actions
