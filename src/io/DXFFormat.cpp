@@ -725,16 +725,41 @@ void DXFFormat::writePolyline(QTextStream& stream, const Geometry::GeometryObjec
     QVector<Geometry::PolylineVertex> vertices = polyline->vertices();
     if (vertices.isEmpty()) return;
 
-    // Collect all points including curve approximations
-    QList<QPointF> allPoints;
     int n = vertices.size();
+
+    // Check if polyline has any curves
+    bool hasCurves = false;
+    for (const auto& vertex : vertices) {
+        if (vertex.type == Geometry::VertexType::Smooth) {
+            hasCurves = true;
+            break;
+        }
+    }
+
+    // If no curves, use simple LWPOLYLINE
+    if (!hasCurves) {
+        writePair(stream, 0, "LWPOLYLINE");
+        writePair(stream, 8, obj->layer());
+        writePair(stream, 90, static_cast<int>(vertices.size()));
+        writePair(stream, 70, polyline->isClosed() ? 1 : 0);
+
+        for (const auto& vertex : vertices) {
+            writePair(stream, 10, vertex.position.x());
+            writePair(stream, 20, vertex.position.y());
+        }
+        return;
+    }
+
+    // For polylines with curves, write as SPLINE with control points
+    // Collect all control points for the entire spline
+    QList<QPointF> controlPoints;
 
     for (int i = 0; i < n; ++i) {
         int nextIdx = (i + 1) % n;
 
         // If we're at the last vertex and not closed, don't process to first
         if (!polyline->isClosed() && i == n - 1) {
-            allPoints.append(vertices[i].position);
+            controlPoints.append(vertices[i].position);
             break;
         }
 
@@ -742,7 +767,7 @@ void DXFFormat::writePolyline(QTextStream& stream, const Geometry::GeometryObjec
         const Geometry::PolylineVertex& next = vertices[nextIdx];
 
         // Add current vertex
-        allPoints.append(current.position);
+        controlPoints.append(current.position);
 
         // Check if segment is curved
         bool needsCurve = (current.type == Geometry::VertexType::Smooth) ||
@@ -784,35 +809,43 @@ void DXFFormat::writePolyline(QTextStream& stream, const Geometry::GeometryObjec
                 c2 = p2 - (p2 - p1) * 0.01;
             }
 
-            // Approximate cubic Bezier with line segments
-            const int segments = 10;
-            for (int j = 1; j <= segments; ++j) {
-                double t = static_cast<double>(j) / segments;
-                double t2 = t * t;
-                double t3 = t2 * t;
-                double mt = 1.0 - t;
-                double mt2 = mt * mt;
-                double mt3 = mt2 * mt;
-
-                QPointF point = p1 * mt3 + c1 * 3.0 * mt2 * t + c2 * 3.0 * mt * t2 + p2 * t3;
-
-                // Don't add the last point as it will be added as the next vertex
-                if (j < segments) {
-                    allPoints.append(point);
-                }
-            }
+            // Add control points
+            controlPoints.append(c1);
+            controlPoints.append(c2);
         }
     }
 
-    // Write as LWPOLYLINE
-    writePair(stream, 0, "LWPOLYLINE");
+    // Write as SPLINE entity
+    writePair(stream, 0, "SPLINE");
     writePair(stream, 8, obj->layer());
-    writePair(stream, 90, static_cast<int>(allPoints.size()));
-    writePair(stream, 70, polyline->isClosed() ? 1 : 0);
 
-    for (const QPointF& point : allPoints) {
+    // Flags: 8 = planar, add 1 for closed
+    int flags = 8;
+    if (polyline->isClosed()) {
+        flags |= 1;
+    }
+    writePair(stream, 70, flags);
+
+    writePair(stream, 71, 3);  // Degree (cubic)
+
+    // Number of knots = number of control points + degree + 1
+    int numControlPoints = static_cast<int>(controlPoints.size());
+    int numKnots = numControlPoints + 4;
+    writePair(stream, 72, numKnots);
+
+    writePair(stream, 73, numControlPoints);  // Number of control points
+    writePair(stream, 74, 0);  // Number of fit points (0 for control point spline)
+
+    // Knot values (uniform knot vector for cubic B-spline)
+    for (int i = 0; i < numKnots; ++i) {
+        writePair(stream, 40, static_cast<double>(i));
+    }
+
+    // Control points
+    for (const QPointF& point : controlPoints) {
         writePair(stream, 10, point.x());
         writePair(stream, 20, point.y());
+        writePair(stream, 30, 0.0);  // Z coordinate
     }
 }
 
