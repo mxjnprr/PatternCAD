@@ -398,19 +398,25 @@ cd /path/to/PatternCAD/build
 
 ---
 
-### TEST-28: Layer - Visibilité ⏳
+### TEST-28: Layer - Visibilité ✅
 **À tester:**
 - Toggle visibilité layer
 
 **Procédure:**
 1. Dessiner objets sur layer
-2. Dans Layers panel, clic icône œil
+2. Dans Layers panel, clic checkbox du layer
 
 **Critère de succès:**
-- Objets du layer disparaissent/réapparaissent
-- Canvas mis à jour
+- Objets du layer disparaissent/réapparaissent ✅
+- Sélections (highlights verts) cachées avec le layer ✅
+- Canvas mis à jour ✅
 
-**Statut:** ⏳ À tester
+**Statut:** ✅ VALIDÉ
+
+**Bugs corrigés:**
+- LayersPanel utilisait le texte affiché avec compteur au lieu du vrai nom
+- Stockage du vrai nom dans Qt::UserRole
+- Ajout de vérifications de visibilité dans SelectTool::drawOverlay
 
 ---
 
