@@ -28,6 +28,13 @@ find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/third-party
+    ${CMAKE_CURRENT_SOURCE_DIR}/third-party/Clipper2/CPP/Clipper2Lib/include
+)
+
+# Clipper2 Sources
+set(CLIPPER2_SOURCES
+    third-party/Clipper2/CPP/Clipper2Lib/src/clipper.engine.cpp
+    third-party/Clipper2/CPP/Clipper2Lib/src/clipper.offset.cpp
 )
 
 # Source Files
@@ -60,6 +67,7 @@ set(SOURCES
     src/geometry/Rectangle.cpp
     src/geometry/Polyline.cpp
     src/geometry/CubicBezier.cpp
+    src/geometry/SeamAllowance.cpp
     src/tools/Tool.cpp
     src/tools/SelectTool.cpp
     src/tools/PolylineTool.cpp
@@ -102,6 +110,7 @@ set(HEADERS
     src/geometry/Rectangle.h
     src/geometry/Polyline.h
     src/geometry/CubicBezier.h
+    src/geometry/SeamAllowance.h
     src/tools/Tool.h
     src/tools/SelectTool.h
     src/tools/PolylineTool.h
@@ -123,6 +132,7 @@ set(RESOURCES
 
 # Executable
 add_executable(PatternCAD
+    ${CLIPPER2_SOURCES}
     ${SOURCES}
     ${HEADERS}
     ${RESOURCES}

@@ -5,6 +5,7 @@
  */
 
 #include "Polyline.h"
+#include "SeamAllowance.h"
 #include <QPainter>
 #include <QPainterPath>
 #include <QtMath>
@@ -102,14 +103,20 @@ namespace {
 Polyline::Polyline(QObject* parent)
     : GeometryObject(parent)
     , m_closed(true)
+    , m_seamAllowance(new SeamAllowance(this))
 {
+    m_seamAllowance->setSourcePolyline(this);
+    connect(m_seamAllowance, &SeamAllowance::changed, this, [this]() { notifyChanged(); });
 }
 
 Polyline::Polyline(const QVector<PolylineVertex>& vertices, QObject* parent)
     : GeometryObject(parent)
     , m_vertices(vertices)
     , m_closed(true)
+    , m_seamAllowance(new SeamAllowance(this))
 {
+    m_seamAllowance->setSourcePolyline(this);
+    connect(m_seamAllowance, &SeamAllowance::changed, this, [this]() { notifyChanged(); });
 }
 
 Polyline::~Polyline()
@@ -239,6 +246,11 @@ void Polyline::draw(QPainter* painter, const QColor& color) const
             painter->setPen(Qt::NoPen);
             painter->drawEllipse(vertex.position, 3, 3);
         }
+    }
+
+    // Draw seam allowance if enabled
+    if (m_seamAllowance && m_seamAllowance->isEnabled()) {
+        m_seamAllowance->render(painter);
     }
 
     painter->restore();

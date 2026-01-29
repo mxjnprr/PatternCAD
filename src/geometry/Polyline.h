@@ -12,6 +12,10 @@
 #include <QVector>
 
 namespace PatternCAD {
+
+// Forward declaration
+class SeamAllowance;
+
 namespace Geometry {
 
 /**
@@ -87,6 +91,9 @@ public:
     bool isClosed() const { return m_closed; }
     void setClosed(bool closed);
 
+    // Seam allowance
+    SeamAllowance* seamAllowance() const { return m_seamAllowance; }
+
     // Geometry interface
     QRectF boundingRect() const override;
     bool contains(const QPointF& point) const override;
@@ -101,6 +108,7 @@ public:
 private:
     QVector<PolylineVertex> m_vertices;
     bool m_closed;
+    SeamAllowance* m_seamAllowance;
 
     // Helper methods
     QPainterPath createPath() const;

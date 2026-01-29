@@ -8,6 +8,8 @@
 #include "geometry/GeometryObject.h"
 #include "geometry/Rectangle.h"
 #include "geometry/Circle.h"
+#include "geometry/Polyline.h"
+#include "geometry/SeamAllowance.h"
 #include "core/Application.h"
 #include "core/Project.h"
 #include "core/Document.h"
@@ -28,6 +30,10 @@ PropertiesPanel::PropertiesPanel(QWidget* parent)
     , m_layerCombo(nullptr)
     , m_widthEdit(nullptr)
     , m_heightEdit(nullptr)
+    , m_seamAllowanceEnabled(nullptr)
+    , m_seamAllowanceWidth(nullptr)
+    , m_seamAllowanceCornerType(nullptr)
+    , m_seamAllowanceLabel(nullptr)
 {
     setupUi();
 }
@@ -99,6 +105,41 @@ void PropertiesPanel::createCommonProperties()
     m_heightEdit->setReadOnly(true);
     m_heightEdit->setButtonSymbols(QAbstractSpinBox::NoButtons);
     m_formLayout->addRow("Height:", m_heightEdit);
+
+    // Seam allowance section (initially hidden)
+    m_seamAllowanceLabel = new QLabel("Seam Allowance", m_formWidget);
+    m_seamAllowanceLabel->setStyleSheet("font-weight: bold; margin-top: 8px;");
+    m_formLayout->addRow("", m_seamAllowanceLabel);
+
+    m_seamAllowanceEnabled = new QCheckBox("Enabled", m_formWidget);
+    connect(m_seamAllowanceEnabled, &QCheckBox::checkStateChanged,
+            this, &PropertiesPanel::onPropertyEdited);
+    m_formLayout->addRow("", m_seamAllowanceEnabled);
+
+    m_seamAllowanceWidth = new QDoubleSpinBox(m_formWidget);
+    m_seamAllowanceWidth->setRange(0.0, 100.0);
+    m_seamAllowanceWidth->setDecimals(1);
+    m_seamAllowanceWidth->setSuffix(" mm");
+    m_seamAllowanceWidth->setSingleStep(1.0);
+    connect(m_seamAllowanceWidth, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &PropertiesPanel::onPropertyEdited);
+    m_formLayout->addRow("Width:", m_seamAllowanceWidth);
+
+    m_seamAllowanceCornerType = new QComboBox(m_formWidget);
+    m_seamAllowanceCornerType->addItem("Miter", static_cast<int>(CornerType::Miter));
+    m_seamAllowanceCornerType->addItem("Round", static_cast<int>(CornerType::Round));
+    m_seamAllowanceCornerType->addItem("Bevel", static_cast<int>(CornerType::Bevel));
+    connect(m_seamAllowanceCornerType, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &PropertiesPanel::onPropertyEdited);
+    m_formLayout->addRow("Corner Type:", m_seamAllowanceCornerType);
+
+    // Initially hide seam allowance controls
+    m_seamAllowanceLabel->hide();
+    m_seamAllowanceEnabled->hide();
+    m_seamAllowanceWidth->hide();
+    m_seamAllowanceCornerType->hide();
+    m_formLayout->labelForField(m_seamAllowanceWidth)->hide();
+    m_formLayout->labelForField(m_seamAllowanceCornerType)->hide();
 }
 
 void PropertiesPanel::createGeometryProperties()
@@ -161,6 +202,9 @@ void PropertiesPanel::updateProperties()
     // Block signals while updating to avoid triggering onPropertyEdited
     m_nameEdit->blockSignals(true);
     m_layerCombo->blockSignals(true);
+    m_seamAllowanceEnabled->blockSignals(true);
+    m_seamAllowanceWidth->blockSignals(true);
+    m_seamAllowanceCornerType->blockSignals(true);
 
     if (m_selectedObjects.isEmpty()) {
         // No selection - disable panel
@@ -172,6 +216,14 @@ void PropertiesPanel::updateProperties()
         m_widthEdit->setValue(0);
         m_heightEdit->setValue(0);
         m_layerCombo->clear();
+
+        // Hide seam allowance controls
+        m_seamAllowanceLabel->hide();
+        m_seamAllowanceEnabled->hide();
+        m_seamAllowanceWidth->hide();
+        m_seamAllowanceCornerType->hide();
+        m_formLayout->labelForField(m_seamAllowanceWidth)->hide();
+        m_formLayout->labelForField(m_seamAllowanceCornerType)->hide();
     } else if (m_selectedObjects.size() == 1) {
         // Single selection - show properties
         m_formWidget->setEnabled(true);
@@ -193,6 +245,38 @@ void PropertiesPanel::updateProperties()
         QRectF bounds = obj->boundingRect();
         m_widthEdit->setValue(bounds.width());
         m_heightEdit->setValue(bounds.height());
+
+        // Check if object is a Polyline to show seam allowance controls
+        if (auto* polyline = qobject_cast<Geometry::Polyline*>(obj)) {
+            SeamAllowance* seamAllowance = polyline->seamAllowance();
+            if (seamAllowance) {
+                m_seamAllowanceEnabled->setChecked(seamAllowance->isEnabled());
+                m_seamAllowanceWidth->setValue(seamAllowance->width());
+
+                // Set corner type combo
+                CornerType cornerType = seamAllowance->cornerType();
+                int index = m_seamAllowanceCornerType->findData(static_cast<int>(cornerType));
+                if (index >= 0) {
+                    m_seamAllowanceCornerType->setCurrentIndex(index);
+                }
+
+                // Show seam allowance controls
+                m_seamAllowanceLabel->show();
+                m_seamAllowanceEnabled->show();
+                m_seamAllowanceWidth->show();
+                m_seamAllowanceCornerType->show();
+                m_formLayout->labelForField(m_seamAllowanceWidth)->show();
+                m_formLayout->labelForField(m_seamAllowanceCornerType)->show();
+            }
+        } else {
+            // Hide seam allowance controls for non-polyline objects
+            m_seamAllowanceLabel->hide();
+            m_seamAllowanceEnabled->hide();
+            m_seamAllowanceWidth->hide();
+            m_seamAllowanceCornerType->hide();
+            m_formLayout->labelForField(m_seamAllowanceWidth)->hide();
+            m_formLayout->labelForField(m_seamAllowanceCornerType)->hide();
+        }
     } else {
         // Multiple selection - show common properties
         m_formWidget->setEnabled(true);
@@ -224,11 +308,22 @@ void PropertiesPanel::updateProperties()
                 m_layerCombo->setCurrentText(first->layer());
             }
         }
+
+        // Hide seam allowance controls for multiple selection
+        m_seamAllowanceLabel->hide();
+        m_seamAllowanceEnabled->hide();
+        m_seamAllowanceWidth->hide();
+        m_seamAllowanceCornerType->hide();
+        m_formLayout->labelForField(m_seamAllowanceWidth)->hide();
+        m_formLayout->labelForField(m_seamAllowanceCornerType)->hide();
     }
 
     // Unblock signals
     m_nameEdit->blockSignals(false);
     m_layerCombo->blockSignals(false);
+    m_seamAllowanceEnabled->blockSignals(false);
+    m_seamAllowanceWidth->blockSignals(false);
+    m_seamAllowanceCornerType->blockSignals(false);
 }
 
 void PropertiesPanel::onPropertyEdited()
@@ -239,6 +334,28 @@ void PropertiesPanel::onPropertyEdited()
 
     // Determine which property was edited
     QObject* senderObj = sender();
+
+    // Handle seam allowance properties separately (not using commands yet)
+    if (m_selectedObjects.size() == 1) {
+        if (auto* polyline = qobject_cast<Geometry::Polyline*>(m_selectedObjects.first())) {
+            SeamAllowance* seamAllowance = polyline->seamAllowance();
+            if (seamAllowance) {
+                if (senderObj == m_seamAllowanceEnabled) {
+                    seamAllowance->setEnabled(m_seamAllowanceEnabled->isChecked());
+                    return;
+                } else if (senderObj == m_seamAllowanceWidth) {
+                    seamAllowance->setWidth(m_seamAllowanceWidth->value());
+                    return;
+                } else if (senderObj == m_seamAllowanceCornerType) {
+                    int typeInt = m_seamAllowanceCornerType->currentData().toInt();
+                    seamAllowance->setCornerType(static_cast<CornerType>(typeInt));
+                    return;
+                }
+            }
+        }
+    }
+
+    // Handle standard properties
     QString propertyName;
     QVariant value;
 

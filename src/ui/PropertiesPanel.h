@@ -15,6 +15,7 @@
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QPushButton>
+#include <QCheckBox>
 #include <QList>
 
 namespace PatternCAD {
@@ -77,6 +78,12 @@ private:
     QComboBox* m_layerCombo;
     QDoubleSpinBox* m_widthEdit;   // Bounding box width (read-only)
     QDoubleSpinBox* m_heightEdit;  // Bounding box height (read-only)
+
+    // Seam allowance widgets (for Polyline)
+    QCheckBox* m_seamAllowanceEnabled;
+    QDoubleSpinBox* m_seamAllowanceWidth;
+    QComboBox* m_seamAllowanceCornerType;
+    QLabel* m_seamAllowanceLabel;
 };
 
 } // namespace UI
