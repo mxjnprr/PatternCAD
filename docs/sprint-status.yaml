@@ -1125,7 +1125,7 @@ epics:
     name: "File Operations and Interoperability"
     description: "Implement file import/export (DXF, SVG, PDF), native project format, and auto-save with recovery"
     priority: "must-have"
-    status: "not-started"
+    status: "in-progress"
     estimated_stories: "8-12"
     actual_stories: 11
     stories:
@@ -1409,11 +1409,11 @@ epics:
           - PDF preserves vector quality (not rasterized)
           - Export includes metadata: title, author, creation date, scale
           - Export tested with Adobe Reader, plotting software
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-007/story-007-10.md"
         assigned_to: ""
         estimate: "8 points"
-        actual: ""
+        actual: "8 points"
         technical_notes: |
           - Use QPdfWriter for PDF generation
           - Render scene to QPainter on PDF
@@ -1800,9 +1800,9 @@ epics:
 metrics:
   total_epics: 8
   total_stories: 62
-  stories_completed: 15
+  stories_completed: 16
   stories_in_progress: 1
-  stories_not_started: 46
+  stories_not_started: 45
   estimated_total_points: 382
 
 # Story Point Summary by Epic
