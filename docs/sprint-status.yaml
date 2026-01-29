@@ -1617,11 +1617,11 @@ epics:
           - Panel shows parameter dependencies (which params use which)
           - Panel can be hidden/shown (View menu)
           - Panel updates when parameters change
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-008/story-008-06.md"
         assigned_to: ""
         estimate: "5 points"
-        actual: ""
+        actual: "5 points"
         technical_notes: |
           - Implement ParametersPanel (QDockWidget)
           - Use QTableWidget or custom model/view

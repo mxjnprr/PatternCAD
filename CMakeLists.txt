@@ -46,6 +46,7 @@ set(SOURCES
     src/ui/ToolPalette.cpp
     src/ui/PropertiesPanel.cpp
     src/ui/LayersPanel.cpp
+    src/ui/ParametersPanel.cpp
     src/ui/KeyboardShortcutsDialog.cpp
     src/ui/PreferencesDialog.cpp
     src/geometry/GeometryObject.cpp
@@ -85,6 +86,7 @@ set(HEADERS
     src/ui/ToolPalette.h
     src/ui/PropertiesPanel.h
     src/ui/LayersPanel.h
+    src/ui/ParametersPanel.h
     src/ui/KeyboardShortcutsDialog.h
     src/ui/PreferencesDialog.h
     src/geometry/GeometryObject.h

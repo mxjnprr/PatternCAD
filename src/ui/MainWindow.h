@@ -28,6 +28,7 @@ class Canvas;
 class ToolPalette;
 class PropertiesPanel;
 class LayersPanel;
+class ParametersPanel;
 
 /**
  * MainWindow provides the main application interface with:
@@ -131,11 +132,13 @@ private:
     ToolPalette* m_toolPalette;
     PropertiesPanel* m_propertiesPanel;
     LayersPanel* m_layersPanel;
+    ParametersPanel* m_parametersPanel;
 
     // Dock widgets
     QDockWidget* m_toolsDock;
     QDockWidget* m_propertiesDock;
     QDockWidget* m_layersDock;
+    QDockWidget* m_parametersDock;
 
     // Tool management
     QMap<QString, Tools::Tool*> m_tools;

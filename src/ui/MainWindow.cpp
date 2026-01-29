@@ -9,6 +9,7 @@
 #include "ToolPalette.h"
 #include "PropertiesPanel.h"
 #include "LayersPanel.h"
+#include "ParametersPanel.h"
 #include "KeyboardShortcutsDialog.h"
 #include "PreferencesDialog.h"
 #include "DimensionInputOverlay.h"
@@ -53,6 +54,7 @@ MainWindow::MainWindow(QWidget* parent)
     , m_toolPalette(nullptr)
     , m_propertiesPanel(nullptr)
     , m_layersPanel(nullptr)
+    , m_parametersPanel(nullptr)
     , m_currentTool(nullptr)
     , m_statusLabel(nullptr)
     , m_cursorLabel(nullptr)
@@ -389,8 +391,16 @@ void MainWindow::setupDockWidgets()
     m_layersDock->setWidget(m_layersPanel);
     addDockWidget(Qt::RightDockWidgetArea, m_layersDock);
 
+    // Parameters Panel (right side)
+    m_parametersPanel = new ParametersPanel(this);
+    m_parametersDock = new QDockWidget(tr("Parameters"), this);
+    m_parametersDock->setObjectName("ParametersDock");
+    m_parametersDock->setWidget(m_parametersPanel);
+    addDockWidget(Qt::RightDockWidgetArea, m_parametersDock);
+
     // Tabify the right side panels
     tabifyDockWidget(m_propertiesDock, m_layersDock);
+    tabifyDockWidget(m_layersDock, m_parametersDock);
 
     // Make Properties visible by default
     m_propertiesDock->raise();
@@ -423,6 +433,7 @@ void MainWindow::setupWindowMenu()
     windowMenu->addAction(m_toolsDock->toggleViewAction());
     windowMenu->addAction(m_propertiesDock->toggleViewAction());
     windowMenu->addAction(m_layersDock->toggleViewAction());
+    windowMenu->addAction(m_parametersDock->toggleViewAction());
 }
 
 void MainWindow::loadSettings()
