@@ -370,40 +370,13 @@ cd /path/to/PatternCAD/build
 
 ---
 
-### TEST-25: Align - Left ⏳
-**À tester:**
-- Aligner bords gauches
-
-**Procédure:**
-1. Dessiner 3 rectangles à positions différentes
-2. Les sélectionner tous (Ctrl+A ou rectangle sélection)
-3. Menu Modify → Align → Align Left
-4. OU: Ctrl+Shift+L
-
-**Critère de succès:**
-- Bords gauches alignés
-- Objets déplacés horizontalement
-
-**Statut:** ⏳ À tester
+### TEST-25: Align - Left ❌
+**Statut:** ❌ SUPPRIMÉ - Fonctionnalité non prioritaire
 
 ---
 
-### TEST-26: Distribute - Horizontal ⏳
-**À tester:**
-- Espacement horizontal égal
-
-**Procédure:**
-1. Dessiner 4 objets à espacements irréguliers
-2. Les sélectionner
-3. Menu Modify → Distribute → Distribute Horizontal
-4. OU: Ctrl+Shift+D
-
-**Critère de succès:**
-- Premier et dernier objets fixes
-- Objets du milieu espacés également
-- Espacement uniforme
-
-**Statut:** ⏳ À tester
+### TEST-26: Distribute - Horizontal ❌
+**Statut:** ❌ SUPPRIMÉ - Fonctionnalité non prioritaire
 
 ---
 
