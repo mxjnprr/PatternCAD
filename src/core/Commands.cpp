@@ -759,4 +759,92 @@ void ScaleObjectsCommand::redo()
     }
 }
 
+// ============================================================================
+// AlignObjectsCommand
+// ============================================================================
+
+AlignObjectsCommand::AlignObjectsCommand(const QList<Geometry::GeometryObject*>& objects,
+                                       AlignMode mode,
+                                       QUndoCommand* parent)
+    : QUndoCommand(parent)
+    , m_mode(mode)
+{
+    // Calculate reference bounds (combined bounds of all objects)
+    if (objects.isEmpty()) {
+        setText(QObject::tr("Align"));
+        return;
+    }
+
+    QRectF referenceBounds = objects.first()->boundingRect();
+    for (int i = 1; i < objects.size(); ++i) {
+        referenceBounds = referenceBounds.united(objects[i]->boundingRect());
+    }
+
+    // Calculate offset for each object
+    for (auto* obj : objects) {
+        if (!obj) continue;
+
+        QRectF objBounds = obj->boundingRect();
+        QPointF offset(0, 0);
+
+        switch (mode) {
+            case AlignMode::Left:
+                offset.setX(referenceBounds.left() - objBounds.left());
+                break;
+            case AlignMode::Right:
+                offset.setX(referenceBounds.right() - objBounds.right());
+                break;
+            case AlignMode::Top:
+                offset.setY(referenceBounds.top() - objBounds.top());
+                break;
+            case AlignMode::Bottom:
+                offset.setY(referenceBounds.bottom() - objBounds.bottom());
+                break;
+            case AlignMode::CenterHorizontal:
+                offset.setX(referenceBounds.center().x() - objBounds.center().x());
+                break;
+            case AlignMode::CenterVertical:
+                offset.setY(referenceBounds.center().y() - objBounds.center().y());
+                break;
+        }
+
+        ObjectOffset objOffset;
+        objOffset.object = obj;
+        objOffset.originalOffset = offset;
+        m_objects.append(objOffset);
+    }
+
+    // Set command text based on mode
+    QString modeText;
+    switch (mode) {
+        case AlignMode::Left: modeText = "Left"; break;
+        case AlignMode::Right: modeText = "Right"; break;
+        case AlignMode::Top: modeText = "Top"; break;
+        case AlignMode::Bottom: modeText = "Bottom"; break;
+        case AlignMode::CenterHorizontal: modeText = "Center Horizontal"; break;
+        case AlignMode::CenterVertical: modeText = "Center Vertical"; break;
+    }
+    setText(QObject::tr("Align %1").arg(modeText));
+}
+
+void AlignObjectsCommand::undo()
+{
+    // Move objects back by negating their offsets
+    for (const auto& objOffset : m_objects) {
+        if (objOffset.object) {
+            objOffset.object->translate(-objOffset.originalOffset);
+        }
+    }
+}
+
+void AlignObjectsCommand::redo()
+{
+    // Apply alignment offsets
+    for (const auto& objOffset : m_objects) {
+        if (objOffset.object) {
+            objOffset.object->translate(objOffset.originalOffset);
+        }
+    }
+}
+
 } // namespace PatternCAD

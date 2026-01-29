@@ -584,11 +584,11 @@ epics:
           - Preview shows alignment result before applying
           - Alignment is undoable
           - Works with 2+ selected objects
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-003/story-003-04.md"
         assigned_to: ""
         estimate: "3 points"
-        actual: ""
+        actual: "3 points"
         technical_notes: |
           - Implement Align command (not a tool, menu/shortcut action)
           - Create AlignObjectsCommand

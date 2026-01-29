@@ -18,6 +18,18 @@ namespace PatternCAD {
 
 class Document;
 
+/**
+ * Alignment modes for AlignObjectsCommand
+ */
+enum class AlignMode {
+    Left,
+    Right,
+    Top,
+    Bottom,
+    CenterHorizontal,
+    CenterVertical
+};
+
 namespace Geometry {
     class GeometryObject;
 }
@@ -288,6 +300,29 @@ private:
     double m_scaleX;
     double m_scaleY;
     QPointF m_origin;
+};
+
+/**
+ * AlignObjectsCommand - Command to align multiple objects
+ */
+class AlignObjectsCommand : public QUndoCommand
+{
+public:
+    AlignObjectsCommand(const QList<Geometry::GeometryObject*>& objects,
+                        AlignMode mode,
+                        QUndoCommand* parent = nullptr);
+
+    void undo() override;
+    void redo() override;
+
+private:
+    struct ObjectOffset {
+        Geometry::GeometryObject* object;
+        QPointF originalOffset;
+    };
+
+    QList<ObjectOffset> m_objects;
+    AlignMode m_mode;
 };
 
 } // namespace PatternCAD

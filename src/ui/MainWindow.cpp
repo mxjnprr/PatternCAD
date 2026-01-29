@@ -15,6 +15,7 @@
 #include "../core/Application.h"
 #include "../core/Project.h"
 #include "../core/Document.h"
+#include "../core/Commands.h"
 #include "../core/Units.h"
 #include "../tools/SelectTool.h"
 #include "../tools/LineTool.h"
@@ -210,6 +211,17 @@ void MainWindow::setupMenuBar()
     modifyMenu->addAction(tr("&Rotate..."), this, &MainWindow::onModifyRotate, QKeySequence(tr("Ctrl+R")));
     modifyMenu->addAction(tr("&Mirror..."), this, &MainWindow::onModifyMirror, QKeySequence(tr("Ctrl+M")));
     modifyMenu->addAction(tr("&Scale..."), this, &MainWindow::onModifyScale, QKeySequence(tr("Ctrl+S")));
+    modifyMenu->addSeparator();
+
+    // Align submenu
+    QMenu* alignMenu = modifyMenu->addMenu(tr("&Align"));
+    alignMenu->addAction(tr("Align &Left"), this, &MainWindow::onModifyAlignLeft, QKeySequence(tr("Ctrl+Shift+L")));
+    alignMenu->addAction(tr("Align &Right"), this, &MainWindow::onModifyAlignRight, QKeySequence(tr("Ctrl+Shift+R")));
+    alignMenu->addAction(tr("Align &Top"), this, &MainWindow::onModifyAlignTop, QKeySequence(tr("Ctrl+Shift+T")));
+    alignMenu->addAction(tr("Align &Bottom"), this, &MainWindow::onModifyAlignBottom, QKeySequence(tr("Ctrl+Shift+B")));
+    alignMenu->addSeparator();
+    alignMenu->addAction(tr("Align Center &Horizontal"), this, &MainWindow::onModifyAlignCenterHorizontal, QKeySequence(tr("Ctrl+Shift+H")));
+    alignMenu->addAction(tr("Align Center &Vertical"), this, &MainWindow::onModifyAlignCenterVertical, QKeySequence(tr("Ctrl+Shift+V")));
 
     // Tools menu (placeholder)
     menuBar()->addMenu(tr("&Tools"));
@@ -656,6 +668,108 @@ void MainWindow::onModifyScale()
 {
     // Activate the Scale tool
     onToolSelected("Scale");
+}
+
+void MainWindow::onModifyAlignLeft()
+{
+    Document* document = m_canvas ? m_canvas->document() : nullptr;
+    if (!document) return;
+
+    QList<Geometry::GeometryObject*> selectedObjects = document->selectedObjects();
+    if (selectedObjects.size() < 2) {
+        statusBar()->showMessage(tr("Select at least 2 objects to align"), 3000);
+        return;
+    }
+
+    auto* command = new AlignObjectsCommand(selectedObjects, AlignMode::Left);
+    if (document->undoStack()) {
+        document->undoStack()->push(command);
+    }
+}
+
+void MainWindow::onModifyAlignRight()
+{
+    Document* document = m_canvas ? m_canvas->document() : nullptr;
+    if (!document) return;
+
+    QList<Geometry::GeometryObject*> selectedObjects = document->selectedObjects();
+    if (selectedObjects.size() < 2) {
+        statusBar()->showMessage(tr("Select at least 2 objects to align"), 3000);
+        return;
+    }
+
+    auto* command = new AlignObjectsCommand(selectedObjects, AlignMode::Right);
+    if (document->undoStack()) {
+        document->undoStack()->push(command);
+    }
+}
+
+void MainWindow::onModifyAlignTop()
+{
+    Document* document = m_canvas ? m_canvas->document() : nullptr;
+    if (!document) return;
+
+    QList<Geometry::GeometryObject*> selectedObjects = document->selectedObjects();
+    if (selectedObjects.size() < 2) {
+        statusBar()->showMessage(tr("Select at least 2 objects to align"), 3000);
+        return;
+    }
+
+    auto* command = new AlignObjectsCommand(selectedObjects, AlignMode::Top);
+    if (document->undoStack()) {
+        document->undoStack()->push(command);
+    }
+}
+
+void MainWindow::onModifyAlignBottom()
+{
+    Document* document = m_canvas ? m_canvas->document() : nullptr;
+    if (!document) return;
+
+    QList<Geometry::GeometryObject*> selectedObjects = document->selectedObjects();
+    if (selectedObjects.size() < 2) {
+        statusBar()->showMessage(tr("Select at least 2 objects to align"), 3000);
+        return;
+    }
+
+    auto* command = new AlignObjectsCommand(selectedObjects, AlignMode::Bottom);
+    if (document->undoStack()) {
+        document->undoStack()->push(command);
+    }
+}
+
+void MainWindow::onModifyAlignCenterHorizontal()
+{
+    Document* document = m_canvas ? m_canvas->document() : nullptr;
+    if (!document) return;
+
+    QList<Geometry::GeometryObject*> selectedObjects = document->selectedObjects();
+    if (selectedObjects.size() < 2) {
+        statusBar()->showMessage(tr("Select at least 2 objects to align"), 3000);
+        return;
+    }
+
+    auto* command = new AlignObjectsCommand(selectedObjects, AlignMode::CenterHorizontal);
+    if (document->undoStack()) {
+        document->undoStack()->push(command);
+    }
+}
+
+void MainWindow::onModifyAlignCenterVertical()
+{
+    Document* document = m_canvas ? m_canvas->document() : nullptr;
+    if (!document) return;
+
+    QList<Geometry::GeometryObject*> selectedObjects = document->selectedObjects();
+    if (selectedObjects.size() < 2) {
+        statusBar()->showMessage(tr("Select at least 2 objects to align"), 3000);
+        return;
+    }
+
+    auto* command = new AlignObjectsCommand(selectedObjects, AlignMode::CenterVertical);
+    if (document->undoStack()) {
+        document->undoStack()->push(command);
+    }
 }
 
 // Help menu slots

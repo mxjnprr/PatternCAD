@@ -84,6 +84,12 @@ private slots:
     void onModifyRotate();
     void onModifyMirror();
     void onModifyScale();
+    void onModifyAlignLeft();
+    void onModifyAlignRight();
+    void onModifyAlignTop();
+    void onModifyAlignBottom();
+    void onModifyAlignCenterHorizontal();
+    void onModifyAlignCenterVertical();
 
     // Help menu
     void onHelpKeyboardShortcuts();
