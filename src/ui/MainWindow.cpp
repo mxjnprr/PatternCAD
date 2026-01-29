@@ -13,6 +13,7 @@
 #include "KeyboardShortcutsDialog.h"
 #include "PreferencesDialog.h"
 #include "DimensionInputOverlay.h"
+#include "RecoveryDialog.h"
 #include "../core/Application.h"
 #include "../core/Project.h"
 #include "../core/Document.h"
@@ -39,6 +40,8 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QDebug>
+#include <QTimer>
+#include <QFile>
 
 namespace PatternCAD {
 namespace UI {
@@ -131,6 +134,9 @@ MainWindow::MainWindow(QWidget* parent)
     m_canvas->setActiveTool(m_currentTool);
 
     updateWindowTitle();
+
+    // Check for auto-save recovery after window is shown
+    QTimer::singleShot(500, this, &MainWindow::checkForAutoSaveRecovery);
 }
 
 MainWindow::~MainWindow()
@@ -1216,6 +1222,93 @@ QString MainWindow::getDefaultDirectory() const
 
     // Fall back to current working directory
     return QDir::currentPath();
+}
+
+void MainWindow::checkForAutoSaveRecovery()
+{
+    // Get all auto-save directories to check
+    QStringList directoriesToCheck;
+
+    // 1. Check custom auto-save directory if configured
+    if (m_autoSaveManager) {
+        QString autoSaveDir = m_autoSaveManager->autoSaveDirectory();
+        if (!autoSaveDir.isEmpty()) {
+            directoriesToCheck << autoSaveDir;
+        }
+    }
+
+    // 2. Check recent files directories
+    QSettings settings;
+    QStringList recentFiles = settings.value("recentFiles").toStringList();
+    for (const QString& filePath : recentFiles) {
+        QFileInfo fileInfo(filePath);
+        QString dir = fileInfo.absolutePath();
+        if (!directoriesToCheck.contains(dir)) {
+            directoriesToCheck << dir;
+        }
+    }
+
+    // 3. Check last used directories
+    SettingsManager& settingsManager = SettingsManager::instance();
+    FileIOSettings fileIO = settingsManager.fileIO();
+    if (!fileIO.lastOpenDirectory.isEmpty() && !directoriesToCheck.contains(fileIO.lastOpenDirectory)) {
+        directoriesToCheck << fileIO.lastOpenDirectory;
+    }
+    if (!fileIO.lastSaveDirectory.isEmpty() && !directoriesToCheck.contains(fileIO.lastSaveDirectory)) {
+        directoriesToCheck << fileIO.lastSaveDirectory;
+    }
+
+    // 4. Check home directory
+    QString homeDir = QDir::homePath();
+    if (!directoriesToCheck.contains(homeDir)) {
+        directoriesToCheck << homeDir;
+    }
+
+    // Scan for auto-save files
+    QStringList allAutoSaveFiles;
+    for (const QString& dir : directoriesToCheck) {
+        QStringList files = AutoSaveManager::findAllAutoSaveFiles(dir);
+        allAutoSaveFiles.append(files);
+    }
+
+    // Remove duplicates
+    allAutoSaveFiles.removeDuplicates();
+
+    if (allAutoSaveFiles.isEmpty()) {
+        return; // No recovery files found
+    }
+
+    // Show recovery dialog
+    RecoveryDialog dialog(allAutoSaveFiles, this);
+    int result = dialog.exec();
+
+    if (result == QDialog::Accepted) {
+        QString selectedFile = dialog.selectedFile();
+        bool shouldDelete = dialog.shouldDeleteAutoSaves();
+
+        if (shouldDelete) {
+            // Delete all auto-save files
+            for (const QString& filePath : allAutoSaveFiles) {
+                QFile::remove(filePath);
+            }
+            statusBar()->showMessage(tr("Auto-save files discarded"), 3000);
+        } else if (!selectedFile.isEmpty()) {
+            // Recover selected file
+            Document* document = m_canvas->document();
+            if (document && document->load(selectedFile)) {
+                document->setModified(true); // Mark as modified (needs save)
+                m_canvas->viewport()->update();
+                updateWindowTitle();
+                statusBar()->showMessage(tr("Recovered from auto-save: %1").arg(selectedFile), 5000);
+
+                // Don't delete the auto-save file yet - keep it until user saves
+            } else {
+                QMessageBox::warning(this, tr("Recovery Failed"),
+                                   tr("Failed to load auto-save file: %1").arg(selectedFile));
+            }
+        }
+    }
+    // If cancelled, keep auto-save files for next startup
 }
 
 } // namespace UI

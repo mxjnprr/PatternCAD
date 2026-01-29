@@ -127,6 +127,7 @@ private:
     void updateRecentFiles(const QString& filepath);
     void updateRecentFilesMenu();
     QString getDefaultDirectory() const;
+    void checkForAutoSaveRecovery();
 
     // UI Components
     Canvas* m_canvas;

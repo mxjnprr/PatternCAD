@@ -278,4 +278,26 @@ void AutoSaveManager::cleanupOldAutoSaves()
     cleanupOldAutoSaves(baseFilePath);
 }
 
+QStringList AutoSaveManager::findAllAutoSaveFiles(const QString& directory)
+{
+    QDir dir(directory);
+    if (!dir.exists()) {
+        return QStringList();
+    }
+
+    // Find all .autosave files
+    QStringList filters;
+    filters << "*.autosave";
+
+    QStringList autoSaveFiles = dir.entryList(filters, QDir::Files, QDir::Time);
+
+    // Convert to absolute paths
+    QStringList absolutePaths;
+    for (const QString& fileName : autoSaveFiles) {
+        absolutePaths << dir.absoluteFilePath(fileName);
+    }
+
+    return absolutePaths;
+}
+
 } // namespace PatternCAD

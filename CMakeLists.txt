@@ -50,6 +50,7 @@ set(SOURCES
     src/ui/ParametersPanel.cpp
     src/ui/KeyboardShortcutsDialog.cpp
     src/ui/PreferencesDialog.cpp
+    src/ui/RecoveryDialog.cpp
     src/geometry/GeometryObject.cpp
     src/geometry/Point2D.cpp
     src/geometry/Line.cpp
@@ -87,6 +88,7 @@ set(HEADERS
     src/ui/ParametersPanel.h
     src/ui/KeyboardShortcutsDialog.h
     src/ui/PreferencesDialog.h
+    src/ui/RecoveryDialog.h
     src/geometry/GeometryObject.h
     src/geometry/Point2D.h
     src/geometry/Line.h
