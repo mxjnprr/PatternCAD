@@ -13,6 +13,7 @@
 #include "geometry/Polyline.h"
 #include <QFile>
 #include <QTextStream>
+#include <QDebug>
 #include <cmath>
 
 namespace PatternCAD {
@@ -106,6 +107,8 @@ bool DXFFormat::parseDXF(QTextStream& stream, Document* document)
     QString currentEntityType;
     DXFEntity currentEntity;
 
+    qDebug() << "DXF: Starting parse";
+
     while (!stream.atEnd()) {
         int code;
         QString value = readPair(stream, code);
@@ -116,12 +119,15 @@ bool DXFFormat::parseDXF(QTextStream& stream, Document* document)
                 // Start of section
                 int nextCode;
                 QString sectionName = readPair(stream, nextCode);
+                qDebug() << "DXF: Found SECTION" << sectionName;
                 if (nextCode == 2 && sectionName == "ENTITIES") {
                     inEntitiesSection = true;
+                    qDebug() << "DXF: Entering ENTITIES section";
                 }
             }
             else if (value == "ENDSEC") {
                 // End of section - process last entity if any
+                qDebug() << "DXF: Found ENDSEC";
                 if (inEntitiesSection && !currentEntityType.isEmpty()) {
                     currentEntity.type = currentEntityType;
                     processEntity(currentEntity, document);
@@ -129,6 +135,11 @@ bool DXFFormat::parseDXF(QTextStream& stream, Document* document)
                     currentEntity = DXFEntity();
                 }
                 inEntitiesSection = false;
+            }
+            else if (value == "EOF") {
+                // End of file
+                qDebug() << "DXF: Found EOF";
+                break;
             }
             else if (inEntitiesSection) {
                 // Process previous entity if any
@@ -156,11 +167,16 @@ bool DXFFormat::parseDXF(QTextStream& stream, Document* document)
         processEntity(currentEntity, document);
     }
 
+    qDebug() << "DXF: Parse complete. Document has" << document->objects().size() << "objects";
+    qDebug() << "DXF: Layers:" << document->layers();
+
     return true;
 }
 
 void DXFFormat::processEntity(const DXFEntity& entity, Document* document)
 {
+    qDebug() << "DXF: Processing entity type:" << entity.type << "layer:" << entity.layer;
+
     if (entity.type == "LINE") {
         processLine(entity, document);
     }
@@ -176,7 +192,9 @@ void DXFFormat::processEntity(const DXFEntity& entity, Document* document)
     else if (entity.type == "LWPOLYLINE") {
         processLWPolyline(entity, document);
     }
-    // POLYLINE is more complex - needs VERTEX entities
+    else {
+        qDebug() << "DXF: Unsupported entity type:" << entity.type;
+    }
 }
 
 void DXFFormat::processLine(const DXFEntity& entity, Document* document)
@@ -185,16 +203,19 @@ void DXFFormat::processLine(const DXFEntity& entity, Document* document)
     double y1 = getDouble(entity, 20);
     double x2 = getDouble(entity, 11);
     double y2 = getDouble(entity, 21);
-    
+
+    qDebug() << "DXF: Creating LINE from (" << x1 << "," << y1 << ") to (" << x2 << "," << y2 << ") on layer" << entity.layer;
+
     auto* line = new Geometry::Line(QPointF(x1, y1), QPointF(x2, y2));
-    
+
     QString layerName = entity.layer.isEmpty() ? "Imported" : entity.layer;
     if (!document->layers().contains(layerName)) {
         document->addLayer(layerName);
     }
     line->setLayer(layerName);
-    
+
     document->addObjectDirect(line);
+    qDebug() << "DXF: LINE added, document now has" << document->objects().size() << "objects";
 }
 
 void DXFFormat::processCircle(const DXFEntity& entity, Document* document)
