@@ -177,7 +177,7 @@ cd /path/to/PatternCAD/build
 
 ---
 
-### TEST-14: Polyline Tool ⏳
+### TEST-14: Polyline Tool ✅
 **À tester:**
 - Ligne polygonale multi-segments
 
@@ -192,7 +192,7 @@ cd /path/to/PatternCAD/build
 - Segments connectés
 - Polyline visible
 
-**Statut:** ⏳ À tester
+**Statut:** ✅ VALIDÉ
 
 ---
 

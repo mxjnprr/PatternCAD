@@ -1030,63 +1030,14 @@ void SelectTool::drawOverlay(QPainter* painter)
         painter->drawRect(m_selectionRect);
     }
 
-    // Draw highlight for hovered object (not selected, not dragging, not selecting)
-    if (m_hoveredObject && m_mode == SelectMode::None && !m_hoveredObject->isSelected()) {
-        QRectF bbox = m_hoveredObject->boundingRect();
-        QPen hoverPen(QColor(255, 165, 0), 2, Qt::DashLine); // Orange
-        painter->setPen(hoverPen);
-        painter->setBrush(Qt::NoBrush);
-        painter->drawRect(bbox);
-    }
+    // Note: Hover and selection highlights are now drawn directly on the polyline
+    // in Polyline::draw() instead of drawing bounding boxes
 
-    // Draw bounding boxes for selected objects
+    // Draw vertex handles for selected objects
     if (m_document) {
         auto selected = m_document->selectedObjects();
         for (auto* obj : selected) {
-            QRectF bbox = obj->boundingRect();
-
-            // Draw bounding box (different color if dragging)
-            QPen bboxPen;
-            if (m_mode == SelectMode::Dragging) {
-                bboxPen = QPen(QColor(0, 255, 0), 2, Qt::SolidLine); // Green when dragging
-            } else {
-                bboxPen = QPen(Qt::blue, 2, Qt::DashLine);
-            }
-            painter->setPen(bboxPen);
-            painter->setBrush(Qt::NoBrush);
-            painter->drawRect(bbox);
-
-            // Draw corner handles only if not dragging and not selecting
-            if (m_mode != SelectMode::Dragging && m_mode != SelectMode::Selecting && m_mode != SelectMode::DraggingVertex) {
-                const double handleSize = 8.0;
-                QBrush handleBrush(Qt::white);
-                QPen handlePen(Qt::blue, 2);
-                painter->setBrush(handleBrush);
-                painter->setPen(handlePen);
-
-                // 8 handles: 4 corners + 4 midpoints
-                QPointF handles[8] = {
-                    bbox.topLeft(),
-                    QPointF(bbox.center().x(), bbox.top()),
-                    bbox.topRight(),
-                    QPointF(bbox.right(), bbox.center().y()),
-                    bbox.bottomRight(),
-                    QPointF(bbox.center().x(), bbox.bottom()),
-                    bbox.bottomLeft(),
-                    QPointF(bbox.left(), bbox.center().y())
-                };
-
-                for (const QPointF& handle : handles) {
-                    painter->drawRect(QRectF(
-                        handle.x() - handleSize / 2,
-                        handle.y() - handleSize / 2,
-                        handleSize,
-                        handleSize
-                    ));
-                }
-            }
-
-            // Draw vertex handles for lines and polylines
+            // Draw vertex handles for polylines
             if (m_mode != SelectMode::Dragging && m_mode != SelectMode::Selecting) {
                 drawVertexHandles(painter, obj);
             }
