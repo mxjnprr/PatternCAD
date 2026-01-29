@@ -18,6 +18,7 @@ find_package(Qt6 REQUIRED COMPONENTS
     Widgets
     Svg
     PrintSupport
+    Xml
 )
 
 # Find Eigen3 for linear algebra (constraint solver)
@@ -130,6 +131,7 @@ target_link_libraries(PatternCAD
     Qt6::Widgets
     Qt6::Svg
     Qt6::PrintSupport
+    Qt6::Xml
     Eigen3::Eigen
 )
 

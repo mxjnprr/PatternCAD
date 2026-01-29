@@ -10,11 +10,13 @@
 #include "FileFormat.h"
 #include <QString>
 #include <QRectF>
+#include <QDomElement>
 
 namespace PatternCAD {
 
 namespace Geometry {
     class GeometryObject;
+    struct PolylineVertex;
 }
 
 namespace IO {
@@ -46,11 +48,28 @@ public:
     // Export operation
     bool exportFile(const QString& filepath, const Document* document) override;
 
+    // Import operation
+    bool importFile(const QString& filepath, Document* document) override;
+
 private:
+    // Export helpers
     QString generateSVG(const Document* document) const;
     QString geometryToSVG(const Geometry::GeometryObject* object, int indent = 2) const;
     QString formatIndent(int level) const;
     QRectF calculateBounds(const Document* document) const;
+
+    // Import helpers
+    bool parseSVG(const QString& svgContent, Document* document);
+    void parseElement(const QDomElement& element, Document* document, const QString& layerName);
+    void parsePath(const QDomElement& element, Document* document, const QString& layerName);
+    void parseLine(const QDomElement& element, Document* document, const QString& layerName);
+    void parseCircle(const QDomElement& element, Document* document, const QString& layerName);
+    void parseRect(const QDomElement& element, Document* document, const QString& layerName);
+    void parsePolyline(const QDomElement& element, Document* document, const QString& layerName);
+    void parsePolygon(const QDomElement& element, Document* document, const QString& layerName);
+
+    // Path parsing
+    QVector<Geometry::PolylineVertex> parsePathData(const QString& pathData);
 };
 
 } // namespace IO

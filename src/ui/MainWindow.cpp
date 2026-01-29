@@ -207,6 +207,10 @@ void MainWindow::setupMenuBar()
     fileMenu->addAction(tr("&Save"), this, &MainWindow::onFileSave, QKeySequence::Save);
     fileMenu->addAction(tr("Save &As..."), this, &MainWindow::onFileSaveAs, QKeySequence::SaveAs);
 
+    // Import submenu
+    QMenu* importMenu = fileMenu->addMenu(tr("&Import"));
+    importMenu->addAction(tr("Import &SVG..."), this, &MainWindow::onFileImportSVG);
+
     // Export submenu
     QMenu* exportMenu = fileMenu->addMenu(tr("&Export"));
     exportMenu->addAction(tr("Export as &SVG..."), this, &MainWindow::onFileExportSVG);
@@ -585,6 +589,40 @@ void MainWindow::onFileSave()
 void MainWindow::onFileSaveAs()
 {
     saveFileAs();
+}
+
+void MainWindow::onFileImportSVG()
+{
+    QString filepath = QFileDialog::getOpenFileName(
+        this,
+        tr("Import SVG"),
+        getDefaultDirectory(),
+        tr("SVG Files (*.svg)")
+    );
+
+    if (filepath.isEmpty()) {
+        return;
+    }
+
+    Document* document = m_canvas->document();
+    if (!document) {
+        statusBar()->showMessage(tr("Error: No document available"), 3000);
+        return;
+    }
+
+    statusBar()->showMessage(tr("Importing SVG..."));
+
+    IO::SVGFormat svgFormat;
+    if (svgFormat.importFile(filepath, document)) {
+        statusBar()->showMessage(tr("Imported SVG: %1").arg(filepath), 3000);
+        m_canvas->update();
+    } else {
+        QMessageBox::warning(this, tr("Import Failed"),
+                           tr("Failed to import SVG file: %1\n%2")
+                           .arg(filepath)
+                           .arg(svgFormat.lastError()));
+        statusBar()->showMessage(tr("Import failed"), 3000);
+    }
 }
 
 void MainWindow::onFileExportSVG()
