@@ -215,7 +215,7 @@ void SVGFormat::parsePath(const QDomElement& element, Document* document, const 
     // Create polyline
     auto* polyline = new Geometry::Polyline(vertices);
     polyline->setLayer(layerName);
-    document->addObject(polyline);
+    document->addObjectDirect(polyline);
 }
 
 void SVGFormat::parseLine(const QDomElement& element, Document* document, const QString& layerName)
@@ -232,7 +232,7 @@ void SVGFormat::parseLine(const QDomElement& element, Document* document, const 
 
     auto* line = new Geometry::Line(QPointF(x1, y1), QPointF(x2, y2));
     line->setLayer(layerName);
-    document->addObject(line);
+    document->addObjectDirect(line);
 }
 
 void SVGFormat::parseCircle(const QDomElement& element, Document* document, const QString& layerName)
@@ -247,7 +247,7 @@ void SVGFormat::parseCircle(const QDomElement& element, Document* document, cons
 
     auto* circle = new Geometry::Circle(QPointF(cx, cy), r);
     circle->setLayer(layerName);
-    document->addObject(circle);
+    document->addObjectDirect(circle);
 }
 
 void SVGFormat::parseRect(const QDomElement& element, Document* document, const QString& layerName)
@@ -264,7 +264,7 @@ void SVGFormat::parseRect(const QDomElement& element, Document* document, const 
 
     auto* rect = new Geometry::Rectangle(QPointF(x, y), width, height);
     rect->setLayer(layerName);
-    document->addObject(rect);
+    document->addObjectDirect(rect);
 }
 
 void SVGFormat::parsePolyline(const QDomElement& element, Document* document, const QString& layerName)
@@ -290,7 +290,7 @@ void SVGFormat::parsePolyline(const QDomElement& element, Document* document, co
     auto* polyline = new Geometry::Polyline(vertices);
     polyline->setClosed(false);
     polyline->setLayer(layerName);
-    document->addObject(polyline);
+    document->addObjectDirect(polyline);
 }
 
 void SVGFormat::parsePolygon(const QDomElement& element, Document* document, const QString& layerName)
@@ -316,7 +316,7 @@ void SVGFormat::parsePolygon(const QDomElement& element, Document* document, con
     auto* polyline = new Geometry::Polyline(vertices);
     polyline->setClosed(true);
     polyline->setLayer(layerName);
-    document->addObject(polyline);
+    document->addObjectDirect(polyline);
 }
 
 QVector<Geometry::PolylineVertex> SVGFormat::parsePathData(const QString& pathData)

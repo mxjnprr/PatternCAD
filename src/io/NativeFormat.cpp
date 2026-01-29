@@ -218,12 +218,12 @@ bool NativeFormat::deserializeDocument(const QJsonObject& json, Document* docume
     }
     document->setActiveLayer(json["activeLayer"].toString("Default"));
 
-    // Load objects
+    // Load objects - use addObjectDirect to preserve layer assignments
     QJsonArray objectsArray = json["objects"].toArray();
     for (const QJsonValue& value : objectsArray) {
         Geometry::GeometryObject* obj = deserializeGeometryObject(value.toObject());
         if (obj) {
-            document->addObject(obj);
+            document->addObjectDirect(obj);
         }
     }
 
