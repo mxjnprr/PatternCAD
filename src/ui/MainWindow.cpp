@@ -223,6 +223,11 @@ void MainWindow::setupMenuBar()
     alignMenu->addAction(tr("Align Center &Horizontal"), this, &MainWindow::onModifyAlignCenterHorizontal, QKeySequence(tr("Ctrl+Shift+H")));
     alignMenu->addAction(tr("Align Center &Vertical"), this, &MainWindow::onModifyAlignCenterVertical, QKeySequence(tr("Ctrl+Shift+V")));
 
+    // Distribute submenu
+    QMenu* distributeMenu = modifyMenu->addMenu(tr("&Distribute"));
+    distributeMenu->addAction(tr("Distribute &Horizontal"), this, &MainWindow::onModifyDistributeHorizontal, QKeySequence(tr("Ctrl+Shift+D")));
+    distributeMenu->addAction(tr("Distribute &Vertical"), this, &MainWindow::onModifyDistributeVertical, QKeySequence(tr("Ctrl+Shift+E")));
+
     // Tools menu (placeholder)
     menuBar()->addMenu(tr("&Tools"));
 
@@ -767,6 +772,40 @@ void MainWindow::onModifyAlignCenterVertical()
     }
 
     auto* command = new AlignObjectsCommand(selectedObjects, AlignMode::CenterVertical);
+    if (document->undoStack()) {
+        document->undoStack()->push(command);
+    }
+}
+
+void MainWindow::onModifyDistributeHorizontal()
+{
+    Document* document = m_canvas ? m_canvas->document() : nullptr;
+    if (!document) return;
+
+    QList<Geometry::GeometryObject*> selectedObjects = document->selectedObjects();
+    if (selectedObjects.size() < 3) {
+        statusBar()->showMessage(tr("Select at least 3 objects to distribute"), 3000);
+        return;
+    }
+
+    auto* command = new DistributeObjectsCommand(selectedObjects, DistributeMode::Horizontal);
+    if (document->undoStack()) {
+        document->undoStack()->push(command);
+    }
+}
+
+void MainWindow::onModifyDistributeVertical()
+{
+    Document* document = m_canvas ? m_canvas->document() : nullptr;
+    if (!document) return;
+
+    QList<Geometry::GeometryObject*> selectedObjects = document->selectedObjects();
+    if (selectedObjects.size() < 3) {
+        statusBar()->showMessage(tr("Select at least 3 objects to distribute"), 3000);
+        return;
+    }
+
+    auto* command = new DistributeObjectsCommand(selectedObjects, DistributeMode::Vertical);
     if (document->undoStack()) {
         document->undoStack()->push(command);
     }

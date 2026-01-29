@@ -90,6 +90,8 @@ private slots:
     void onModifyAlignBottom();
     void onModifyAlignCenterHorizontal();
     void onModifyAlignCenterVertical();
+    void onModifyDistributeHorizontal();
+    void onModifyDistributeVertical();
 
     // Help menu
     void onHelpKeyboardShortcuts();

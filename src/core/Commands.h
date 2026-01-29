@@ -30,6 +30,14 @@ enum class AlignMode {
     CenterVertical
 };
 
+/**
+ * Distribution modes for DistributeObjectsCommand
+ */
+enum class DistributeMode {
+    Horizontal,
+    Vertical
+};
+
 namespace Geometry {
     class GeometryObject;
 }
@@ -323,6 +331,29 @@ private:
 
     QList<ObjectOffset> m_objects;
     AlignMode m_mode;
+};
+
+/**
+ * DistributeObjectsCommand - Command to distribute multiple objects evenly
+ */
+class DistributeObjectsCommand : public QUndoCommand
+{
+public:
+    DistributeObjectsCommand(const QList<Geometry::GeometryObject*>& objects,
+                            DistributeMode mode,
+                            QUndoCommand* parent = nullptr);
+
+    void undo() override;
+    void redo() override;
+
+private:
+    struct ObjectOffset {
+        Geometry::GeometryObject* object;
+        QPointF originalOffset;
+    };
+
+    QList<ObjectOffset> m_objects;
+    DistributeMode m_mode;
 };
 
 } // namespace PatternCAD

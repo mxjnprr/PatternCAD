@@ -847,4 +847,99 @@ void AlignObjectsCommand::redo()
     }
 }
 
+// ============================================================================
+// DistributeObjectsCommand
+// ============================================================================
+
+DistributeObjectsCommand::DistributeObjectsCommand(const QList<Geometry::GeometryObject*>& objects,
+                                                 DistributeMode mode,
+                                                 QUndoCommand* parent)
+    : QUndoCommand(parent)
+    , m_mode(mode)
+{
+    if (objects.size() < 3) {
+        setText(QObject::tr("Distribute"));
+        return;
+    }
+
+    // Create a sorted copy of objects
+    QList<Geometry::GeometryObject*> sortedObjects = objects;
+
+    // Sort objects by position (center X for horizontal, center Y for vertical)
+    if (mode == DistributeMode::Horizontal) {
+        std::sort(sortedObjects.begin(), sortedObjects.end(),
+                 [](Geometry::GeometryObject* a, Geometry::GeometryObject* b) {
+                     return a->boundingRect().center().x() < b->boundingRect().center().x();
+                 });
+    } else {
+        std::sort(sortedObjects.begin(), sortedObjects.end(),
+                 [](Geometry::GeometryObject* a, Geometry::GeometryObject* b) {
+                     return a->boundingRect().center().y() < b->boundingRect().center().y();
+                 });
+    }
+
+    // Keep first and last objects fixed
+    Geometry::GeometryObject* firstObj = sortedObjects.first();
+    Geometry::GeometryObject* lastObj = sortedObjects.last();
+
+    // Calculate total span between first and last object centers
+    double totalSpan;
+    if (mode == DistributeMode::Horizontal) {
+        totalSpan = lastObj->boundingRect().center().x() - firstObj->boundingRect().center().x();
+    } else {
+        totalSpan = lastObj->boundingRect().center().y() - firstObj->boundingRect().center().y();
+    }
+
+    // Calculate equal gap size between object centers
+    double gapSize = totalSpan / (sortedObjects.size() - 1);
+
+    // Calculate offsets for middle objects (first and last stay fixed)
+    for (int i = 0; i < sortedObjects.size(); ++i) {
+        auto* obj = sortedObjects[i];
+        if (!obj) continue;
+
+        QPointF currentCenter = obj->boundingRect().center();
+        QPointF targetCenter;
+
+        if (mode == DistributeMode::Horizontal) {
+            double targetX = firstObj->boundingRect().center().x() + i * gapSize;
+            targetCenter = QPointF(targetX, currentCenter.y());
+        } else {
+            double targetY = firstObj->boundingRect().center().y() + i * gapSize;
+            targetCenter = QPointF(currentCenter.x(), targetY);
+        }
+
+        QPointF offset = targetCenter - currentCenter;
+
+        ObjectOffset objOffset;
+        objOffset.object = obj;
+        objOffset.originalOffset = offset;
+        m_objects.append(objOffset);
+    }
+
+    // Set command text
+    QString modeText = (mode == DistributeMode::Horizontal) ? "Horizontal" : "Vertical";
+    setText(QObject::tr("Distribute %1").arg(modeText));
+}
+
+void DistributeObjectsCommand::undo()
+{
+    // Move objects back by negating their offsets
+    for (const auto& objOffset : m_objects) {
+        if (objOffset.object) {
+            objOffset.object->translate(-objOffset.originalOffset);
+        }
+    }
+}
+
+void DistributeObjectsCommand::redo()
+{
+    // Apply distribution offsets
+    for (const auto& objOffset : m_objects) {
+        if (objOffset.object) {
+            objOffset.object->translate(objOffset.originalOffset);
+        }
+    }
+}
+
 } // namespace PatternCAD

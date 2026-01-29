@@ -480,7 +480,7 @@ epics:
     name: "Transformation and Manipulation Tools"
     description: "Implement transformation tools (rotate, mirror, scale, align) with visual feedback and parametric preservation"
     priority: "must-have"
-    status: "in-progress"
+    status: "completed"
     estimated_stories: "4-6"
     actual_stories: 5
     stories:
@@ -609,11 +609,11 @@ epics:
           - User can specify spacing distance
           - Distribution works with 3+ selected objects
           - Distribution is undoable
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-003/story-003-05.md"
         assigned_to: ""
         estimate: "3 points"
-        actual: ""
+        actual: "3 points"
         technical_notes: |
           - Implement Distribute command
           - Create DistributeObjectsCommand
