@@ -198,58 +198,39 @@ cd /path/to/PatternCAD/build
 
 ## Phase 3: Sélection et Manipulation
 
-### TEST-15: Select Tool - Sélection simple ⏳
+### TEST-15: Select Tool - Sélection simple ✅
 **À tester:**
 - Sélectionner un objet
 
 **Procédure:**
-1. Dessiner quelques objets (lignes, cercles)
-2. Touche S (Select tool)
-3. Cliquer sur un objet
+1. Dessiner quelques polylignes
+2. Touche Z (Select tool)
+3. Cliquer sur une polyligne
 
 **Critère de succès:**
-- Objet sélectionné (surligné ou poignées visibles)
+- Objet sélectionné (surligné directement, pas de bounding box)
 - Properties panel se met à jour
+- Vertex handles visibles
 
-**Statut:** ⏳ À tester
-
----
-
-### TEST-16: Select Tool - Déplacement ⏳
-**À tester:**
-- Glisser-déposer un objet
-
-**Procédure:**
-1. Sélectionner un objet
-2. Glisser avec souris
-
-**Critère de succès:**
-- Objet suit la souris
-- Position se met à jour
-
-**Statut:** ⏳ À tester
+**Statut:** ✅ VALIDÉ
 
 ---
 
-### TEST-17: Select Tool - Sélection multiple ⏳
-**À tester:**
-- Ctrl+clic pour multi-sélection
+### TEST-16: Select Tool - Déplacement ❌ SUPPRIMÉ
+**Raison:** Fonctionnalité non souhaitée. Le déplacement de la vue se fait uniquement avec la barre Espace (TEST-34).
 
-**Procédure:**
-1. Dessiner 3 objets
-2. Clic objet 1
-3. Ctrl+clic objet 2
-4. Ctrl+clic objet 3
-
-**Critère de succès:**
-- 3 objets sélectionnés simultanément
-- Déplacement groupe possible
-
-**Statut:** ⏳ À tester
+**Statut:** ❌ Supprimé
 
 ---
 
-### TEST-18: Select Tool - Rectangle de sélection ⏳
+### TEST-17: Select Tool - Sélection multiple ❌ SUPPRIMÉ
+**Raison:** Dépendance de TEST-16 (déplacement d'objets non souhaité).
+
+**Statut:** ❌ Supprimé
+
+---
+
+### TEST-18: Select Tool - Rectangle de sélection ✅
 **À tester:**
 - Drag pour sélectionner zone
 
@@ -263,11 +244,11 @@ cd /path/to/PatternCAD/build
 - Rectangle de sélection visible
 - Objets dans zone = sélectionnés
 
-**Statut:** ⏳ À tester
+**Statut:** ✅ VALIDÉ
 
 ---
 
-### TEST-19: Delete Objects ⏳
+### TEST-19: Delete Objects ✅
 **À tester:**
 - Supprimer objets sélectionnés
 
@@ -279,11 +260,11 @@ cd /path/to/PatternCAD/build
 - Objets disparaissent
 - Canvas mis à jour
 
-**Statut:** ⏳ À tester
+**Statut:** ✅ VALIDÉ
 
 ---
 
-### TEST-20: Undo/Redo ⏳
+### TEST-20: Undo/Redo ✅
 **À tester:**
 - Annuler et refaire actions
 
@@ -296,7 +277,7 @@ cd /path/to/PatternCAD/build
 - Objet disparaît puis réapparaît
 - Edit menu montre actions
 
-**Statut:** ⏳ À tester
+**Statut:** ✅ VALIDÉ
 
 ---
 
@@ -560,11 +541,11 @@ cd /path/to/PatternCAD/build
 
 ## Résumé
 
-**Total tests:** 27 (7 supprimés)
-**Réussis:** 6 ✅
+**Total tests:** 27 (9 supprimés)
+**Réussis:** 11 ✅
 **Échoués:** 0 ❌
-**Supprimés:** 7 ❌ (Point Tool + Line Tool + 2 tests Line dépendants + Circle Tool + Rectangle Tool + 1 test Rectangle dépendant)
-**Non testés:** 21 ⏳
+**Supprimés:** 9 ❌ (Point + Line + 2 Line deps + Circle + Rectangle + 1 Rectangle dep + Déplacement objet + Sélection multiple)
+**Non testés:** 16 ⏳
 
 ---
 

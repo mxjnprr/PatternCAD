@@ -54,10 +54,16 @@ public:
     // Query if tool is active (rotating)
     bool hasVertexTargeted() const { return false; } // For consistency with SelectTool
 
+public slots:
+    // Handle numeric input from overlay
+    void onNumericAngleEntered(double angle);
+
 private:
     enum class RotateMode {
         Idle,
-        Rotating
+        SelectingCenter,  // Mouse down, selecting center position
+        ReadyToRotate,    // Center set, waiting for rotation movement
+        Rotating          // Actively rotating (preview mode)
     };
 
     // Helper methods

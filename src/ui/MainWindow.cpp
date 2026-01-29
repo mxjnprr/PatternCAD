@@ -297,7 +297,13 @@ void MainWindow::setupStatusBar()
         // Apply the dimension value to the active tool
         if (m_currentTool) {
             // Check tool type and apply appropriate dimension
-            if (auto* polylineTool = qobject_cast<Tools::PolylineTool*>(m_currentTool)) {
+            if (m_currentDimensionMode == "angle") {
+                // For angle mode, value is the angle
+                if (auto* rotateTool = qobject_cast<Tools::RotateTool*>(m_currentTool)) {
+                    rotateTool->onNumericAngleEntered(value);
+                    statusBar()->showMessage(tr("Rotation applied: %1°").arg(value, 0, 'f', 1), 3000);
+                }
+            } else if (auto* polylineTool = qobject_cast<Tools::PolylineTool*>(m_currentTool)) {
                 polylineTool->applyLength(value, angle);
                 QString msg = tr("Segment created with length: %1").arg(Units::formatLength(value, 2));
                 if (angle != 0.0) {
@@ -850,6 +856,9 @@ void MainWindow::onDimensionInputRequested(const QString& mode, double initialLe
         prompt = "Radius:";
     } else if (mode == "rectangle") {
         prompt = "Width x Height:";
+    } else if (mode == "angle") {
+        prompt = "Angle (degrees):";
+        withAngle = false;  // Don't show second angle field, we only need one input
     }
 
     // Get current cursor position in global coordinates
