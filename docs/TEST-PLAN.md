@@ -520,7 +520,7 @@ cd /path/to/PatternCAD/build
 
 ---
 
-### TEST-33: Preferences Dialog ⏳
+### TEST-33: Preferences Dialog ✅
 **À tester:**
 - Ouvrir préférences
 
@@ -528,11 +528,14 @@ cd /path/to/PatternCAD/build
 1. Menu Edit → Preferences
 
 **Critère de succès:**
-- Dialog s'ouvre
-- Onglets visibles
-- Paramètres éditables
+- Dialog s'ouvre ✅
+- Onglets visibles (General, Editor, File I/O, Advanced) ✅
+- Paramètres éditables ✅
+- Boutons OK/Cancel/Apply/Restore Defaults fonctionnels ✅
 
-**Statut:** ⏳ À tester
+**Statut:** ✅ VALIDÉ
+
+**Note:** Dialog fonctionnel mais préférences pas encore connectées à l'application (squelette UI pour futur). Les valeurs ne sont pas sauvegardées et n'ont pas d'effet pour l'instant.
 
 ---
 
@@ -558,10 +561,10 @@ cd /path/to/PatternCAD/build
 ## Résumé
 
 **Total tests:** 27 (9 supprimés)
-**Réussis:** 16 ✅
+**Réussis:** 17 ✅
 **Échoués:** 0 ❌
 **Supprimés:** 9 ❌ (Point + Line + 2 Line deps + Circle + Rectangle + 1 Rectangle dep + Déplacement objet + Sélection multiple)
-**Non testés:** 11 ⏳
+**Non testés:** 10 ⏳
 
 ---
 
