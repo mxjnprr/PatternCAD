@@ -65,6 +65,7 @@ set(SOURCES
     src/tools/AddPointOnContourTool.cpp
     src/tools/RotateTool.cpp
     src/tools/MirrorTool.cpp
+    src/tools/ScaleTool.cpp
     src/io/FileFormat.cpp
     src/io/NativeFormat.cpp
 )
@@ -103,6 +104,7 @@ set(HEADERS
     src/tools/AddPointOnContourTool.h
     src/tools/RotateTool.h
     src/tools/MirrorTool.h
+    src/tools/ScaleTool.h
     src/io/FileFormat.h
     src/io/NativeFormat.h
 )

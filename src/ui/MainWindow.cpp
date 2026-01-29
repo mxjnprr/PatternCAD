@@ -25,6 +25,7 @@
 #include "../tools/AddPointOnContourTool.h"
 #include "../tools/RotateTool.h"
 #include "../tools/MirrorTool.h"
+#include "../tools/ScaleTool.h"
 
 #include <QMenuBar>
 #include <QToolBar>
@@ -85,6 +86,7 @@ MainWindow::MainWindow(QWidget* parent)
     m_tools["AddPointOnContour"] = new Tools::AddPointOnContourTool(this);
     m_tools["Rotate"] = new Tools::RotateTool(this);
     m_tools["Mirror"] = new Tools::MirrorTool(this);
+    m_tools["Scale"] = new Tools::ScaleTool(this);
 
     // Set document for all tools and connect status messages
     for (auto* tool : m_tools) {
@@ -207,6 +209,7 @@ void MainWindow::setupMenuBar()
     QMenu* modifyMenu = menuBar()->addMenu(tr("&Modify"));
     modifyMenu->addAction(tr("&Rotate..."), this, &MainWindow::onModifyRotate, QKeySequence(tr("Ctrl+R")));
     modifyMenu->addAction(tr("&Mirror..."), this, &MainWindow::onModifyMirror, QKeySequence(tr("Ctrl+M")));
+    modifyMenu->addAction(tr("&Scale..."), this, &MainWindow::onModifyScale, QKeySequence(tr("Ctrl+S")));
 
     // Tools menu (placeholder)
     menuBar()->addMenu(tr("&Tools"));
@@ -647,6 +650,12 @@ void MainWindow::onModifyMirror()
 {
     // Activate the Mirror tool
     onToolSelected("Mirror");
+}
+
+void MainWindow::onModifyScale()
+{
+    // Activate the Scale tool
+    onToolSelected("Scale");
 }
 
 // Help menu slots

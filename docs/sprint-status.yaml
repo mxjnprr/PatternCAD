@@ -556,11 +556,11 @@ epics:
           - Scale shows preview before committing
           - Parametric relationships are maintained after scaling
           - Scale is undoable
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-003/story-003-03.md"
         assigned_to: ""
         estimate: "5 points"
-        actual: ""
+        actual: "5 points"
         technical_notes: |
           - Implement ScaleTool
           - Create ScaleObjectsCommand
