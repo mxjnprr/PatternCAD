@@ -58,6 +58,8 @@ struct FileIOSettings {
     bool autoSaveEnabled = true;
     int autoSaveInterval = 5;  // minutes
     int autoSaveVersions = 10;  // keep last N versions
+    int autoSaveLocation = 0;  // 0 = next to file, 1 = custom directory
+    QString autoSaveCustomDirectory;  // custom directory path
 
     // Recent files
     int recentFilesCount = 10;

@@ -128,6 +128,8 @@ void SettingsManager::loadFileIO()
     m_fileIO.autoSaveEnabled = m_settings.value("autoSaveEnabled", true).toBool();
     m_fileIO.autoSaveInterval = m_settings.value("autoSaveInterval", 5).toInt();
     m_fileIO.autoSaveVersions = m_settings.value("autoSaveVersions", 10).toInt();
+    m_fileIO.autoSaveLocation = m_settings.value("autoSaveLocation", 0).toInt();
+    m_fileIO.autoSaveCustomDirectory = m_settings.value("autoSaveCustomDirectory", "").toString();
     m_fileIO.recentFilesCount = m_settings.value("recentFilesCount", 10).toInt();
     m_fileIO.lastOpenDirectory = m_settings.value("lastOpenDirectory", "").toString();
     m_fileIO.lastSaveDirectory = m_settings.value("lastSaveDirectory", "").toString();
@@ -180,6 +182,8 @@ void SettingsManager::saveFileIO()
     m_settings.setValue("autoSaveEnabled", m_fileIO.autoSaveEnabled);
     m_settings.setValue("autoSaveInterval", m_fileIO.autoSaveInterval);
     m_settings.setValue("autoSaveVersions", m_fileIO.autoSaveVersions);
+    m_settings.setValue("autoSaveLocation", m_fileIO.autoSaveLocation);
+    m_settings.setValue("autoSaveCustomDirectory", m_fileIO.autoSaveCustomDirectory);
     m_settings.setValue("recentFilesCount", m_fileIO.recentFilesCount);
     m_settings.setValue("lastOpenDirectory", m_fileIO.lastOpenDirectory);
     m_settings.setValue("lastSaveDirectory", m_fileIO.lastSaveDirectory);

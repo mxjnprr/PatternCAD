@@ -19,6 +19,7 @@
 #include "../core/Commands.h"
 #include "../core/Units.h"
 #include "../core/AutoSaveManager.h"
+#include "../core/SettingsManager.h"
 #include "../tools/SelectTool.h"
 #include "../tools/PolylineTool.h"
 #include "../tools/AddPointOnContourTool.h"
@@ -480,13 +481,21 @@ void MainWindow::loadSettings()
 
     // Load auto-save settings
     if (m_autoSaveManager) {
-        bool autoSaveEnabled = settings.value("autoSave/enabled", true).toBool();
-        int autoSaveInterval = settings.value("autoSave/interval", 5).toInt();
-        int maxAutoSaves = settings.value("autoSave/maxAutoSaves", 10).toInt();
+        SettingsManager& settingsManager = SettingsManager::instance();
+        FileIOSettings fileIO = settingsManager.fileIO();
 
-        m_autoSaveManager->setEnabled(autoSaveEnabled);
-        m_autoSaveManager->setInterval(autoSaveInterval);
-        m_autoSaveManager->setMaxAutoSaves(maxAutoSaves);
+        m_autoSaveManager->setEnabled(fileIO.autoSaveEnabled);
+        m_autoSaveManager->setInterval(fileIO.autoSaveInterval);
+        m_autoSaveManager->setMaxAutoSaves(fileIO.autoSaveVersions);
+
+        // Set auto-save directory based on location preference
+        if (fileIO.autoSaveLocation == 1 && !fileIO.autoSaveCustomDirectory.isEmpty()) {
+            // Custom directory
+            m_autoSaveManager->setAutoSaveDirectory(fileIO.autoSaveCustomDirectory);
+        } else {
+            // Next to file (empty string means next to file)
+            m_autoSaveManager->setAutoSaveDirectory("");
+        }
     }
 }
 
@@ -496,12 +505,7 @@ void MainWindow::saveSettings()
     settings.setValue("mainWindow/geometry", saveGeometry());
     settings.setValue("mainWindow/state", saveState());
 
-    // Save auto-save settings
-    if (m_autoSaveManager) {
-        settings.setValue("autoSave/enabled", m_autoSaveManager->isEnabled());
-        settings.setValue("autoSave/interval", m_autoSaveManager->interval());
-        settings.setValue("autoSave/maxAutoSaves", m_autoSaveManager->maxAutoSaves());
-    }
+    // Note: Auto-save settings are now managed by SettingsManager via PreferencesDialog
 }
 
 void MainWindow::updateWindowTitle()

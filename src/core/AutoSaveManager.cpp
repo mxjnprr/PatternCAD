@@ -27,9 +27,8 @@ AutoSaveManager::AutoSaveManager(QObject* parent)
     m_timer->setTimerType(Qt::VeryCoarseTimer); // Save power
     connect(m_timer, &QTimer::timeout, this, &AutoSaveManager::onTimerTimeout);
 
-    // Default auto-save directory: system temp
-    m_autoSaveDirectory = QDir::tempPath() + "/patterncad-autosave";
-    QDir().mkpath(m_autoSaveDirectory);
+    // Default: save next to file (empty directory means "next to file")
+    m_autoSaveDirectory = "";
 
     // Start timer if enabled
     if (m_enabled) {
@@ -86,8 +85,12 @@ void AutoSaveManager::setMaxAutoSaves(int count)
 void AutoSaveManager::setAutoSaveDirectory(const QString& directory)
 {
     m_autoSaveDirectory = directory;
-    QDir().mkpath(m_autoSaveDirectory);
-    qDebug() << "Auto-save directory set to:" << m_autoSaveDirectory;
+    if (!m_autoSaveDirectory.isEmpty()) {
+        QDir().mkpath(m_autoSaveDirectory);
+        qDebug() << "Auto-save directory set to:" << m_autoSaveDirectory;
+    } else {
+        qDebug() << "Auto-save directory set to: next to file";
+    }
 }
 
 void AutoSaveManager::setDocument(Document* document)
@@ -179,16 +182,25 @@ void AutoSaveManager::performAutoSave()
     }
 }
 
-QString AutoSaveManager::generateAutoSaveFilePath(const QString& baseFilePath)
+QString AutoSaveManager::generateAutoSaveFilePath(const QString& baseFilePath) const
 {
     QFileInfo fileInfo(baseFilePath);
     QString baseName = fileInfo.completeBaseName(); // Without extension
-    QString directory = fileInfo.absolutePath();
+    QString directory;
 
-    // If base path is just a name (no directory), use auto-save directory
-    if (directory == "." || baseName == baseFilePath) {
-        directory = QDir::tempPath() + "/patterncad-autosave";
-        QDir().mkpath(directory);
+    // Determine directory for auto-save
+    if (!m_autoSaveDirectory.isEmpty()) {
+        // Custom directory specified
+        directory = m_autoSaveDirectory;
+    } else {
+        // Save next to the file
+        directory = fileInfo.absolutePath();
+
+        // If base path is just a name (no directory), use temp as fallback
+        if (directory == "." || baseName == baseFilePath) {
+            directory = QDir::tempPath() + "/patterncad-autosave";
+            QDir().mkpath(directory);
+        }
     }
 
     // Generate timestamp
@@ -207,11 +219,20 @@ QStringList AutoSaveManager::findAutoSaveFiles(const QString& baseFilePath) cons
 {
     QFileInfo fileInfo(baseFilePath);
     QString baseName = fileInfo.completeBaseName();
-    QString directory = fileInfo.absolutePath();
+    QString directory;
 
-    // If no directory, check auto-save directory
-    if (directory == "." || baseName == baseFilePath) {
+    // Determine directory where auto-saves are stored
+    if (!m_autoSaveDirectory.isEmpty()) {
+        // Custom directory specified
         directory = m_autoSaveDirectory;
+    } else {
+        // Same directory as file
+        directory = fileInfo.absolutePath();
+
+        // If no directory, use temp as fallback
+        if (directory == "." || baseName == baseFilePath) {
+            directory = QDir::tempPath() + "/patterncad-autosave";
+        }
     }
 
     QDir dir(directory);

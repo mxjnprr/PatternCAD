@@ -13,6 +13,8 @@
 #include <QColorDialog>
 #include <QDialogButtonBox>
 #include <QMessageBox>
+#include <QFileDialog>
+#include <QDir>
 
 namespace PatternCAD {
 namespace UI {
@@ -205,6 +207,29 @@ void PreferencesDialog::createFileIOTab()
     m_autoSaveVersionsSpinBox->setSuffix(tr(" files"));
     autoSaveLayout->addRow(tr("Keep Versions:"), m_autoSaveVersionsSpinBox);
 
+    m_autoSaveLocationCombo = new QComboBox();
+    m_autoSaveLocationCombo->addItem(tr("Next to file"));
+    m_autoSaveLocationCombo->addItem(tr("Custom directory"));
+    autoSaveLayout->addRow(tr("Save Location:"), m_autoSaveLocationCombo);
+
+    QHBoxLayout* customDirLayout = new QHBoxLayout();
+    m_autoSaveCustomDirEdit = new QLineEdit();
+    m_autoSaveCustomDirEdit->setPlaceholderText(tr("Choose a directory..."));
+    m_autoSaveCustomDirButton = new QPushButton(tr("Browse..."));
+    customDirLayout->addWidget(m_autoSaveCustomDirEdit);
+    customDirLayout->addWidget(m_autoSaveCustomDirButton);
+    autoSaveLayout->addRow(tr("Directory:"), customDirLayout);
+
+    // Connect signals
+    connect(m_autoSaveLocationCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &PreferencesDialog::onAutoSaveLocationChanged);
+    connect(m_autoSaveCustomDirButton, &QPushButton::clicked,
+            this, &PreferencesDialog::onBrowseAutoSaveDirectory);
+
+    // Initially hide custom directory widgets if "Next to file" is selected
+    m_autoSaveCustomDirEdit->setEnabled(false);
+    m_autoSaveCustomDirButton->setEnabled(false);
+
     layout->addWidget(autoSaveGroup);
 
     // Recent Files group
@@ -305,6 +330,9 @@ void PreferencesDialog::loadSettings()
     m_autoSaveCheck->setChecked(fileIO.autoSaveEnabled);
     m_autoSaveIntervalSpinBox->setValue(fileIO.autoSaveInterval);
     m_autoSaveVersionsSpinBox->setValue(fileIO.autoSaveVersions);
+    m_autoSaveLocationCombo->setCurrentIndex(fileIO.autoSaveLocation);
+    m_autoSaveCustomDirEdit->setText(fileIO.autoSaveCustomDirectory);
+    onAutoSaveLocationChanged(fileIO.autoSaveLocation); // Update enabled state
     m_recentFilesCountSpinBox->setValue(fileIO.recentFilesCount);
     m_compressNativeCheck->setChecked(fileIO.compressNativeFormat);
 
@@ -348,6 +376,8 @@ void PreferencesDialog::saveSettings()
     fileIO.autoSaveEnabled = m_autoSaveCheck->isChecked();
     fileIO.autoSaveInterval = m_autoSaveIntervalSpinBox->value();
     fileIO.autoSaveVersions = m_autoSaveVersionsSpinBox->value();
+    fileIO.autoSaveLocation = m_autoSaveLocationCombo->currentIndex();
+    fileIO.autoSaveCustomDirectory = m_autoSaveCustomDirEdit->text();
     fileIO.recentFilesCount = m_recentFilesCountSpinBox->value();
     fileIO.compressNativeFormat = m_compressNativeCheck->isChecked();
     settings.setFileIO(fileIO);
@@ -420,6 +450,28 @@ void PreferencesDialog::onCanvasColorButton()
     if (color.isValid()) {
         m_canvasColor = color;
         updateColorButton(m_canvasColorButton, m_canvasColor);
+    }
+}
+
+void PreferencesDialog::onAutoSaveLocationChanged(int index)
+{
+    // 0 = Next to file, 1 = Custom directory
+    bool isCustom = (index == 1);
+    m_autoSaveCustomDirEdit->setEnabled(isCustom);
+    m_autoSaveCustomDirButton->setEnabled(isCustom);
+}
+
+void PreferencesDialog::onBrowseAutoSaveDirectory()
+{
+    QString dir = QFileDialog::getExistingDirectory(
+        this,
+        tr("Choose Auto-Save Directory"),
+        m_autoSaveCustomDirEdit->text().isEmpty() ? QDir::homePath() : m_autoSaveCustomDirEdit->text(),
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks
+    );
+
+    if (!dir.isEmpty()) {
+        m_autoSaveCustomDirEdit->setText(dir);
     }
 }
 

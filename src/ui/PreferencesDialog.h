@@ -39,6 +39,8 @@ private slots:
     void onGridColorButton();
     void onSelectionColorButton();
     void onCanvasColorButton();
+    void onAutoSaveLocationChanged(int index);
+    void onBrowseAutoSaveDirectory();
 
 private:
     void setupUi();
@@ -83,6 +85,9 @@ private:
     QCheckBox* m_autoSaveCheck;
     QSpinBox* m_autoSaveIntervalSpinBox;
     QSpinBox* m_autoSaveVersionsSpinBox;
+    QComboBox* m_autoSaveLocationCombo;
+    QLineEdit* m_autoSaveCustomDirEdit;
+    QPushButton* m_autoSaveCustomDirButton;
     QSpinBox* m_recentFilesCountSpinBox;
     QCheckBox* m_compressNativeCheck;
 

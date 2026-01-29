@@ -64,7 +64,7 @@ public:
     // Utility
     QStringList findAutoSaveFiles(const QString& baseFilePath) const;
     void cleanupOldAutoSaves(const QString& baseFilePath);
-    static QString generateAutoSaveFilePath(const QString& baseFilePath);
+    QString generateAutoSaveFilePath(const QString& baseFilePath) const;
 
 signals:
     void autoSaveStarted();
