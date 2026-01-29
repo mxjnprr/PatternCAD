@@ -450,21 +450,27 @@ cd /path/to/PatternCAD/build
 
 ## Phase 6: Autres Features UI
 
-### TEST-30: Properties Panel ⏳
+### TEST-30: Properties Panel ✅
 **À tester:**
 - Affichage propriétés objet
 
 **Procédure:**
-1. Dessiner un rectangle
-2. Le sélectionner
+1. Dessiner une polyligne
+2. La sélectionner (Z + clic)
 3. Observer Properties panel
+4. Créer un nouveau layer
+5. Changer le layer via Properties panel
 
 **Critère de succès:**
-- Position X, Y affichée
-- Taille W, H affichée
-- Valeurs correctes
+- Panel affiche "Properties (1 object)" ✅
+- Name éditable ✅
+- Layer dropdown avec tous les layers ✅
+- Changement de layer fonctionnel ✅
+- Width/Height affichent dimensions bounding box (read-only) ✅
 
-**Statut:** ⏳ À tester
+**Statut:** ✅ VALIDÉ
+
+**Note:** PropertiesPanel simplifié - gardé uniquement les champs utiles (Name, Layer, Width, Height). Position X/Y, Line Weight, Line Color et Line Style supprimés.
 
 ---
 
@@ -540,10 +546,10 @@ cd /path/to/PatternCAD/build
 ## Résumé
 
 **Total tests:** 27 (9 supprimés)
-**Réussis:** 13 ✅
+**Réussis:** 14 ✅
 **Échoués:** 0 ❌
 **Supprimés:** 9 ❌ (Point + Line + 2 Line deps + Circle + Rectangle + 1 Rectangle dep + Déplacement objet + Sélection multiple)
-**Non testés:** 14 ⏳
+**Non testés:** 13 ⏳
 
 ---
 
