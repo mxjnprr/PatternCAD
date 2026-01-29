@@ -45,6 +45,13 @@ void ScaleTool::activate()
     m_mode = ScaleMode::Idle;
     m_uniformScale = true;
     m_scaleX = 1.0;
+
+    // Show usage instructions
+    if (m_document && !m_document->selectedObjects().isEmpty()) {
+        emit statusMessage(tr("Scale Tool: Click to set origin | Drag to scale | U=Toggle uniform/non-uniform | Enter=Apply | Esc=Cancel"));
+    } else {
+        emit statusMessage(tr("Scale Tool: Select objects first"));
+    }
     m_scaleY = 1.0;
 
     // Check if there are selected objects

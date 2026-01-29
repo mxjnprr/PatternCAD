@@ -47,7 +47,7 @@ void MirrorTool::activate()
         // Calculate default horizontal axis through selection center
         calculateDefaultAxis(AxisType::Horizontal);
         m_mode = MirrorMode::SelectingAxis;
-        emit statusMessage(tr("Mirror Tool: H=Horizontal | V=Vertical | C=Custom | Enter=Apply | Esc=Cancel"));
+        emit statusMessage(tr("Mirror Tool: H=Horizontal axis | V=Vertical axis | C=Custom axis | Enter=Apply mirror | Esc=Cancel"));
 
         if (m_canvas) {
             m_canvas->update();
@@ -77,6 +77,7 @@ void MirrorTool::mousePressEvent(QMouseEvent* event)
             m_axisPoint1 = m_currentPoint;
             m_axisPoint2 = m_currentPoint;
             m_mode = MirrorMode::SelectingAxis;
+            emit statusMessage(tr("Custom axis point 1 set - Move mouse and click for point 2 | Enter=Apply | Esc=Cancel"));
         }
     }
 }
@@ -127,7 +128,7 @@ void MirrorTool::keyPressEvent(QKeyEvent* event)
         m_axisType = AxisType::Horizontal;
         calculateDefaultAxis(AxisType::Horizontal);
         m_mode = MirrorMode::SelectingAxis;
-        emit statusMessage(tr("Horizontal Mirror | Enter=Apply | V=Vertical | C=Custom | Esc=Cancel"));
+        emit statusMessage(tr("Mirror Horizontal: Enter=Apply mirror | V=Switch to vertical | C=Custom axis | Esc=Cancel"));
         if (m_canvas) {
             m_canvas->update();
         }
@@ -139,7 +140,7 @@ void MirrorTool::keyPressEvent(QKeyEvent* event)
         m_axisType = AxisType::Vertical;
         calculateDefaultAxis(AxisType::Vertical);
         m_mode = MirrorMode::SelectingAxis;
-        emit statusMessage(tr("Vertical Mirror | Enter=Apply | H=Horizontal | C=Custom | Esc=Cancel"));
+        emit statusMessage(tr("Mirror Vertical: Enter=Apply mirror | H=Switch to horizontal | C=Custom axis | Esc=Cancel"));
         if (m_canvas) {
             m_canvas->update();
         }
@@ -150,7 +151,7 @@ void MirrorTool::keyPressEvent(QKeyEvent* event)
         // Switch to custom mirror axis
         m_axisType = AxisType::Custom;
         m_mode = MirrorMode::Idle;
-        emit statusMessage(tr("Custom Mirror: Click two points to define axis | H=Horizontal | V=Vertical | Esc=Cancel"));
+        emit statusMessage(tr("Mirror Custom: Click 2 points to define axis | H=Horizontal | V=Vertical | Esc=Cancel"));
         if (m_canvas) {
             m_canvas->update();
         }

@@ -989,9 +989,8 @@ void MainWindow::onToolSelected(const QString& toolName)
     if (m_tools.contains(toolName)) {
         m_currentTool = m_tools[toolName];
         m_canvas->setActiveTool(m_currentTool);
-        statusBar()->showMessage(tr("Tool: %1 - %2")
-            .arg(m_currentTool->name())
-            .arg(m_currentTool->description()));
+        // Don't show generic tool description here - each tool shows its own
+        // detailed status message in activate() with keyboard shortcuts
     }
 }
 

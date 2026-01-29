@@ -203,11 +203,17 @@ QPointF Canvas::snapPoint(const QPointF& point) const
 
 void Canvas::setActiveTool(Tools::Tool* tool)
 {
+    // Deactivate previous tool
+    if (m_activeTool) {
+        m_activeTool->deactivate();
+    }
+
     m_activeTool = tool;
     if (tool) {
         tool->setCanvas(this);
         tool->setDocument(m_document);
         setCursor(tool->cursor());
+        tool->activate();  // Activate the tool to show its status message
     } else {
         setCursor(Qt::ArrowCursor);
     }

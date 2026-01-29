@@ -36,7 +36,22 @@
       "Bash(test:*)",
       "Bash(ldd:*)",
       "Bash(dpkg-deb:*)",
-      "Bash(cd /mnt/Data/Air MKG/Commun/Air MKG/Code/PatternCAD/build:*)"
+      "Bash(cd /mnt/Data/Air MKG/Commun/Air MKG/Code/PatternCAD/build:*)",
+      "Bash(V=Vertical axis)",
+      "Bash(C=Custom axis)",
+      "Bash(Enter=Apply mirror)",
+      "Bash(Esc=Cancel\"\n  * After H: \"Mirror Horizontal: Enter=Apply mirror)",
+      "Bash(V=Switch to vertical)",
+      "Bash(Esc=Cancel\"\n  * After V: \"Mirror Vertical: Enter=Apply mirror)",
+      "Bash(H=Switch to horizontal)",
+      "Bash(Esc=Cancel\"\n  * After C: \"Mirror Custom: Click 2 points to define axis)",
+      "Bash(H=Horizontal)",
+      "Bash(V=Vertical)",
+      "Bash(Esc=Cancel\"\n  * Messages now explain the ACTION of each key, not just the name\n\n- Add contextual help to Scale tool\n  * \"Scale Tool: Click to set origin)",
+      "Bash(Drag to scale)",
+      "Bash(U=Toggle uniform/non-uniform)",
+      "Bash(Enter=Apply)",
+      "Bash(Esc=Cancel\"\n\n- Remove generic tool description message from MainWindow::onToolSelected\\(\\)\n  * Was overwriting detailed help from activate\\(\\)\n  * Each tool now shows its own detailed help\n\n- Update TEST-PLAN: TEST-22 and TEST-23 validated\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }

@@ -306,7 +306,7 @@ cd /path/to/PatternCAD/build
 
 ---
 
-### TEST-22: Mirror Tool - Horizontal ⏳
+### TEST-22: Mirror Tool - Horizontal ✅
 **À tester:**
 - Symétrie horizontale
 
@@ -321,11 +321,11 @@ cd /path/to/PatternCAD/build
 - Original intact
 - Position symétrique
 
-**Statut:** ⏳ À tester
+**Statut:** ✅ VALIDÉ (+ aide contextuelle H/V/C, menu clic-droit, auto-retour Select)
 
 ---
 
-### TEST-23: Mirror Tool - Vertical ⏳
+### TEST-23: Mirror Tool - Vertical ✅
 **À tester:**
 - Symétrie verticale
 
@@ -339,7 +339,7 @@ cd /path/to/PatternCAD/build
 - Copie miroir créée
 - Symétrie verticale
 
-**Statut:** ⏳ À tester
+**Statut:** ✅ VALIDÉ (+ aide contextuelle dynamique H/V/C avec actions explicites)
 
 ---
 
