@@ -19,7 +19,6 @@
 #include "../core/Commands.h"
 #include "../core/Units.h"
 #include "../tools/SelectTool.h"
-#include "../tools/RectangleTool.h"
 #include "../tools/PolylineTool.h"
 #include "../tools/AddPointOnContourTool.h"
 #include "../tools/RotateTool.h"
@@ -78,7 +77,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     // Initialize tools
     m_tools["Select"] = new Tools::SelectTool(this);
-    m_tools["Rectangle"] = new Tools::RectangleTool(this);
     m_tools["Polyline"] = new Tools::PolylineTool(this);
     m_tools["AddPointOnContour"] = new Tools::AddPointOnContourTool(this);
     m_tools["Rotate"] = new Tools::RotateTool(this);
@@ -238,11 +236,6 @@ void MainWindow::setupMenuBar()
     selectToolAction->setShortcut(QKeySequence(Qt::Key_S));
     connect(selectToolAction, &QAction::triggered, [this]() { onToolSelected("Select"); });
     addAction(selectToolAction);
-
-    QAction* rectangleToolAction = new QAction(tr("&Rectangle Tool"), this);
-    rectangleToolAction->setShortcut(QKeySequence(Qt::Key_R));
-    connect(rectangleToolAction, &QAction::triggered, [this]() { onToolSelected("Rectangle"); });
-    addAction(rectangleToolAction);
 
     QAction* polylineToolAction = new QAction(tr("&Polyline Tool"), this);
     polylineToolAction->setShortcut(QKeySequence(Qt::Key_D));

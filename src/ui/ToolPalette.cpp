@@ -21,9 +21,6 @@ ToolPalette::ToolPalette(QWidget* parent)
     , m_buttonGroup(nullptr)
     , m_currentToolName("Select")
     , m_selectButton(nullptr)
-    , m_lineButton(nullptr)
-    , m_circleButton(nullptr)
-    , m_rectangleButton(nullptr)
     , m_polylineButton(nullptr)
 {
     setupUi();
@@ -57,10 +54,7 @@ void ToolPalette::setupUi()
 
     // Drawing Tools group
     addGroupSeparator("Drawing");
-    m_lineButton = createToolButton("Line", "line", "Line Tool (L)", 1);
-    m_circleButton = createToolButton("Circle", "circle", "Circle Tool (C)", 2);
-    m_rectangleButton = createToolButton("Rectangle", "rectangle", "Rectangle Tool (R)", 3);
-    m_polylineButton = createToolButton("Polyline", "polyline", "Polyline/Draft Tool (D)", 4);
+    m_polylineButton = createToolButton("Polyline", "polyline", "Polyline/Draft Tool (D)", 1);
 
     // Add stretch at the end
     m_layout->addStretch();
@@ -107,12 +101,6 @@ void ToolPalette::setCurrentTool(const QString& toolName)
         // Update button state
         if (toolName == "Select") {
             m_selectButton->setChecked(true);
-        } else if (toolName == "Line") {
-            m_lineButton->setChecked(true);
-        } else if (toolName == "Circle") {
-            m_circleButton->setChecked(true);
-        } else if (toolName == "Rectangle") {
-            m_rectangleButton->setChecked(true);
         } else if (toolName == "Polyline") {
             m_polylineButton->setChecked(true);
         }
@@ -126,10 +114,7 @@ void ToolPalette::onToolButtonClicked(int id)
     QString toolName;
     switch (id) {
         case 0: toolName = "Select"; break;
-        case 1: toolName = "Line"; break;
-        case 2: toolName = "Circle"; break;
-        case 3: toolName = "Rectangle"; break;
-        case 4: toolName = "Polyline"; break;
+        case 1: toolName = "Polyline"; break;
         default: toolName = "Select"; break;
     }
 

@@ -25,12 +25,8 @@ namespace UI {
 /**
  * ToolPalette provides a palette of drawing tools:
  * - Selection tool
- * - Line tool
- * - Circle tool
- * - Rectangle tool
- * - Bezier curve tool
- * - Measurement tools
- * - Transform tools
+ * - Polyline tool
+ * - (Future: Bezier curve tool, measurement tools, transform tools)
  */
 class ToolPalette : public QWidget
 {
@@ -67,9 +63,6 @@ private:
 
     // Tool buttons
     QToolButton* m_selectButton;
-    QToolButton* m_lineButton;
-    QToolButton* m_circleButton;
-    QToolButton* m_rectangleButton;
     QToolButton* m_polylineButton;
 };
 
