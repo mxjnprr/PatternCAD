@@ -498,7 +498,7 @@ cd /path/to/PatternCAD/build
 
 ---
 
-### TEST-32: Keyboard Shortcuts Dialog ⏳
+### TEST-32: Keyboard Shortcuts Dialog ✅
 **À tester:**
 - Afficher aide raccourcis
 
@@ -507,10 +507,16 @@ cd /path/to/PatternCAD/build
 2. OU: F1
 
 **Critère de succès:**
-- Dialog s'ouvre
-- Liste des raccourcis affichée
+- Dialog s'ouvre ✅
+- Liste complète des raccourcis avec catégories ✅
+- Formatage HTML avec statuts colorés (✅ Implémenté, 🔜 Planifié, 📋 Futur) ✅
+- Raccourci D pour Draw/Polyline ✅
+- P réservé pour Create Parallel (futur) ✅
+- Bouton Close fonctionne ✅
 
-**Statut:** ⏳ À tester
+**Statut:** ✅ VALIDÉ
+
+**Bugs corrigés:** Raccourci P changé en D pour Polyline Tool (Draw)
 
 ---
 
@@ -552,10 +558,10 @@ cd /path/to/PatternCAD/build
 ## Résumé
 
 **Total tests:** 27 (9 supprimés)
-**Réussis:** 15 ✅
+**Réussis:** 16 ✅
 **Échoués:** 0 ❌
 **Supprimés:** 9 ❌ (Point + Line + 2 Line deps + Circle + Rectangle + 1 Rectangle dep + Déplacement objet + Sélection multiple)
-**Non testés:** 12 ⏳
+**Non testés:** 11 ⏳
 
 ---
 
