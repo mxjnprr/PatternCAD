@@ -73,14 +73,11 @@ private:
     Document* m_document;
     QList<Geometry::GeometryObject*> m_selectedObjects;
 
-    // Property widgets (examples)
+    // Property widgets
     QLineEdit* m_nameEdit;
     QComboBox* m_layerCombo;
-    QDoubleSpinBox* m_xPositionEdit;
-    QDoubleSpinBox* m_yPositionEdit;
-    QDoubleSpinBox* m_widthEdit;
-    QDoubleSpinBox* m_heightEdit;
-    QDoubleSpinBox* m_lineWeightEdit;
+    QDoubleSpinBox* m_widthEdit;   // Bounding box width (read-only)
+    QDoubleSpinBox* m_heightEdit;  // Bounding box height (read-only)
     QPushButton* m_lineColorButton;
     QComboBox* m_lineStyleCombo;
 };
