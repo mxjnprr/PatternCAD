@@ -86,6 +86,17 @@ namespace {
 
         return QPointF(mirroredX, mirroredY);
     }
+
+    // Helper function to scale a point around an origin
+    QPointF scalePoint(const QPointF& point, double scaleX, double scaleY, const QPointF& origin) {
+        double dx = point.x() - origin.x();
+        double dy = point.y() - origin.y();
+
+        double scaledX = dx * scaleX;
+        double scaledY = dy * scaleY;
+
+        return QPointF(origin.x() + scaledX, origin.y() + scaledY);
+    }
 }
 
 Polyline::Polyline(QObject* parent)
@@ -188,6 +199,16 @@ void Polyline::mirror(const QPointF& axisPoint1, const QPointF& axisPoint2)
         if (vertex.tangent != QPointF()) {
             vertex.tangent = mirrorVector(vertex.tangent, axisPoint1, axisPoint2);
         }
+    }
+    notifyChanged();
+}
+
+void Polyline::scale(double scaleX, double scaleY, const QPointF& origin)
+{
+    for (auto& vertex : m_vertices) {
+        // Scale the position
+        vertex.position = scalePoint(vertex.position, scaleX, scaleY, origin);
+        // Tangent vectors remain unchanged (they are directions, not positions)
     }
     notifyChanged();
 }

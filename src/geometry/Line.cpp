@@ -49,6 +49,17 @@ namespace {
 
         return QPointF(2.0 * closestX - point.x(), 2.0 * closestY - point.y());
     }
+
+    // Helper function to scale a point around an origin
+    QPointF scalePoint(const QPointF& point, double scaleX, double scaleY, const QPointF& origin) {
+        double dx = point.x() - origin.x();
+        double dy = point.y() - origin.y();
+
+        double scaledX = dx * scaleX;
+        double scaledY = dy * scaleY;
+
+        return QPointF(origin.x() + scaledX, origin.y() + scaledY);
+    }
 }
 
 Line::Line(QObject* parent)
@@ -218,6 +229,13 @@ void Line::mirror(const QPointF& axisPoint1, const QPointF& axisPoint2)
 {
     m_start = mirrorPoint(m_start, axisPoint1, axisPoint2);
     m_end = mirrorPoint(m_end, axisPoint1, axisPoint2);
+    notifyChanged();
+}
+
+void Line::scale(double scaleX, double scaleY, const QPointF& origin)
+{
+    m_start = scalePoint(m_start, scaleX, scaleY, origin);
+    m_end = scalePoint(m_end, scaleX, scaleY, origin);
     notifyChanged();
 }
 

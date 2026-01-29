@@ -49,6 +49,17 @@ namespace {
 
         return QPointF(2.0 * closestX - point.x(), 2.0 * closestY - point.y());
     }
+
+    // Helper function to scale a point around an origin
+    QPointF scalePoint(const QPointF& point, double scaleX, double scaleY, const QPointF& origin) {
+        double dx = point.x() - origin.x();
+        double dy = point.y() - origin.y();
+
+        double scaledX = dx * scaleX;
+        double scaledY = dy * scaleY;
+
+        return QPointF(origin.x() + scaledX, origin.y() + scaledY);
+    }
 }
 
 CubicBezier::CubicBezier(QObject* parent)
@@ -269,6 +280,15 @@ void CubicBezier::mirror(const QPointF& axisPoint1, const QPointF& axisPoint2)
     m_p1 = mirrorPoint(m_p1, axisPoint1, axisPoint2);
     m_p2 = mirrorPoint(m_p2, axisPoint1, axisPoint2);
     m_p3 = mirrorPoint(m_p3, axisPoint1, axisPoint2);
+    notifyChanged();
+}
+
+void CubicBezier::scale(double scaleX, double scaleY, const QPointF& origin)
+{
+    m_p0 = scalePoint(m_p0, scaleX, scaleY, origin);
+    m_p1 = scalePoint(m_p1, scaleX, scaleY, origin);
+    m_p2 = scalePoint(m_p2, scaleX, scaleY, origin);
+    m_p3 = scalePoint(m_p3, scaleX, scaleY, origin);
     notifyChanged();
 }
 

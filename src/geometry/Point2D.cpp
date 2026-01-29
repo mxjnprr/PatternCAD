@@ -174,6 +174,20 @@ void Point2D::mirror(const QPointF& axisPoint1, const QPointF& axisPoint2)
     setPosition(mirroredX, mirroredY);
 }
 
+void Point2D::scale(double scaleX, double scaleY, const QPointF& origin)
+{
+    // Translate to origin
+    double dx = m_position.x() - origin.x();
+    double dy = m_position.y() - origin.y();
+
+    // Scale
+    double scaledX = dx * scaleX;
+    double scaledY = dy * scaleY;
+
+    // Translate back
+    setPosition(origin.x() + scaledX, origin.y() + scaledY);
+}
+
 void Point2D::draw(QPainter* painter, const QColor& color) const
 {
     if (!m_visible) {

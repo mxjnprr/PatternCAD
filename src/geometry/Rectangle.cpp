@@ -49,6 +49,17 @@ namespace {
 
         return QPointF(2.0 * closestX - point.x(), 2.0 * closestY - point.y());
     }
+
+    // Helper function to scale a point around an origin
+    QPointF scalePoint(const QPointF& point, double scaleX, double scaleY, const QPointF& origin) {
+        double dx = point.x() - origin.x();
+        double dy = point.y() - origin.y();
+
+        double scaledX = dx * scaleX;
+        double scaledY = dy * scaleY;
+
+        return QPointF(origin.x() + scaledX, origin.y() + scaledY);
+    }
 }
 
 Rectangle::Rectangle(QObject* parent)
@@ -243,6 +254,30 @@ void Rectangle::mirror(const QPointF& axisPoint1, const QPointF& axisPoint2)
     topRight = mirrorPoint(topRight, axisPoint1, axisPoint2);
     bottomLeft = mirrorPoint(bottomLeft, axisPoint1, axisPoint2);
     bottomRight = mirrorPoint(bottomRight, axisPoint1, axisPoint2);
+
+    // Find new axis-aligned bounding rect
+    double minX = qMin(qMin(topLeft.x(), topRight.x()), qMin(bottomLeft.x(), bottomRight.x()));
+    double maxX = qMax(qMax(topLeft.x(), topRight.x()), qMax(bottomLeft.x(), bottomRight.x()));
+    double minY = qMin(qMin(topLeft.y(), topRight.y()), qMin(bottomLeft.y(), bottomRight.y()));
+    double maxY = qMax(qMax(topLeft.y(), topRight.y()), qMax(bottomLeft.y(), bottomRight.y()));
+
+    setTopLeft(QPointF(minX, minY));
+    setWidth(maxX - minX);
+    setHeight(maxY - minY);
+}
+
+void Rectangle::scale(double scaleX, double scaleY, const QPointF& origin)
+{
+    // Scale all four corners and compute new axis-aligned bounding rect
+    QPointF topLeft = m_topLeft;
+    QPointF topRight(m_topLeft.x() + m_width, m_topLeft.y());
+    QPointF bottomLeft(m_topLeft.x(), m_topLeft.y() + m_height);
+    QPointF bottomRight(m_topLeft.x() + m_width, m_topLeft.y() + m_height);
+
+    topLeft = scalePoint(topLeft, scaleX, scaleY, origin);
+    topRight = scalePoint(topRight, scaleX, scaleY, origin);
+    bottomLeft = scalePoint(bottomLeft, scaleX, scaleY, origin);
+    bottomRight = scalePoint(bottomRight, scaleX, scaleY, origin);
 
     // Find new axis-aligned bounding rect
     double minX = qMin(qMin(topLeft.x(), topRight.x()), qMin(bottomLeft.x(), bottomRight.x()));

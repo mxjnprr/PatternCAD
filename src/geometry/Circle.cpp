@@ -49,6 +49,17 @@ namespace {
 
         return QPointF(2.0 * closestX - point.x(), 2.0 * closestY - point.y());
     }
+
+    // Helper function to scale a point around an origin
+    QPointF scalePoint(const QPointF& point, double scaleX, double scaleY, const QPointF& origin) {
+        double dx = point.x() - origin.x();
+        double dy = point.y() - origin.y();
+
+        double scaledX = dx * scaleX;
+        double scaledY = dy * scaleY;
+
+        return QPointF(origin.x() + scaledX, origin.y() + scaledY);
+    }
 }
 
 Circle::Circle(QObject* parent)
@@ -167,6 +178,16 @@ void Circle::mirror(const QPointF& axisPoint1, const QPointF& axisPoint2)
     // For a circle, we only need to mirror its center point
     // The radius remains the same
     setCenter(mirrorPoint(m_center, axisPoint1, axisPoint2));
+}
+
+void Circle::scale(double scaleX, double scaleY, const QPointF& origin)
+{
+    // Scale the center point
+    setCenter(scalePoint(m_center, scaleX, scaleY, origin));
+
+    // Scale the radius (use average of scaleX and scaleY for uniform scaling)
+    double avgScale = (scaleX + scaleY) / 2.0;
+    setRadius(m_radius * avgScale);
 }
 
 void Circle::draw(QPainter* painter, const QColor& color) const

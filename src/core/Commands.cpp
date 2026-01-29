@@ -721,4 +721,42 @@ void MirrorObjectsCommand::redo()
     }
 }
 
+// ============================================================================
+// ScaleObjectsCommand
+// ============================================================================
+
+ScaleObjectsCommand::ScaleObjectsCommand(const QList<Geometry::GeometryObject*>& objects,
+                                       double scaleX,
+                                       double scaleY,
+                                       const QPointF& origin,
+                                       QUndoCommand* parent)
+    : QUndoCommand(parent)
+    , m_objects(objects)
+    , m_scaleX(scaleX)
+    , m_scaleY(scaleY)
+    , m_origin(origin)
+{
+    setText(QObject::tr("Scale %n object(s)", "", objects.size()));
+}
+
+void ScaleObjectsCommand::undo()
+{
+    // Undo scale by scaling with inverse factors
+    for (auto* obj : m_objects) {
+        if (obj) {
+            obj->scale(1.0 / m_scaleX, 1.0 / m_scaleY, m_origin);
+        }
+    }
+}
+
+void ScaleObjectsCommand::redo()
+{
+    // Apply scale
+    for (auto* obj : m_objects) {
+        if (obj) {
+            obj->scale(m_scaleX, m_scaleY, m_origin);
+        }
+    }
+}
+
 } // namespace PatternCAD

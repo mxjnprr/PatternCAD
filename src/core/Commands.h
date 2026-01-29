@@ -268,6 +268,28 @@ private:
     bool m_firstRedo;
 };
 
+/**
+ * ScaleObjectsCommand - Command to scale multiple objects
+ */
+class ScaleObjectsCommand : public QUndoCommand
+{
+public:
+    ScaleObjectsCommand(const QList<Geometry::GeometryObject*>& objects,
+                        double scaleX,
+                        double scaleY,
+                        const QPointF& origin,
+                        QUndoCommand* parent = nullptr);
+
+    void undo() override;
+    void redo() override;
+
+private:
+    QList<Geometry::GeometryObject*> m_objects;
+    double m_scaleX;
+    double m_scaleY;
+    QPointF m_origin;
+};
+
 } // namespace PatternCAD
 
 #endif // PATTERNCAD_COMMANDS_H
