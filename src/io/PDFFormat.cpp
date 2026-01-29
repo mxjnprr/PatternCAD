@@ -174,30 +174,33 @@ void PDFFormat::renderGeometry(QPainter* painter, const Geometry::GeometryObject
 
             if (prev.type == Geometry::VertexType::Smooth || curr.type == Geometry::VertexType::Smooth) {
                 // Cubic bezier
-                QPointF p0 = prev.position;
-                QPointF p3 = curr.position;
+                QPointF p1 = prev.position;
+                QPointF p2 = curr.position;
 
-                // Calculate control points
-                QPointF direction = p3 - p0;
-                double distance = std::sqrt(direction.x() * direction.x() + direction.y() * direction.y());
+                // Calculate control points - same algorithm as Polyline::createPath()
+                QPointF segment = p2 - p1;
+                double dist = std::sqrt(segment.x() * segment.x() + segment.y() * segment.y());
+                double controlDistance = dist / 3.0;
 
-                // Normalize tangents
-                QPointF prevTangent = prev.tangent;
-                double prevLen = std::sqrt(prevTangent.x() * prevTangent.x() + prevTangent.y() * prevTangent.y());
-                if (prevLen > 0.0001) {
-                    prevTangent = QPointF(prevTangent.x() / prevLen, prevTangent.y() / prevLen);
+                QPointF c1, c2;
+
+                // Control point c1 (outgoing from prev)
+                if (prev.type == Geometry::VertexType::Smooth && prev.tangent != QPointF()) {
+                    c1 = p1 + prev.tangent * controlDistance * prev.outgoingTension;
+                } else {
+                    // Sharp: place control point very close to p1
+                    c1 = p1 + (p2 - p1) * 0.01;
                 }
 
-                QPointF currTangent = curr.tangent;
-                double currLen = std::sqrt(currTangent.x() * currTangent.x() + currTangent.y() * currTangent.y());
-                if (currLen > 0.0001) {
-                    currTangent = QPointF(currTangent.x() / currLen, currTangent.y() / currLen);
+                // Control point c2 (incoming to curr)
+                if (curr.type == Geometry::VertexType::Smooth && curr.tangent != QPointF()) {
+                    c2 = p2 - curr.tangent * controlDistance * curr.incomingTension;
+                } else {
+                    // Sharp: place control point very close to p2
+                    c2 = p2 - (p2 - p1) * 0.01;
                 }
 
-                QPointF p1 = p0 + prevTangent * distance * prev.outgoingTension;
-                QPointF p2 = p3 - currTangent * distance * curr.incomingTension;
-
-                path.cubicTo(p1, p2, p3);
+                path.cubicTo(c1, c2, p2);
             } else {
                 // Straight line
                 path.lineTo(curr.position);

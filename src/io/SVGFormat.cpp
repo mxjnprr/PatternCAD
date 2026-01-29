@@ -213,34 +213,37 @@ QString SVGFormat::geometryToSVG(const Geometry::GeometryObject* object, int ind
             const Geometry::PolylineVertex& curr = vertices[i];
 
             if (prev.type == Geometry::VertexType::Smooth || curr.type == Geometry::VertexType::Smooth) {
-                // Use cubic bezier
-                QPointF p0 = prev.position;
-                QPointF p3 = curr.position;
+                // Use cubic bezier - same algorithm as Polyline::createPath()
+                QPointF p1 = prev.position;
+                QPointF p2 = curr.position;
 
-                // Calculate control points based on tangents and tensions
-                QPointF direction = p3 - p0;
-                double distance = std::sqrt(direction.x() * direction.x() + direction.y() * direction.y());
+                // Calculate control points
+                QPointF segment = p2 - p1;
+                double dist = std::sqrt(segment.x() * segment.x() + segment.y() * segment.y());
+                double controlDistance = dist / 3.0;
 
-                // Normalize tangents manually
-                QPointF prevTangentNorm = prev.tangent;
-                double prevLen = std::sqrt(prevTangentNorm.x() * prevTangentNorm.x() + prevTangentNorm.y() * prevTangentNorm.y());
-                if (prevLen > 0.0001) {
-                    prevTangentNorm = QPointF(prevTangentNorm.x() / prevLen, prevTangentNorm.y() / prevLen);
+                QPointF c1, c2;
+
+                // Control point c1 (outgoing from prev)
+                if (prev.type == Geometry::VertexType::Smooth && prev.tangent != QPointF()) {
+                    c1 = p1 + prev.tangent * controlDistance * prev.outgoingTension;
+                } else {
+                    // Sharp: place control point very close to p1
+                    c1 = p1 + (p2 - p1) * 0.01;
                 }
 
-                QPointF currTangentNorm = curr.tangent;
-                double currLen = std::sqrt(currTangentNorm.x() * currTangentNorm.x() + currTangentNorm.y() * currTangentNorm.y());
-                if (currLen > 0.0001) {
-                    currTangentNorm = QPointF(currTangentNorm.x() / currLen, currTangentNorm.y() / currLen);
+                // Control point c2 (incoming to curr)
+                if (curr.type == Geometry::VertexType::Smooth && curr.tangent != QPointF()) {
+                    c2 = p2 - curr.tangent * controlDistance * curr.incomingTension;
+                } else {
+                    // Sharp: place control point very close to p2
+                    c2 = p2 - (p2 - p1) * 0.01;
                 }
-
-                QPointF p1 = p0 + prevTangentNorm * distance * prev.outgoingTension;
-                QPointF p2 = p3 - currTangentNorm * distance * curr.incomingTension;
 
                 pathStream << QString(" C %1,%2 %3,%4 %5,%6")
-                              .arg(p1.x()).arg(p1.y())
-                              .arg(p2.x()).arg(p2.y())
-                              .arg(p3.x()).arg(p3.y());
+                              .arg(c1.x()).arg(c1.y())
+                              .arg(c2.x()).arg(c2.y())
+                              .arg(p2.x()).arg(p2.y());
             } else {
                 // Straight line
                 pathStream << QString(" L %1,%2").arg(curr.position.x()).arg(curr.position.y());
