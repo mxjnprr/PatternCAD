@@ -19,7 +19,6 @@
 #include "../core/Commands.h"
 #include "../core/Units.h"
 #include "../tools/SelectTool.h"
-#include "../tools/CircleTool.h"
 #include "../tools/RectangleTool.h"
 #include "../tools/PolylineTool.h"
 #include "../tools/AddPointOnContourTool.h"
@@ -79,7 +78,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     // Initialize tools
     m_tools["Select"] = new Tools::SelectTool(this);
-    m_tools["Circle"] = new Tools::CircleTool(this);
     m_tools["Rectangle"] = new Tools::RectangleTool(this);
     m_tools["Polyline"] = new Tools::PolylineTool(this);
     m_tools["AddPointOnContour"] = new Tools::AddPointOnContourTool(this);
@@ -241,11 +239,6 @@ void MainWindow::setupMenuBar()
     connect(selectToolAction, &QAction::triggered, [this]() { onToolSelected("Select"); });
     addAction(selectToolAction);
 
-    QAction* circleToolAction = new QAction(tr("&Circle Tool"), this);
-    circleToolAction->setShortcut(QKeySequence(Qt::Key_C));
-    connect(circleToolAction, &QAction::triggered, [this]() { onToolSelected("Circle"); });
-    addAction(circleToolAction);
-
     QAction* rectangleToolAction = new QAction(tr("&Rectangle Tool"), this);
     rectangleToolAction->setShortcut(QKeySequence(Qt::Key_R));
     connect(rectangleToolAction, &QAction::triggered, [this]() { onToolSelected("Rectangle"); });
@@ -326,9 +319,6 @@ void MainWindow::setupStatusBar()
                     selectTool->applyFreeSegmentLength(value, angle);
                     statusBar()->showMessage(tr("Free segment adjusted"), 2000);
                 }
-            } else if (auto* circleTool = qobject_cast<Tools::CircleTool*>(m_currentTool)) {
-                // TODO: circleTool->applyRadius(value);
-                statusBar()->showMessage(tr("Dimension value applied"), 2000);
             }
         }
         m_canvas->setFocus();  // Return focus to canvas

@@ -152,21 +152,12 @@ cd /path/to/PatternCAD/build
 
 ---
 
-### TEST-11: Circle Tool ⏳
-**À tester:**
-- Dessiner un cercle
+### TEST-11: Circle Tool ❌ SUPPRIMÉ
+**Raison:** Cercles standalone inutiles dans une application de design de patrons. Les pièces nécessitent des **contours fermés modifiables** (rectangles, polylignes fermées).
 
-**Procédure:**
-1. Touche C
-2. Clic pour centre
-3. Déplacer pour rayon
-4. Clic pour valider
+**Note:** La classe géométrique `Circle` est conservée en interne. Elle sera réintégrée plus tard comme "internal" pour boutons, marquages circulaires, etc. à l'intérieur des pièces.
 
-**Critère de succès:**
-- Cercle visible
-- Rayon affiché pendant traçage
-
-**Statut:** ⏳ À tester
+**Statut:** ❌ Supprimé (pas de test nécessaire)
 
 ---
 
@@ -589,11 +580,11 @@ cd /path/to/PatternCAD/build
 
 ## Résumé
 
-**Total tests:** 30 (4 supprimés)
+**Total tests:** 29 (5 supprimés)
 **Réussis:** 6 ✅
 **Échoués:** 0 ❌
-**Supprimés:** 4 ❌ (Point Tool + Line Tool + 2 tests Line dépendants)
-**Non testés:** 24 ⏳
+**Supprimés:** 5 ❌ (Point Tool + Line Tool + 2 tests Line dépendants + Circle Tool)
+**Non testés:** 23 ⏳
 
 ---
 

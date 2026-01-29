@@ -58,7 +58,6 @@ set(SOURCES
     src/geometry/CubicBezier.cpp
     src/tools/Tool.cpp
     src/tools/SelectTool.cpp
-    src/tools/CircleTool.cpp
     src/tools/RectangleTool.cpp
     src/tools/PolylineTool.cpp
     src/tools/AddPointOnContourTool.cpp
@@ -96,7 +95,6 @@ set(HEADERS
     src/geometry/CubicBezier.h
     src/tools/Tool.h
     src/tools/SelectTool.h
-    src/tools/CircleTool.h
     src/tools/RectangleTool.h
     src/tools/PolylineTool.h
     src/tools/AddPointOnContourTool.h
