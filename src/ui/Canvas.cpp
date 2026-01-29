@@ -233,15 +233,11 @@ bool Canvas::event(QEvent* event)
 
 void Canvas::wheelEvent(QWheelEvent* event)
 {
-    // Zoom with mouse wheel
-    if (event->modifiers() & Qt::ControlModifier) {
-        double delta = event->angleDelta().y() / 120.0;
-        double factor = std::pow(1.2, delta);
-        setZoomLevel(m_zoomLevel * factor);
-        event->accept();
-    } else {
-        QGraphicsView::wheelEvent(event);
-    }
+    // Zoom with mouse wheel (no modifier needed)
+    double delta = event->angleDelta().y() / 120.0;
+    double factor = std::pow(1.2, delta);
+    setZoomLevel(m_zoomLevel * factor);
+    event->accept();
 }
 
 void Canvas::mousePressEvent(QMouseEvent* event)

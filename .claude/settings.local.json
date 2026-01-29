@@ -33,7 +33,10 @@
       "Bash(done)",
       "Bash(do echo -n \"story-001-$i: \")",
       "Bash(do echo \"=== EPIC-$epic ===\")",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(ldd:*)",
+      "Bash(dpkg-deb:*)",
+      "Bash(cd /mnt/Data/Air MKG/Commun/Air MKG/Code/PatternCAD/build:*)"
     ]
   }
 }
