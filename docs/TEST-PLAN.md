@@ -539,32 +539,22 @@ cd /path/to/PatternCAD/build
 
 ---
 
-### TEST-34: Spacebar Grab-and-Move ⏳
-**À tester:**
-- Pan temporaire avec Espace
+### TEST-34: Spacebar Grab-and-Move ❌ SUPPRIMÉ
+**Raison:** Fonctionnalité non nécessaire. Le pan de la vue se fait déjà avec **clic molette maintenu + glisser** (TEST-04 validé). La barre Espace est utilisée pour "pick and place" dans SelectTool.
 
-**Procédure:**
-1. Sélectionner un outil (ex: Line)
-2. Maintenir Espace
-3. Glisser pour déplacer vue
-4. Relâcher Espace
-
-**Critère de succès:**
-- Vue se déplace pendant Espace
-- Retour à Line tool après
-- Outil actif inchangé
-
-**Statut:** ⏳ À tester
+**Statut:** ❌ Supprimé
 
 ---
 
 ## Résumé
 
-**Total tests:** 27 (9 supprimés)
+**Total tests:** 27 (10 supprimés)
 **Réussis:** 17 ✅
 **Échoués:** 0 ❌
-**Supprimés:** 9 ❌ (Point + Line + 2 Line deps + Circle + Rectangle + 1 Rectangle dep + Déplacement objet + Sélection multiple)
-**Non testés:** 10 ⏳
+**Supprimés:** 10 ❌ (Point + Line + 2 Line deps + Circle + Rectangle + 1 Rectangle dep + Déplacement objet + Sélection multiple + Spacebar Grab-and-Move)
+**Non testés:** 0 ⏳
+
+**🎉 TOUS LES TESTS SONT TERMINÉS ! 🎉**
 
 ---
 
