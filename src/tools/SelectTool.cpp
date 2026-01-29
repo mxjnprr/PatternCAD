@@ -110,6 +110,13 @@ void SelectTool::mousePressEvent(QMouseEvent* event)
             int handleVertexIndex = findHandleAt(m_currentPoint, &handleObject, &handleSide);
 
             if (handleVertexIndex >= 0) {
+                // Check if layer is locked
+                if (m_document->isLayerLocked(handleObject->layer())) {
+                    showStatusMessage("Cannot modify object on locked layer");
+                    event->accept();
+                    return;
+                }
+
                 // Start dragging handle
                 m_selectedHandleObject = handleObject;
                 m_selectedHandleVertexIndex = handleVertexIndex;
@@ -137,6 +144,13 @@ void SelectTool::mousePressEvent(QMouseEvent* event)
                 int vertexIndex = findVertexAt(m_currentPoint, &vertexObject);
 
                 if (vertexIndex >= 0) {
+                // Check if layer is locked
+                if (m_document->isLayerLocked(vertexObject->layer())) {
+                    showStatusMessage("Cannot modify object on locked layer");
+                    event->accept();
+                    return;
+                }
+
                 // Select vertex (but don't start moving yet)
                 // Check if this is the same vertex we already had selected
                 bool sameVertex = (m_selectedVertexObject == vertexObject && m_selectedVertexIndex == vertexIndex);
@@ -165,6 +179,13 @@ void SelectTool::mousePressEvent(QMouseEvent* event)
                 int segmentIndex = findSegmentAt(m_currentPoint, &segmentObject);
 
                 if (segmentIndex >= 0) {
+                    // Check if layer is locked
+                    if (m_document->isLayerLocked(segmentObject->layer())) {
+                        showStatusMessage("Cannot modify object on locked layer");
+                        event->accept();
+                        return;
+                    }
+
                     // Check if Shift is pressed → toggle segment selection for multi-lock
                     if (event->modifiers() & Qt::ShiftModifier) {
                         toggleSegmentSelection(segmentObject, segmentIndex);
@@ -688,6 +709,13 @@ void SelectTool::keyPressEvent(QKeyEvent* event)
                 return;
             }
 
+            // Check if layer is locked
+            if (m_document->isLayerLocked(m_hoveredObject->layer())) {
+                showStatusMessage("Cannot move object on locked layer");
+                event->accept();
+                return;
+            }
+
             // Clear previous selection and select this object
             m_document->clearSelection();
             QList<Geometry::GeometryObject*> selected;
@@ -732,7 +760,11 @@ void SelectTool::keyPressEvent(QKeyEvent* event)
 
         // If a vertex is selected/hovered, delete the vertex instead of the object
         if (auto* polyline = dynamic_cast<Geometry::Polyline*>(targetObject)) {
-            if (targetIndex >= 0 && targetIndex < polyline->vertexCount()) {
+            // Check if layer is locked
+            if (m_document && m_document->isLayerLocked(targetObject->layer())) {
+                showStatusMessage("Cannot modify object on locked layer");
+                vertexHandled = true;
+            } else if (targetIndex >= 0 && targetIndex < polyline->vertexCount()) {
                 if (polyline->vertexCount() <= 3) {
                     showStatusMessage("Cannot delete vertex - polyline needs at least 3 vertices");
                 } else {
@@ -762,21 +794,42 @@ void SelectTool::keyPressEvent(QKeyEvent* event)
             if (m_document) {
                 auto selected = m_document->selectedObjects();
                 if (!selected.isEmpty()) {
+                    // Filter out objects on locked layers
+                    QList<Geometry::GeometryObject*> deletableObjects;
+                    int lockedCount = 0;
+                    for (auto* obj : selected) {
+                        if (m_document->isLayerLocked(obj->layer())) {
+                            lockedCount++;
+                        } else {
+                            deletableObjects.append(obj);
+                        }
+                    }
+
+                    if (deletableObjects.isEmpty()) {
+                        showStatusMessage("Cannot delete objects on locked layers");
+                        return;
+                    }
+
                     // Confirmation for bulk delete
-                    if (selected.size() > 10) {
+                    if (deletableObjects.size() > 10) {
                         QWidget* parentWidget = m_canvas ? m_canvas->parentWidget() : nullptr;
                         QMessageBox::StandardButton reply = QMessageBox::question(parentWidget,
                             QObject::tr("Delete Objects"),
-                            QObject::tr("Delete %1 selected objects?").arg(selected.size()),
+                            QObject::tr("Delete %1 selected objects?").arg(deletableObjects.size()),
                             QMessageBox::Yes | QMessageBox::No);
                         if (reply != QMessageBox::Yes) {
                             return;
                         }
                     }
 
-                    m_document->removeObjects(selected);
+                    m_document->removeObjects(deletableObjects);
                     m_hoveredObject = nullptr;
-                    showStatusMessage(QString("Deleted %1 object(s)").arg(selected.size()));
+                    if (lockedCount > 0) {
+                        showStatusMessage(QString("Deleted %1 object(s) (skipped %2 on locked layers)")
+                            .arg(deletableObjects.size()).arg(lockedCount));
+                    } else {
+                        showStatusMessage(QString("Deleted %1 object(s)").arg(deletableObjects.size()));
+                    }
                 }
             }
         }
@@ -833,6 +886,13 @@ void SelectTool::keyPressEvent(QKeyEvent* event)
         qDebug() << "SelectTool: Key_G pressed, mode=" << (int)m_mode << "vertex selected=" << (m_selectedVertexObject != nullptr);
         // Activate move mode for selected vertex (G = Grab)
         if (m_mode == SelectMode::VertexSelected && m_selectedVertexObject) {
+            // Check if layer is locked
+            if (m_document && m_document->isLayerLocked(m_selectedVertexObject->layer())) {
+                showStatusMessage("Cannot modify object on locked layer");
+                event->accept();
+                return;
+            }
+
             m_mode = SelectMode::DraggingVertex;
             m_lastPoint = m_currentPoint;
             qDebug() << "SelectTool: Entering DraggingVertex mode";
@@ -992,6 +1052,13 @@ void SelectTool::keyPressEvent(QKeyEvent* event)
         }
 
         if (auto* polyline = dynamic_cast<Geometry::Polyline*>(targetObject)) {
+            // Check if layer is locked
+            if (m_document && m_document->isLayerLocked(targetObject->layer())) {
+                showStatusMessage("Cannot modify object on locked layer");
+                event->accept();
+                return;
+            }
+
             if (targetIndex >= 0 && targetIndex < polyline->vertexCount()) {
                 auto vertex = polyline->vertexAt(targetIndex);
                 Geometry::VertexType oldType = vertex.type;
@@ -1491,6 +1558,12 @@ void SelectTool::selectObjectAt(const QPointF& point, bool addToSelection)
 
     Geometry::GeometryObject* obj = findObjectAt(point);
 
+    // Check if layer is locked
+    if (obj && m_document->isLayerLocked(obj->layer())) {
+        showStatusMessage("Cannot select object on locked layer");
+        return;
+    }
+
     if (!addToSelection) {
         m_document->clearSelection();
     }
@@ -1521,12 +1594,21 @@ void SelectTool::selectObjectsInRect(const QRectF& rect, bool addToSelection)
     QList<Geometry::GeometryObject*> objects = findObjectsInRect(rect);
     if (!objects.isEmpty()) {
         QList<Geometry::GeometryObject*> selected = m_document->selectedObjects();
+        int lockedCount = 0;
         for (auto* obj : objects) {
+            // Skip objects on locked layers
+            if (m_document->isLayerLocked(obj->layer())) {
+                lockedCount++;
+                continue;
+            }
             if (!selected.contains(obj)) {
                 selected.append(obj);
             }
         }
         m_document->setSelectedObjects(selected);
+        if (lockedCount > 0) {
+            showStatusMessage(QString("Skipped %1 object(s) on locked layers").arg(lockedCount));
+        }
     }
 }
 
