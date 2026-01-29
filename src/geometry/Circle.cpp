@@ -11,6 +11,23 @@
 namespace PatternCAD {
 namespace Geometry {
 
+namespace {
+    // Helper function to rotate a point around a center
+    QPointF rotatePoint(const QPointF& point, double angleDegrees, const QPointF& center) {
+        double angleRadians = qDegreesToRadians(angleDegrees);
+        double cosAngle = qCos(angleRadians);
+        double sinAngle = qSin(angleRadians);
+
+        double dx = point.x() - center.x();
+        double dy = point.y() - center.y();
+
+        double rotatedX = dx * cosAngle - dy * sinAngle;
+        double rotatedY = dx * sinAngle + dy * cosAngle;
+
+        return QPointF(center.x() + rotatedX, center.y() + rotatedY);
+    }
+}
+
 Circle::Circle(QObject* parent)
     : GeometryObject(parent)
     , m_center(0.0, 0.0)
@@ -113,6 +130,13 @@ bool Circle::contains(const QPointF& point) const
 void Circle::translate(const QPointF& delta)
 {
     setCenter(m_center + delta);
+}
+
+void Circle::rotate(double angleDegrees, const QPointF& center)
+{
+    // For a circle, we only need to rotate its center point
+    // The radius remains the same
+    setCenter(rotatePoint(m_center, angleDegrees, center));
 }
 
 void Circle::draw(QPainter* painter, const QColor& color) const

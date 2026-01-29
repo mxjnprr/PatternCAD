@@ -11,6 +11,23 @@
 namespace PatternCAD {
 namespace Geometry {
 
+namespace {
+    // Helper function to rotate a point around a center
+    QPointF rotatePoint(const QPointF& point, double angleDegrees, const QPointF& center) {
+        double angleRadians = qDegreesToRadians(angleDegrees);
+        double cosAngle = qCos(angleRadians);
+        double sinAngle = qSin(angleRadians);
+
+        double dx = point.x() - center.x();
+        double dy = point.y() - center.y();
+
+        double rotatedX = dx * cosAngle - dy * sinAngle;
+        double rotatedY = dx * sinAngle + dy * cosAngle;
+
+        return QPointF(center.x() + rotatedX, center.y() + rotatedY);
+    }
+}
+
 CubicBezier::CubicBezier(QObject* parent)
     : GeometryObject(parent)
     , m_p0(0.0, 0.0)
@@ -214,7 +231,16 @@ void CubicBezier::translate(const QPointF& delta)
     notifyChanged();
 }
 
-void CubicBezier::draw(QPainter* painter) const
+void CubicBezier::rotate(double angleDegrees, const QPointF& center)
+{
+    m_p0 = rotatePoint(m_p0, angleDegrees, center);
+    m_p1 = rotatePoint(m_p1, angleDegrees, center);
+    m_p2 = rotatePoint(m_p2, angleDegrees, center);
+    m_p3 = rotatePoint(m_p3, angleDegrees, center);
+    notifyChanged();
+}
+
+void CubicBezier::draw(QPainter* painter, const QColor& color) const
 {
     if (!m_visible) {
         return;
@@ -223,8 +249,8 @@ void CubicBezier::draw(QPainter* painter) const
     painter->save();
 
     // Set color and style based on selection state
-    QColor color = m_selected ? Qt::red : Qt::black;
-    QPen pen(color, m_selected ? 2 : 1);
+    QColor drawColor = m_selected ? Qt::red : color;
+    QPen pen(drawColor, m_selected ? 2 : 1);
     painter->setPen(pen);
     painter->setBrush(Qt::NoBrush);
 

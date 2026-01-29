@@ -122,7 +122,26 @@ void Point2D::translate(const QPointF& delta)
     setPosition(m_position + delta);
 }
 
-void Point2D::draw(QPainter* painter) const
+void Point2D::rotate(double angleDegrees, const QPointF& center)
+{
+    // Convert angle to radians
+    double angleRadians = qDegreesToRadians(angleDegrees);
+    double cosAngle = qCos(angleRadians);
+    double sinAngle = qSin(angleRadians);
+
+    // Translate to origin
+    double dx = m_position.x() - center.x();
+    double dy = m_position.y() - center.y();
+
+    // Rotate
+    double rotatedX = dx * cosAngle - dy * sinAngle;
+    double rotatedY = dx * sinAngle + dy * cosAngle;
+
+    // Translate back
+    setPosition(center.x() + rotatedX, center.y() + rotatedY);
+}
+
+void Point2D::draw(QPainter* painter, const QColor& color) const
 {
     if (!m_visible) {
         return;
@@ -131,9 +150,9 @@ void Point2D::draw(QPainter* painter) const
     painter->save();
 
     // Set color based on selection state
-    QColor color = m_selected ? Qt::red : Qt::blue;
-    painter->setPen(QPen(color, 2));
-    painter->setBrush(color);
+    QColor drawColor = m_selected ? Qt::red : color;
+    painter->setPen(QPen(drawColor, 2));
+    painter->setBrush(drawColor);
 
     // Draw point as small circle
     painter->drawEllipse(m_position, POINT_SIZE / 2, POINT_SIZE / 2);

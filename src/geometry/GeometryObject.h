@@ -91,6 +91,7 @@ public:
     virtual QRectF boundingRect() const = 0;
     virtual bool contains(const QPointF& point) const = 0;
     virtual void translate(const QPointF& delta) = 0;
+    virtual void rotate(double angleDegrees, const QPointF& center) = 0;
 
     // Drawing
     virtual void draw(QPainter* painter, const QColor& color = Qt::black) const = 0;

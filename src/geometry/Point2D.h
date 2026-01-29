@@ -53,9 +53,10 @@ public:
     QRectF boundingRect() const override;
     bool contains(const QPointF& point) const override;
     void translate(const QPointF& delta) override;
+    void rotate(double angleDegrees, const QPointF& center) override;
 
     // Drawing
-    void draw(QPainter* painter) const override;
+    void draw(QPainter* painter, const QColor& color = Qt::black) const override;
 
 private:
     QPointF m_position;

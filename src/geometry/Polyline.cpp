@@ -7,11 +7,41 @@
 #include "Polyline.h"
 #include <QPainter>
 #include <QPainterPath>
+#include <QtMath>
 #include <cmath>
 #include <limits>
 
 namespace PatternCAD {
 namespace Geometry {
+
+namespace {
+    // Helper function to rotate a point around a center
+    QPointF rotatePoint(const QPointF& point, double angleDegrees, const QPointF& center) {
+        double angleRadians = qDegreesToRadians(angleDegrees);
+        double cosAngle = qCos(angleRadians);
+        double sinAngle = qSin(angleRadians);
+
+        double dx = point.x() - center.x();
+        double dy = point.y() - center.y();
+
+        double rotatedX = dx * cosAngle - dy * sinAngle;
+        double rotatedY = dx * sinAngle + dy * cosAngle;
+
+        return QPointF(center.x() + rotatedX, center.y() + rotatedY);
+    }
+
+    // Helper to rotate a vector (for tangent rotation, no translation)
+    QPointF rotateVector(const QPointF& vec, double angleDegrees) {
+        double angleRadians = qDegreesToRadians(angleDegrees);
+        double cosAngle = qCos(angleRadians);
+        double sinAngle = qSin(angleRadians);
+
+        double rotatedX = vec.x() * cosAngle - vec.y() * sinAngle;
+        double rotatedY = vec.x() * sinAngle + vec.y() * cosAngle;
+
+        return QPointF(rotatedX, rotatedY);
+    }
+}
 
 Polyline::Polyline(QObject* parent)
     : GeometryObject(parent)
@@ -87,6 +117,19 @@ void Polyline::translate(const QPointF& delta)
 {
     for (auto& vertex : m_vertices) {
         vertex.position += delta;
+    }
+    notifyChanged();
+}
+
+void Polyline::rotate(double angleDegrees, const QPointF& center)
+{
+    for (auto& vertex : m_vertices) {
+        // Rotate the position
+        vertex.position = rotatePoint(vertex.position, angleDegrees, center);
+        // Rotate the tangent vector (if it exists)
+        if (vertex.tangent != QPointF()) {
+            vertex.tangent = rotateVector(vertex.tangent, angleDegrees);
+        }
     }
     notifyChanged();
 }

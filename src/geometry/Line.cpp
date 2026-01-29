@@ -11,6 +11,23 @@
 namespace PatternCAD {
 namespace Geometry {
 
+namespace {
+    // Helper function to rotate a point around a center
+    QPointF rotatePoint(const QPointF& point, double angleDegrees, const QPointF& center) {
+        double angleRadians = qDegreesToRadians(angleDegrees);
+        double cosAngle = qCos(angleRadians);
+        double sinAngle = qSin(angleRadians);
+
+        double dx = point.x() - center.x();
+        double dy = point.y() - center.y();
+
+        double rotatedX = dx * cosAngle - dy * sinAngle;
+        double rotatedY = dx * sinAngle + dy * cosAngle;
+
+        return QPointF(center.x() + rotatedX, center.y() + rotatedY);
+    }
+}
+
 Line::Line(QObject* parent)
     : GeometryObject(parent)
     , m_start(0.0, 0.0)
@@ -164,6 +181,13 @@ void Line::translate(const QPointF& delta)
 {
     m_start += delta;
     m_end += delta;
+    notifyChanged();
+}
+
+void Line::rotate(double angleDegrees, const QPointF& center)
+{
+    m_start = rotatePoint(m_start, angleDegrees, center);
+    m_end = rotatePoint(m_end, angleDegrees, center);
     notifyChanged();
 }
 

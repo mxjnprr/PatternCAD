@@ -11,6 +11,23 @@
 namespace PatternCAD {
 namespace Geometry {
 
+namespace {
+    // Helper function to rotate a point around a center
+    QPointF rotatePoint(const QPointF& point, double angleDegrees, const QPointF& center) {
+        double angleRadians = qDegreesToRadians(angleDegrees);
+        double cosAngle = qCos(angleRadians);
+        double sinAngle = qSin(angleRadians);
+
+        double dx = point.x() - center.x();
+        double dy = point.y() - center.y();
+
+        double rotatedX = dx * cosAngle - dy * sinAngle;
+        double rotatedY = dx * sinAngle + dy * cosAngle;
+
+        return QPointF(center.x() + rotatedX, center.y() + rotatedY);
+    }
+}
+
 Rectangle::Rectangle(QObject* parent)
     : GeometryObject(parent)
     , m_topLeft(0.0, 0.0)
@@ -165,6 +182,30 @@ bool Rectangle::contains(const QPointF& point) const
 void Rectangle::translate(const QPointF& delta)
 {
     setTopLeft(m_topLeft + delta);
+}
+
+void Rectangle::rotate(double angleDegrees, const QPointF& center)
+{
+    // Rotate all four corners and compute new axis-aligned bounding rect
+    QPointF topLeft = m_topLeft;
+    QPointF topRight(m_topLeft.x() + m_width, m_topLeft.y());
+    QPointF bottomLeft(m_topLeft.x(), m_topLeft.y() + m_height);
+    QPointF bottomRight(m_topLeft.x() + m_width, m_topLeft.y() + m_height);
+
+    topLeft = rotatePoint(topLeft, angleDegrees, center);
+    topRight = rotatePoint(topRight, angleDegrees, center);
+    bottomLeft = rotatePoint(bottomLeft, angleDegrees, center);
+    bottomRight = rotatePoint(bottomRight, angleDegrees, center);
+
+    // Find new axis-aligned bounding rect
+    double minX = qMin(qMin(topLeft.x(), topRight.x()), qMin(bottomLeft.x(), bottomRight.x()));
+    double maxX = qMax(qMax(topLeft.x(), topRight.x()), qMax(bottomLeft.x(), bottomRight.x()));
+    double minY = qMin(qMin(topLeft.y(), topRight.y()), qMin(bottomLeft.y(), bottomRight.y()));
+    double maxY = qMax(qMax(topLeft.y(), topRight.y()), qMax(bottomLeft.y(), bottomRight.y()));
+
+    setTopLeft(QPointF(minX, minY));
+    setWidth(maxX - minX);
+    setHeight(maxY - minY);
 }
 
 void Rectangle::draw(QPainter* painter, const QColor& color) const
