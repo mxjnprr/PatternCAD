@@ -80,6 +80,9 @@ private slots:
     void onViewToggleGrid();
     void onViewToggleSnap();
 
+    // Modify menu
+    void onModifyRotate();
+
     // Help menu
     void onHelpKeyboardShortcuts();
     void onHelpAbout();

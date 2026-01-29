@@ -221,6 +221,26 @@ private:
     void setProperty(Geometry::GeometryObject* object, const QString& propertyName, const QVariant& value);
 };
 
+/**
+ * RotateObjectsCommand - Command to rotate multiple objects
+ */
+class RotateObjectsCommand : public QUndoCommand
+{
+public:
+    RotateObjectsCommand(const QList<Geometry::GeometryObject*>& objects,
+                         double angleDegrees,
+                         const QPointF& center,
+                         QUndoCommand* parent = nullptr);
+
+    void undo() override;
+    void redo() override;
+
+private:
+    QList<Geometry::GeometryObject*> m_objects;
+    double m_angleDegrees;
+    QPointF m_center;
+};
+
 } // namespace PatternCAD
 
 #endif // PATTERNCAD_COMMANDS_H

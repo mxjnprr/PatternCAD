@@ -499,11 +499,11 @@ epics:
           - Rotation preserves object properties and constraints
           - Rotation is undoable
           - Shift+Drag snaps rotation to 15° increments
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-003/story-003-01.md"
         assigned_to: ""
         estimate: "5 points"
-        actual: ""
+        actual: "5 points"
         technical_notes: |
           - Implement RotateTool with interactive drag
           - Create RotateObjectsCommand

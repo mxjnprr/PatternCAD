@@ -23,6 +23,7 @@
 #include "../tools/PointTool.h"
 #include "../tools/PolylineTool.h"
 #include "../tools/AddPointOnContourTool.h"
+#include "../tools/RotateTool.h"
 
 #include <QMenuBar>
 #include <QToolBar>
@@ -81,6 +82,7 @@ MainWindow::MainWindow(QWidget* parent)
     m_tools["Point"] = new Tools::PointTool(this);
     m_tools["Polyline"] = new Tools::PolylineTool(this);
     m_tools["AddPointOnContour"] = new Tools::AddPointOnContourTool(this);
+    m_tools["Rotate"] = new Tools::RotateTool(this);
 
     // Set document for all tools and connect status messages
     for (auto* tool : m_tools) {
@@ -199,8 +201,9 @@ void MainWindow::setupMenuBar()
     // Draw menu (placeholder)
     menuBar()->addMenu(tr("&Draw"));
 
-    // Modify menu (placeholder)
-    menuBar()->addMenu(tr("&Modify"));
+    // Modify menu
+    QMenu* modifyMenu = menuBar()->addMenu(tr("&Modify"));
+    modifyMenu->addAction(tr("&Rotate..."), this, &MainWindow::onModifyRotate, QKeySequence(tr("Ctrl+R")));
 
     // Tools menu (placeholder)
     menuBar()->addMenu(tr("&Tools"));
@@ -628,6 +631,13 @@ void MainWindow::onEditPreferences()
 {
     PreferencesDialog dialog(this);
     dialog.exec();
+}
+
+// Modify menu slots
+void MainWindow::onModifyRotate()
+{
+    // Activate the Rotate tool
+    onToolSelected("Rotate");
 }
 
 // Help menu slots

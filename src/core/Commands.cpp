@@ -514,4 +514,37 @@ void UpdatePropertyCommand::setProperty(Geometry::GeometryObject* object, const 
     }
 }
 
+// RotateObjectsCommand
+RotateObjectsCommand::RotateObjectsCommand(const QList<Geometry::GeometryObject*>& objects,
+                                           double angleDegrees,
+                                           const QPointF& center,
+                                           QUndoCommand* parent)
+    : QUndoCommand(parent)
+    , m_objects(objects)
+    , m_angleDegrees(angleDegrees)
+    , m_center(center)
+{
+    setText(QObject::tr("Rotate %n object(s)", "", objects.size()));
+}
+
+void RotateObjectsCommand::undo()
+{
+    // Undo rotation by rotating back with negative angle
+    for (auto* obj : m_objects) {
+        if (obj) {
+            obj->rotate(-m_angleDegrees, m_center);
+        }
+    }
+}
+
+void RotateObjectsCommand::redo()
+{
+    // Apply rotation
+    for (auto* obj : m_objects) {
+        if (obj) {
+            obj->rotate(m_angleDegrees, m_center);
+        }
+    }
+}
+
 } // namespace PatternCAD
