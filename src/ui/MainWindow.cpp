@@ -22,6 +22,7 @@
 #include "../core/AutoSaveManager.h"
 #include "../core/SettingsManager.h"
 #include "../io/SVGFormat.h"
+#include "../io/PDFFormat.h"
 #include "../tools/SelectTool.h"
 #include "../tools/PolylineTool.h"
 #include "../tools/AddPointOnContourTool.h"
@@ -209,6 +210,7 @@ void MainWindow::setupMenuBar()
     // Export submenu
     QMenu* exportMenu = fileMenu->addMenu(tr("&Export"));
     exportMenu->addAction(tr("Export as &SVG..."), this, &MainWindow::onFileExportSVG);
+    exportMenu->addAction(tr("Export as &PDF..."), this, &MainWindow::onFileExportPDF);
 
     fileMenu->addSeparator();
     fileMenu->addAction(tr("E&xit"), this, &MainWindow::onFileExit, QKeySequence::Quit);
@@ -619,6 +621,44 @@ void MainWindow::onFileExportSVG()
                            tr("Failed to export SVG file: %1\n%2")
                            .arg(filepath)
                            .arg(svgFormat.lastError()));
+        statusBar()->showMessage(tr("Export failed"), 3000);
+    }
+}
+
+void MainWindow::onFileExportPDF()
+{
+    QString filepath = QFileDialog::getSaveFileName(
+        this,
+        tr("Export as PDF"),
+        getDefaultDirectory(),
+        tr("PDF Files (*.pdf)")
+    );
+
+    if (filepath.isEmpty()) {
+        return;
+    }
+
+    // Add extension if not present
+    if (!filepath.endsWith(".pdf", Qt::CaseInsensitive)) {
+        filepath += ".pdf";
+    }
+
+    Document* document = m_canvas->document();
+    if (!document) {
+        statusBar()->showMessage(tr("Error: No document available"), 3000);
+        return;
+    }
+
+    statusBar()->showMessage(tr("Exporting to PDF..."));
+
+    IO::PDFFormat pdfFormat;
+    if (pdfFormat.exportFile(filepath, document)) {
+        statusBar()->showMessage(tr("Exported to PDF: %1").arg(filepath), 3000);
+    } else {
+        QMessageBox::warning(this, tr("Export Failed"),
+                           tr("Failed to export PDF file: %1\n%2")
+                           .arg(filepath)
+                           .arg(pdfFormat.lastError()));
         statusBar()->showMessage(tr("Export failed"), 3000);
     }
 }

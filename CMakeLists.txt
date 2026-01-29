@@ -68,6 +68,7 @@ set(SOURCES
     src/io/FileFormat.cpp
     src/io/NativeFormat.cpp
     src/io/SVGFormat.cpp
+    src/io/PDFFormat.cpp
 )
 
 set(HEADERS
@@ -107,6 +108,7 @@ set(HEADERS
     src/io/FileFormat.h
     src/io/NativeFormat.h
     src/io/SVGFormat.h
+    src/io/PDFFormat.h
 )
 
 # Resources

@@ -63,6 +63,7 @@ private slots:
     void onFileSave();
     void onFileSaveAs();
     void onFileExportSVG();
+    void onFileExportPDF();
     void onFileExit();
     void onFileOpenRecent();
 
