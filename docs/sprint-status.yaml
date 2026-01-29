@@ -1456,7 +1456,7 @@ epics:
     name: "User Interface and Cross-Platform Foundation"
     description: "Build application UI framework, multi-panel workspace, keyboard shortcuts, layer management, undo/redo system, and cross-platform support"
     priority: "must-have"
-    status: "in-progress"
+    status: "completed"
     estimated_stories: "8-12"
     actual_stories: 12
     stories:
@@ -1754,11 +1754,11 @@ epics:
           - Build includes all dependencies (Qt, libraries)
           - CI/CD pipeline builds for both platforms
           - Installation creates file associations (.patterncad)
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-008/story-008-11.md"
         assigned_to: ""
         estimate: "13 points"
-        actual: ""
+        actual: "13 points"
         technical_notes: |
           - Create CMakeLists.txt
           - Set up vcpkg or Conan for dependencies

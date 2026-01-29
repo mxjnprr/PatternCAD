@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=PatternCAD
+GenericName=Pattern Design Software
+Comment=Professional pattern design CAD software for creating and editing sewing patterns
+Exec=PatternCAD %F
+Icon=patterncad
+Terminal=false
+Categories=Graphics;VectorGraphics;Engineering;Qt;
+MimeType=application/x-patterncad;
+StartupNotify=true
+StartupWMClass=PatternCAD
+Keywords=pattern;cad;design;sewing;vector;parametric;

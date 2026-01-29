@@ -239,3 +239,60 @@ cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build . --config Release
 cpack -G NSIS
 ```
+
+### Linux (RPM package)
+
+```bash
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build .
+cpack -G RPM
+```
+
+### Linux (AppImage)
+
+```bash
+# Run the build script from project root
+./packaging/appimage/build-appimage.sh
+```
+
+This creates a portable AppImage that can run on any recent Linux distribution without installation.
+
+### Windows (Portable ZIP)
+
+```powershell
+# Run the deployment script from project root
+.\packaging\windows\deploy-windows.ps1
+```
+
+This creates a portable ZIP package with all dependencies bundled.
+
+## Using vcpkg for Dependencies
+
+vcpkg provides cross-platform dependency management:
+
+```bash
+# Install vcpkg
+git clone https://github.com/Microsoft/vcpkg.git
+cd vcpkg
+./bootstrap-vcpkg.sh  # or bootstrap-vcpkg.bat on Windows
+
+# Build PatternCAD with vcpkg
+cd /path/to/PatternCAD
+cmake -B build -S . \
+    -DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake \
+    -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+The `vcpkg.json` manifest file in the project root automatically handles Qt6 and Eigen3 dependencies.
+
+## Continuous Integration
+
+PatternCAD uses GitHub Actions for CI/CD:
+
+- **Linux builds**: DEB, RPM, and AppImage packages
+- **Windows builds**: NSIS installer and portable ZIP
+- **Automated testing**: Runs on every commit
+- **Release packaging**: Automatic artifact creation for releases
+
+See `.github/workflows/build.yml` for the full CI configuration.

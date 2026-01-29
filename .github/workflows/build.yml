@@ -1,0 +1,192 @@
+name: Build PatternCAD
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  release:
+    types: [ created ]
+
+env:
+  QT_VERSION: "6.5.3"
+
+jobs:
+  build-linux:
+    name: Build on Linux
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: 'linux'
+          target: 'desktop'
+          arch: 'gcc_64'
+          modules: 'qtsvg'
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake \
+            ninja-build \
+            libeigen3-dev \
+            libxcb-cursor0 \
+            libgl1-mesa-dev
+
+      - name: Configure CMake
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Create DEB package
+        run: |
+          cd build
+          cpack -G DEB
+
+      - name: Create RPM package
+        run: |
+          cd build
+          cpack -G RPM
+
+      - name: Upload DEB package
+        uses: actions/upload-artifact@v4
+        with:
+          name: PatternCAD-Linux-DEB
+          path: build/*.deb
+
+      - name: Upload RPM package
+        uses: actions/upload-artifact@v4
+        with:
+          name: PatternCAD-Linux-RPM
+          path: build/*.rpm
+
+      - name: Create AppImage
+        if: github.event_name == 'release'
+        run: |
+          # Install linuxdeploy
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy*.AppImage
+
+          # Create AppImage
+          DESTDIR=AppDir cmake --install build
+          ./linuxdeploy-x86_64.AppImage \
+            --appdir=AppDir \
+            --plugin qt \
+            --output appimage
+
+      - name: Upload AppImage
+        if: github.event_name == 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: PatternCAD-Linux-AppImage
+          path: PatternCAD-*.AppImage
+
+  build-windows:
+    name: Build on Windows
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2019_64'
+          modules: 'qtsvg'
+          cache: true
+
+      - name: Setup MSVC
+        uses: microsoft/setup-msbuild@v1.3
+
+      - name: Install Eigen3
+        run: |
+          git clone --depth 1 --branch 3.4.0 https://gitlab.com/libeigen/eigen.git
+          cd eigen
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX="C:/eigen3"
+          cmake --install .
+
+      - name: Configure CMake
+        run: |
+          cmake -B build -G "Visual Studio 17 2022" -A x64 `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_PREFIX_PATH="C:/eigen3"
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Deploy Qt
+        run: |
+          mkdir deploy
+          windeployqt --release --no-translations `
+            --dir deploy `
+            build/Release/PatternCAD.exe
+          copy build/Release/PatternCAD.exe deploy/
+
+      - name: Create ZIP archive
+        run: |
+          Compress-Archive -Path deploy/* -DestinationPath PatternCAD-Windows-Portable.zip
+
+      - name: Upload portable package
+        uses: actions/upload-artifact@v4
+        with:
+          name: PatternCAD-Windows-Portable
+          path: PatternCAD-Windows-Portable.zip
+
+      - name: Create NSIS installer
+        if: github.event_name == 'release'
+        run: |
+          cd build
+          cpack -G NSIS -C Release
+
+      - name: Upload installer
+        if: github.event_name == 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: PatternCAD-Windows-Installer
+          path: build/*.exe
+
+  # Release job - attach artifacts to GitHub releases
+  release:
+    name: Create Release
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display structure
+        run: ls -R artifacts
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/**/*.deb
+            artifacts/**/*.rpm
+            artifacts/**/*.AppImage
+            artifacts/**/*.exe
+            artifacts/**/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

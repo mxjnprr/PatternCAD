@@ -140,15 +140,6 @@ else()
     target_compile_options(PatternCAD PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
-# Installation
-install(TARGETS PatternCAD
-    RUNTIME DESTINATION bin
-)
-
-# Tests (temporarily disabled - will be fixed later)
-# enable_testing()
-# add_subdirectory(tests)
-
 # Platform-specific settings
 if(WIN32)
     set_target_properties(PatternCAD PROPERTIES
@@ -160,3 +151,37 @@ elseif(APPLE)
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/resources/Info.plist.in
     )
 endif()
+
+# Installation
+include(GNUInstallDirs)
+
+install(TARGETS PatternCAD
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    BUNDLE DESTINATION .
+)
+
+# Install desktop entry (Linux)
+if(UNIX AND NOT APPLE)
+    install(FILES resources/patterncad.desktop
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
+    )
+
+    # Install MIME type
+    install(FILES resources/patterncad.xml
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/mime/packages
+    )
+
+    # Install icon (if exists)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/patterncad.png)
+        install(FILES resources/icons/patterncad.png
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/256x256/apps
+        )
+    endif()
+endif()
+
+# Tests (temporarily disabled - will be fixed later)
+# enable_testing()
+# add_subdirectory(tests)
+
+# Packaging
+include(cmake/Packaging.cmake)

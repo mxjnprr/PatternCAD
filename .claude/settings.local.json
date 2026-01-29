@@ -32,7 +32,8 @@
       "Bash(do echo -n \"story-008-$i: \")",
       "Bash(done)",
       "Bash(do echo -n \"story-001-$i: \")",
-      "Bash(do echo \"=== EPIC-$epic ===\")"
+      "Bash(do echo \"=== EPIC-$epic ===\")",
+      "Bash(test:*)"
     ]
   }
 }
