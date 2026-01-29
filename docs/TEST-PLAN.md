@@ -283,24 +283,26 @@ cd /path/to/PatternCAD/build
 
 ## Phase 4: Transformations
 
-### TEST-21: Rotate Tool ⏳
+### TEST-21: Rotate Tool ✅
 **À tester:**
 - Rotation interactive
 
 **Procédure:**
-1. Dessiner un rectangle
+1. Sélectionner une polyligne (Z + clic)
 2. Ctrl+R (ou menu Modify → Rotate)
-3. Clic sur rectangle pour sélectionner
-4. Clic pour définir centre rotation
-5. Déplacer souris pour angle
-6. Clic pour valider
+3. Clic + relâche pour définir centre rotation
+4. Déplacer souris pour voir preview
+5. Tab pour input numérique OU Enter/Clic pour valider
+6. (Shift pour snap 15°)
 
 **Critère de succès:**
-- Rectangle tourne autour du centre
-- Angle affiché
+- Centre de rotation définissable
+- Preview en temps réel
+- Tab ouvre input numérique fonctionnel
+- Enter valide l'angle
 - Undo possible
 
-**Statut:** ⏳ À tester
+**Statut:** ✅ VALIDÉ
 
 ---
 
