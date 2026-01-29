@@ -28,6 +28,7 @@ namespace UI {
 class Canvas;
 class ToolPalette;
 class PropertiesPanel;
+class ObjectsPanel;
 class LayersPanel;
 class ParametersPanel;
 
@@ -139,6 +140,7 @@ private:
     PropertiesPanel* m_propertiesPanel;
     LayersPanel* m_layersPanel;
     ParametersPanel* m_parametersPanel;
+    ObjectsPanel* m_objectsPanel;
 
     // Dock widgets
     QDockWidget* m_toolsDock;

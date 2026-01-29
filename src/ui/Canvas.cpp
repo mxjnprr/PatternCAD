@@ -143,6 +143,23 @@ void Canvas::zoomToSelection()
     }
 }
 
+void Canvas::zoomToObject(Geometry::GeometryObject* object)
+{
+    if (!object) return;
+
+    QRectF bounds = object->boundingRect();
+    if (bounds.isNull() || bounds.isEmpty()) return;
+
+    // Add some margin (20% for single object)
+    bounds = bounds.adjusted(-bounds.width() * 0.2, -bounds.height() * 0.2,
+                             bounds.width() * 0.2, bounds.height() * 0.2);
+    fitInView(bounds, Qt::KeepAspectRatio);
+    // Update zoom level based on transform
+    m_zoomLevel = transform().m11();
+    emit zoomChanged(m_zoomLevel);
+    update();
+}
+
 void Canvas::zoomToActual()
 {
     setZoomLevel(1.0);

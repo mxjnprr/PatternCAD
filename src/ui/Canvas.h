@@ -17,6 +17,10 @@ namespace PatternCAD {
 // Forward declarations
 class Document;
 
+namespace Geometry {
+    class GeometryObject;
+}
+
 namespace Tools {
     class Tool;
 }
@@ -50,6 +54,7 @@ public:
     void zoomOut();
     void zoomFit();
     void zoomToSelection();
+    void zoomToObject(Geometry::GeometryObject* object);
     void zoomToActual();  // 100% zoom
     void zoomReset();
     void setZoomLevel(double level);

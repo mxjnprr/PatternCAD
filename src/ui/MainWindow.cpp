@@ -10,6 +10,7 @@
 #include "PropertiesPanel.h"
 #include "LayersPanel.h"
 #include "ParametersPanel.h"
+#include "ObjectsPanel.h"
 #include "KeyboardShortcutsDialog.h"
 #include "PreferencesDialog.h"
 #include "DimensionInputOverlay.h"
@@ -83,6 +84,17 @@ MainWindow::MainWindow(QWidget* parent)
     m_canvas->setDocument(document);
     m_layersPanel->setDocument(document);
     m_propertiesPanel->setDocument(document);
+    m_objectsPanel->setDocument(document);
+
+    // Connect ObjectsPanel signals
+    connect(m_objectsPanel, &ObjectsPanel::objectSelected, this, [this](Geometry::GeometryObject* obj) {
+        if (m_canvas->document()) {
+            m_canvas->document()->clearSelection();
+            obj->setSelected(true);
+            m_canvas->update();
+        }
+    });
+    connect(m_objectsPanel, &ObjectsPanel::zoomToObject, m_canvas, &Canvas::zoomToObject);
 
     // Setup auto-save
     m_autoSaveManager = new AutoSaveManager(this);
@@ -455,9 +467,15 @@ void MainWindow::setupDockWidgets()
     m_parametersDock->setWidget(m_parametersPanel);
     addDockWidget(Qt::RightDockWidgetArea, m_parametersDock);
 
+    // Objects Panel (right side)
+    m_objectsPanel = new ObjectsPanel(this);
+    m_objectsPanel->setObjectName("ObjectsPanel");
+    addDockWidget(Qt::RightDockWidgetArea, m_objectsPanel);
+
     // Tabify the right side panels
     tabifyDockWidget(m_propertiesDock, m_layersDock);
     tabifyDockWidget(m_layersDock, m_parametersDock);
+    tabifyDockWidget(m_parametersDock, m_objectsPanel);
 
     // Make Properties visible by default
     m_propertiesDock->raise();
