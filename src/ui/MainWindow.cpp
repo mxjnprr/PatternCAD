@@ -617,6 +617,7 @@ void MainWindow::onFileImportSVG()
     IO::SVGFormat svgFormat;
     if (svgFormat.importFile(filepath, document)) {
         statusBar()->showMessage(tr("Imported SVG: %1").arg(filepath), 3000);
+        m_canvas->zoomFit(); // Auto-zoom to fit imported objects
         m_canvas->update();
     } else {
         QMessageBox::warning(this, tr("Import Failed"),
@@ -651,6 +652,7 @@ void MainWindow::onFileImportDXF()
     IO::DXFFormat dxfFormat;
     if (dxfFormat.importFile(filepath, document)) {
         statusBar()->showMessage(tr("Imported DXF: %1").arg(filepath), 3000);
+        m_canvas->zoomFit(); // Auto-zoom to fit imported objects
         m_canvas->update();
     } else {
         QMessageBox::warning(this, tr("Import Failed"),

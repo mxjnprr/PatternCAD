@@ -104,8 +104,11 @@ QString DXFFormat::readPair(QTextStream& stream, int& code)
 bool DXFFormat::parseDXF(QTextStream& stream, Document* document)
 {
     bool inEntitiesSection = false;
+    bool inBlocksSection = false;
     QString currentEntityType;
     DXFEntity currentEntity;
+    QMap<QString, QList<DXFEntity>> blocks; // Store blocks for INSERT expansion
+    QString currentBlockName;
 
     qDebug() << "DXF: Starting parse";
 
@@ -124,6 +127,10 @@ bool DXFFormat::parseDXF(QTextStream& stream, Document* document)
                     inEntitiesSection = true;
                     qDebug() << "DXF: Entering ENTITIES section";
                 }
+                else if (nextCode == 2 && sectionName == "BLOCKS") {
+                    inBlocksSection = true;
+                    qDebug() << "DXF: Entering BLOCKS section";
+                }
             }
             else if (value == "ENDSEC") {
                 // End of section - process last entity if any
@@ -134,12 +141,36 @@ bool DXFFormat::parseDXF(QTextStream& stream, Document* document)
                     currentEntityType.clear();
                     currentEntity = DXFEntity();
                 }
+                if (inBlocksSection && !currentEntityType.isEmpty()) {
+                    currentEntity.type = currentEntityType;
+                    if (!currentBlockName.isEmpty()) {
+                        blocks[currentBlockName].append(currentEntity);
+                        qDebug() << "DXF: Added" << currentEntityType << "to block" << currentBlockName;
+                    }
+                    currentEntityType.clear();
+                    currentEntity = DXFEntity();
+                }
                 inEntitiesSection = false;
+                inBlocksSection = false;
             }
             else if (value == "EOF") {
                 // End of file
                 qDebug() << "DXF: Found EOF";
                 break;
+            }
+            else if (value == "BLOCK") {
+                // Start of block definition
+                if (inBlocksSection) {
+                    // Read block name from next attributes
+                    currentEntityType = "BLOCK";
+                    currentEntity = DXFEntity();
+                }
+            }
+            else if (value == "ENDBLK") {
+                // End of block definition
+                if (inBlocksSection) {
+                    currentBlockName.clear();
+                }
             }
             else if (inEntitiesSection) {
                 // Process previous entity if any
@@ -151,6 +182,19 @@ bool DXFFormat::parseDXF(QTextStream& stream, Document* document)
                 currentEntityType = value;
                 currentEntity = DXFEntity();
             }
+            else if (inBlocksSection && !currentEntityType.isEmpty()) {
+                // Process previous entity in block
+                if (currentEntityType != "BLOCK") {
+                    currentEntity.type = currentEntityType;
+                    if (!currentBlockName.isEmpty()) {
+                        blocks[currentBlockName].append(currentEntity);
+                        qDebug() << "DXF: Added" << currentEntityType << "to block" << currentBlockName;
+                    }
+                }
+                // Start new entity in block
+                currentEntityType = value;
+                currentEntity = DXFEntity();
+            }
         }
         else if (inEntitiesSection && !currentEntityType.isEmpty()) {
             // Accumulate entity attributes
@@ -158,6 +202,21 @@ bool DXFFormat::parseDXF(QTextStream& stream, Document* document)
                 currentEntity.layer = value;
             }
             currentEntity.attributes.insert(code, value);
+        }
+        else if (inBlocksSection) {
+            // Accumulate block data
+            if (code == 2 && currentEntityType == "BLOCK") {
+                // Block name
+                currentBlockName = value;
+                qDebug() << "DXF: Starting block definition:" << currentBlockName;
+            }
+            else if (!currentEntityType.isEmpty() && currentEntityType != "BLOCK") {
+                // Entity attribute in block
+                if (code == 8) {
+                    currentEntity.layer = value;
+                }
+                currentEntity.attributes.insert(code, value);
+            }
         }
     }
 
@@ -191,6 +250,11 @@ void DXFFormat::processEntity(const DXFEntity& entity, Document* document)
     }
     else if (entity.type == "LWPOLYLINE") {
         processLWPolyline(entity, document);
+    }
+    else if (entity.type == "INSERT") {
+        // INSERT entities reference blocks - we skip them for now
+        // They would need block expansion which is complex
+        qDebug() << "DXF: Skipping INSERT entity (block references not yet supported)";
     }
     else {
         qDebug() << "DXF: Unsupported entity type:" << entity.type;
