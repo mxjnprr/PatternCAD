@@ -420,7 +420,7 @@ cd /path/to/PatternCAD/build
 
 ---
 
-### TEST-29: Layer - Lock ⏳
+### TEST-29: Layer - Lock ✅
 **À tester:**
 - Verrouiller layer
 
@@ -437,7 +437,7 @@ cd /path/to/PatternCAD/build
 - Aucune modification possible (move, delete, transform) ✅
 - Message "Cannot modify object on locked layer" affiché ✅
 
-**Statut:** ⏳ À tester
+**Statut:** ✅ VALIDÉ
 
 **Implémentation:**
 - Checks ajoutés dans SelectTool pour tous les types d'interactions:
@@ -540,10 +540,10 @@ cd /path/to/PatternCAD/build
 ## Résumé
 
 **Total tests:** 27 (9 supprimés)
-**Réussis:** 12 ✅
+**Réussis:** 13 ✅
 **Échoués:** 0 ❌
 **Supprimés:** 9 ❌ (Point + Line + 2 Line deps + Circle + Rectangle + 1 Rectangle dep + Déplacement objet + Sélection multiple)
-**Non testés:** 15 ⏳
+**Non testés:** 14 ⏳
 
 ---
 
