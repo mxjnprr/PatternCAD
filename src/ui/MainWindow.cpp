@@ -19,7 +19,6 @@
 #include "../core/Commands.h"
 #include "../core/Units.h"
 #include "../tools/SelectTool.h"
-#include "../tools/LineTool.h"
 #include "../tools/CircleTool.h"
 #include "../tools/RectangleTool.h"
 #include "../tools/PolylineTool.h"
@@ -80,7 +79,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     // Initialize tools
     m_tools["Select"] = new Tools::SelectTool(this);
-    m_tools["Line"] = new Tools::LineTool(this);
     m_tools["Circle"] = new Tools::CircleTool(this);
     m_tools["Rectangle"] = new Tools::RectangleTool(this);
     m_tools["Polyline"] = new Tools::PolylineTool(this);
@@ -243,11 +241,6 @@ void MainWindow::setupMenuBar()
     connect(selectToolAction, &QAction::triggered, [this]() { onToolSelected("Select"); });
     addAction(selectToolAction);
 
-    QAction* lineToolAction = new QAction(tr("L&ine Tool"), this);
-    lineToolAction->setShortcut(QKeySequence(Qt::Key_I));
-    connect(lineToolAction, &QAction::triggered, [this]() { onToolSelected("Line"); });
-    addAction(lineToolAction);
-
     QAction* circleToolAction = new QAction(tr("&Circle Tool"), this);
     circleToolAction->setShortcut(QKeySequence(Qt::Key_C));
     connect(circleToolAction, &QAction::triggered, [this]() { onToolSelected("Circle"); });
@@ -257,11 +250,6 @@ void MainWindow::setupMenuBar()
     rectangleToolAction->setShortcut(QKeySequence(Qt::Key_R));
     connect(rectangleToolAction, &QAction::triggered, [this]() { onToolSelected("Rectangle"); });
     addAction(rectangleToolAction);
-
-    QAction* pointToolAction = new QAction(tr("&Point Tool"), this);
-    pointToolAction->setShortcut(QKeySequence(Qt::Key_P));
-    connect(pointToolAction, &QAction::triggered, [this]() { onToolSelected("Point"); });
-    addAction(pointToolAction);
 
     QAction* polylineToolAction = new QAction(tr("&Polyline Tool"), this);
     polylineToolAction->setShortcut(QKeySequence(Qt::Key_D));

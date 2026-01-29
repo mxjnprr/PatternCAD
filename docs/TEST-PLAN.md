@@ -129,60 +129,26 @@ cd /path/to/PatternCAD/build
 
 ---
 
-### TEST-08: Line Tool ⏳
-**À tester:**
-- Tracer une ligne entre deux points
+### TEST-08: Line Tool ❌ SUPPRIMÉ
+**Raison:** Les lignes standalone ne servent pas dans une application de design de patrons. Les pièces nécessitent des **contours fermés** (rectangles, polylignes fermées).
 
-**Procédure:**
-1. Touche L
-2. Clic point A
-3. Clic point B
+**Note:** La classe géométrique `Line` est conservée en interne. Elle sera réintégrée plus tard comme "internal" pour les lignes de pli, marquages, etc. à l'intérieur des pièces.
 
-**Critère de succès:**
-- Ligne visible entre A et B
-- Longueur/angle affichés pendant traçage
-
-**Statut:** ⏳ À tester
+**Statut:** ❌ Supprimé (pas de test nécessaire)
 
 ---
 
-### TEST-09: Line Tool - Mode orthogonal ⏳
-**À tester:**
-- Shift pour forcer horizontal/vertical
+### TEST-09: Line Tool - Mode orthogonal ❌ SUPPRIMÉ
+**Raison:** Dépendance de TEST-08 (Line Tool supprimé)
 
-**Procédure:**
-1. Touche L
-2. Clic point A
-3. Maintenir Shift
-4. Déplacer souris
-5. Clic point B
-
-**Critère de succès:**
-- Ligne forcée H ou V selon direction
-- Angle = 0° ou 90°
-
-**Statut:** ⏳ À tester
+**Statut:** ❌ Supprimé
 
 ---
 
-### TEST-10: Line Tool - Dimension input ⏳
-**À tester:**
-- Tab pour saisir longueur/angle précis
+### TEST-10: Line Tool - Dimension input ❌ SUPPRIMÉ
+**Raison:** Dépendance de TEST-08 (Line Tool supprimé)
 
-**Procédure:**
-1. Touche L
-2. Clic point A
-3. Appuyer Tab
-4. Saisir longueur (ex: 100)
-5. Tab
-6. Saisir angle (ex: 45)
-7. Entrée
-
-**Critère de succès:**
-- Overlay de saisie apparaît
-- Ligne créée avec dimensions exactes
-
-**Statut:** ⏳ À tester
+**Statut:** ❌ Supprimé
 
 ---
 
@@ -623,11 +589,11 @@ cd /path/to/PatternCAD/build
 
 ## Résumé
 
-**Total tests:** 33 (1 supprimé)
+**Total tests:** 30 (4 supprimés)
 **Réussis:** 6 ✅
 **Échoués:** 0 ❌
-**Supprimés:** 1 ❌
-**Non testés:** 27 ⏳
+**Supprimés:** 4 ❌ (Point Tool + Line Tool + 2 tests Line dépendants)
+**Non testés:** 24 ⏳
 
 ---
 
