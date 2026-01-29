@@ -234,8 +234,9 @@ bool Canvas::event(QEvent* event)
 void Canvas::wheelEvent(QWheelEvent* event)
 {
     // Zoom with mouse wheel (no modifier needed)
+    // Use factor 1.1 for smoother, more controlled zoom
     double delta = event->angleDelta().y() / 120.0;
-    double factor = std::pow(1.2, delta);
+    double factor = std::pow(1.1, delta);
     setZoomLevel(m_zoomLevel * factor);
     event->accept();
 }
