@@ -62,10 +62,13 @@ Canvas::~Canvas()
 void Canvas::setupScene()
 {
     m_scene = new QGraphicsScene(this);
-    m_scene->setSceneRect(-5000, -5000, 10000, 10000);
+    // Use a very large scene rect for unlimited canvas
+    m_scene->setSceneRect(-100000, -100000, 200000, 200000);
     setScene(m_scene);
 
-    // TODO: Initialize scene items
+    // Enable unlimited scrolling
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 }
 
 Document* Canvas::document() const
@@ -110,8 +113,35 @@ void Canvas::zoomOut()
 
 void Canvas::zoomFit()
 {
-    // TODO: Fit view to content bounds
-    fitInView(sceneRect(), Qt::KeepAspectRatio);
+    if (!m_document) {
+        fitInView(sceneRect(), Qt::KeepAspectRatio);
+        return;
+    }
+
+    // Calculate bounding rect of all objects
+    QRectF bounds;
+    for (auto* obj : m_document->objects()) {
+        QRectF objBounds = obj->boundingRect();
+        if (bounds.isNull()) {
+            bounds = objBounds;
+        } else {
+            bounds = bounds.united(objBounds);
+        }
+    }
+
+    // If no objects or empty bounds, use a default view centered at origin
+    if (bounds.isNull() || bounds.isEmpty()) {
+        bounds = QRectF(-100, -100, 200, 200);
+    }
+
+    // Add margin (10%)
+    bounds = bounds.adjusted(-bounds.width() * 0.1, -bounds.height() * 0.1,
+                             bounds.width() * 0.1, bounds.height() * 0.1);
+
+    fitInView(bounds, Qt::KeepAspectRatio);
+    // Update zoom level based on transform
+    m_zoomLevel = transform().m11();
+    emit zoomChanged(m_zoomLevel);
 }
 
 void Canvas::zoomToSelection()
