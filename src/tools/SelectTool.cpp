@@ -674,6 +674,8 @@ void SelectTool::mouseReleaseEvent(QMouseEvent* event)
 
 void SelectTool::keyPressEvent(QKeyEvent* event)
 {
+    qDebug() << "SelectTool::keyPressEvent - key:" << event->key() << "text:" << event->text();
+
     if (event->key() == Qt::Key_Space) {
         if (m_mode == SelectMode::Dragging) {
             // Place the object(s)
@@ -730,15 +732,17 @@ void SelectTool::keyPressEvent(QKeyEvent* event)
 
         // If a vertex is selected/hovered, delete the vertex instead of the object
         if (auto* polyline = dynamic_cast<Geometry::Polyline*>(targetObject)) {
-            auto vertices = polyline->vertices();
-            if (targetIndex >= 0 && targetIndex < vertices.size()) {
-                if (vertices.size() <= 3) {
+            if (targetIndex >= 0 && targetIndex < polyline->vertexCount()) {
+                if (polyline->vertexCount() <= 3) {
                     showStatusMessage("Cannot delete vertex - polyline needs at least 3 vertices");
                 } else {
-                    vertices.removeAt(targetIndex);
-                    polyline->setVertices(vertices);
-                    if (m_document) {
-                        m_document->notifyObjectChanged(targetObject);
+                    // Create undo command for deletion
+                    auto* cmd = new DeleteVertexCommand(targetObject, targetIndex);
+                    if (m_document && m_document->undoStack()) {
+                        m_document->undoStack()->push(cmd);
+                    } else {
+                        cmd->redo();
+                        delete cmd;
                     }
                     // Reset selection state
                     m_mode = SelectMode::None;
@@ -826,10 +830,12 @@ void SelectTool::keyPressEvent(QKeyEvent* event)
         }
         event->accept();
     } else if (event->key() == Qt::Key_G) {
+        qDebug() << "SelectTool: Key_G pressed, mode=" << (int)m_mode << "vertex selected=" << (m_selectedVertexObject != nullptr);
         // Activate move mode for selected vertex (G = Grab)
         if (m_mode == SelectMode::VertexSelected && m_selectedVertexObject) {
             m_mode = SelectMode::DraggingVertex;
             m_lastPoint = m_currentPoint;
+            qDebug() << "SelectTool: Entering DraggingVertex mode";
 
             QString msg = QString("Moving vertex %1 | L: lock | T: toggle type | Tab: dimension | Esc: cancel")
                 .arg(m_selectedVertexIndex + 1);
@@ -837,8 +843,9 @@ void SelectTool::keyPressEvent(QKeyEvent* event)
                 msg += " [LOCKED]";
             }
             showStatusMessage(msg);
-        } else if (m_mode == SelectMode::None) {
-            showStatusMessage("Select a vertex first");
+        } else {
+            qDebug() << "SelectTool: G pressed but conditions not met for vertex grab";
+            showStatusMessage("Select a vertex first (click on a vertex to select it)");
         }
         event->accept();
     } else if (event->key() == Qt::Key_L) {
@@ -985,21 +992,30 @@ void SelectTool::keyPressEvent(QKeyEvent* event)
         }
 
         if (auto* polyline = dynamic_cast<Geometry::Polyline*>(targetObject)) {
-            auto vertices = polyline->vertices();
-            if (targetIndex >= 0 && targetIndex < vertices.size()) {
-                Geometry::PolylineVertex vertex = vertices[targetIndex];
-                if (vertex.type == Geometry::VertexType::Sharp) {
-                    vertex.type = Geometry::VertexType::Smooth;
-                    showStatusMessage(QString("Vertex %1 changed to Smooth").arg(targetIndex + 1));
+            if (targetIndex >= 0 && targetIndex < polyline->vertexCount()) {
+                auto vertex = polyline->vertexAt(targetIndex);
+                Geometry::VertexType oldType = vertex.type;
+                Geometry::VertexType newType = (oldType == Geometry::VertexType::Sharp)
+                    ? Geometry::VertexType::Smooth
+                    : Geometry::VertexType::Sharp;
+
+                // Create undo command for type change
+                auto* cmd = new ChangeVertexTypeCommand(
+                    targetObject,
+                    targetIndex,
+                    static_cast<int>(oldType),
+                    static_cast<int>(newType)
+                );
+
+                if (m_document && m_document->undoStack()) {
+                    m_document->undoStack()->push(cmd);
                 } else {
-                    vertex.type = Geometry::VertexType::Sharp;
-                    showStatusMessage(QString("Vertex %1 changed to Sharp").arg(targetIndex + 1));
+                    cmd->redo();
+                    delete cmd;
                 }
-                vertices[targetIndex] = vertex;
-                polyline->setVertices(vertices);
-                if (m_document) {
-                    m_document->notifyObjectChanged(targetObject);
-                }
+
+                QString typeName = (newType == Geometry::VertexType::Sharp) ? "Sharp" : "Smooth";
+                showStatusMessage(QString("Vertex %1 changed to %2").arg(targetIndex + 1).arg(typeName));
             }
         }
         event->accept();

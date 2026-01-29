@@ -40,6 +40,9 @@ Canvas::Canvas(QWidget* parent)
     setResizeAnchor(QGraphicsView::AnchorUnderMouse);
     setDragMode(QGraphicsView::NoDrag);
 
+    // Enable keyboard focus so Canvas receives key events
+    setFocusPolicy(Qt::StrongFocus);
+
     // TODO: Configure view settings
     // TODO: Connect signals
 }
@@ -317,6 +320,8 @@ void Canvas::mouseReleaseEvent(QMouseEvent* event)
 
 void Canvas::keyPressEvent(QKeyEvent* event)
 {
+    qDebug() << "Canvas::keyPressEvent - key:" << event->key() << "text:" << event->text() << "tool:" << (m_activeTool ? m_activeTool->name() : "none");
+
     if (m_activeTool) {
         m_activeTool->keyPressEvent(event);
 

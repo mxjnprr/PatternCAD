@@ -944,4 +944,83 @@ void DistributeObjectsCommand::redo()
     }
 }
 
+// ============================================================================
+// DeleteVertexCommand
+// ============================================================================
+
+DeleteVertexCommand::DeleteVertexCommand(Geometry::GeometryObject* object, int vertexIndex,
+                                       QUndoCommand* parent)
+    : QUndoCommand(parent)
+    , m_object(object)
+    , m_vertexIndex(vertexIndex)
+{
+    // Store vertex data for undo
+    if (auto* polyline = qobject_cast<Geometry::Polyline*>(object)) {
+        if (vertexIndex >= 0 && vertexIndex < polyline->vertexCount()) {
+            auto vertex = polyline->vertexAt(vertexIndex);
+            m_position = vertex.position;
+            m_vertexType = static_cast<int>(vertex.type);
+            m_incomingTension = vertex.incomingTension;
+            m_outgoingTension = vertex.outgoingTension;
+            m_tangent = vertex.tangent;
+        }
+    }
+    setText(QObject::tr("Delete Vertex %1").arg(vertexIndex + 1));
+}
+
+void DeleteVertexCommand::undo()
+{
+    // Re-insert the vertex
+    if (auto* polyline = qobject_cast<Geometry::Polyline*>(m_object)) {
+        Geometry::PolylineVertex vertex(
+            m_position,
+            static_cast<Geometry::VertexType>(m_vertexType),
+            m_incomingTension,
+            m_outgoingTension,
+            m_tangent
+        );
+        polyline->insertVertex(m_vertexIndex, vertex);
+    }
+}
+
+void DeleteVertexCommand::redo()
+{
+    // Delete the vertex
+    if (auto* polyline = qobject_cast<Geometry::Polyline*>(m_object)) {
+        polyline->removeVertex(m_vertexIndex);
+    }
+}
+
+// ============================================================================
+// ChangeVertexTypeCommand
+// ============================================================================
+
+ChangeVertexTypeCommand::ChangeVertexTypeCommand(Geometry::GeometryObject* object, int vertexIndex,
+                                                 int oldType, int newType,
+                                                 QUndoCommand* parent)
+    : QUndoCommand(parent)
+    , m_object(object)
+    , m_vertexIndex(vertexIndex)
+    , m_oldType(oldType)
+    , m_newType(newType)
+{
+    QString oldTypeName = (oldType == static_cast<int>(Geometry::VertexType::Sharp)) ? "Sharp" : "Smooth";
+    QString newTypeName = (newType == static_cast<int>(Geometry::VertexType::Sharp)) ? "Sharp" : "Smooth";
+    setText(QObject::tr("Change Vertex %1: %2 → %3").arg(vertexIndex + 1).arg(oldTypeName).arg(newTypeName));
+}
+
+void ChangeVertexTypeCommand::undo()
+{
+    if (auto* polyline = qobject_cast<Geometry::Polyline*>(m_object)) {
+        polyline->setVertexType(m_vertexIndex, static_cast<Geometry::VertexType>(m_oldType));
+    }
+}
+
+void ChangeVertexTypeCommand::redo()
+{
+    if (auto* polyline = qobject_cast<Geometry::Polyline*>(m_object)) {
+        polyline->setVertexType(m_vertexIndex, static_cast<Geometry::VertexType>(m_newType));
+    }
+}
+
 } // namespace PatternCAD

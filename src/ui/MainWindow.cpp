@@ -149,6 +149,9 @@ void MainWindow::setupUi()
     setupStatusBar();
     setupDockWidgets();
     setupWindowMenu();
+
+    // Give focus to canvas so it receives keyboard events
+    m_canvas->setFocus();
 }
 
 void MainWindow::setupMenuBar()
@@ -202,8 +205,8 @@ void MainWindow::setupMenuBar()
     viewMenu->addAction(tr("Zoom to &Selection"), this, &MainWindow::onViewZoomSelection, QKeySequence(tr("Shift+F")));
     viewMenu->addAction(tr("Zoom &Actual (100%)"), this, &MainWindow::onViewZoomActual, QKeySequence(tr("Ctrl+0")));
     viewMenu->addSeparator();
-    viewMenu->addAction(tr("Toggle &Grid"), this, &MainWindow::onViewToggleGrid, QKeySequence(tr("G")));
-    viewMenu->addAction(tr("Toggle &Snap to Grid"), this, &MainWindow::onViewToggleSnap, QKeySequence(tr("Ctrl+Shift+G")));
+    viewMenu->addAction(tr("Toggle &Grid"), this, &MainWindow::onViewToggleGrid);
+    viewMenu->addAction(tr("Toggle &Snap to Grid"), this, &MainWindow::onViewToggleSnap);
 
     // Draw menu (placeholder)
     menuBar()->addMenu(tr("&Draw"));

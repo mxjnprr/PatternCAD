@@ -72,6 +72,7 @@ public:
     void insertVertex(int index, const PolylineVertex& vertex);
     void removeVertex(int index);
     void updateVertex(int index, const QPointF& position);
+    void setVertexType(int index, VertexType type);
     PolylineVertex vertexAt(int index) const;
 
     // Vertex hit testing

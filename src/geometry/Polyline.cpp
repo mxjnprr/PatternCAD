@@ -528,6 +528,14 @@ void Polyline::updateVertex(int index, const QPointF& position)
     }
 }
 
+void Polyline::setVertexType(int index, VertexType type)
+{
+    if (index >= 0 && index < m_vertices.size()) {
+        m_vertices[index].type = type;
+        notifyChanged();
+    }
+}
+
 PolylineVertex Polyline::vertexAt(int index) const
 {
     if (index >= 0 && index < m_vertices.size()) {

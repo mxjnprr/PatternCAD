@@ -356,6 +356,48 @@ private:
     DistributeMode m_mode;
 };
 
+/**
+ * DeleteVertexCommand - Command to delete a vertex from a polyline
+ */
+class DeleteVertexCommand : public QUndoCommand
+{
+public:
+    DeleteVertexCommand(Geometry::GeometryObject* object, int vertexIndex,
+                       QUndoCommand* parent = nullptr);
+
+    void undo() override;
+    void redo() override;
+
+private:
+    Geometry::GeometryObject* m_object;
+    int m_vertexIndex;
+    QPointF m_position;
+    int m_vertexType;  // Stored as int to avoid including Polyline.h
+    double m_incomingTension;
+    double m_outgoingTension;
+    QPointF m_tangent;
+};
+
+/**
+ * ChangeVertexTypeCommand - Command to change a vertex type (Sharp/Smooth)
+ */
+class ChangeVertexTypeCommand : public QUndoCommand
+{
+public:
+    ChangeVertexTypeCommand(Geometry::GeometryObject* object, int vertexIndex,
+                           int oldType, int newType,
+                           QUndoCommand* parent = nullptr);
+
+    void undo() override;
+    void redo() override;
+
+private:
+    Geometry::GeometryObject* m_object;
+    int m_vertexIndex;
+    int m_oldType;  // Stored as int to avoid including Polyline.h
+    int m_newType;
+};
+
 } // namespace PatternCAD
 
 #endif // PATTERNCAD_COMMANDS_H
