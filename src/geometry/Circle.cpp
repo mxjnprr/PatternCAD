@@ -26,6 +26,29 @@ namespace {
 
         return QPointF(center.x() + rotatedX, center.y() + rotatedY);
     }
+
+    // Helper function to mirror a point across an axis
+    QPointF mirrorPoint(const QPointF& point, const QPointF& axisPoint1, const QPointF& axisPoint2) {
+        double dx = axisPoint2.x() - axisPoint1.x();
+        double dy = axisPoint2.y() - axisPoint1.y();
+
+        double length = qSqrt(dx * dx + dy * dy);
+        if (length < 1e-10) {
+            return point;
+        }
+        double ux = dx / length;
+        double uy = dy / length;
+
+        double vx = point.x() - axisPoint1.x();
+        double vy = point.y() - axisPoint1.y();
+
+        double projection = vx * ux + vy * uy;
+
+        double closestX = axisPoint1.x() + projection * ux;
+        double closestY = axisPoint1.y() + projection * uy;
+
+        return QPointF(2.0 * closestX - point.x(), 2.0 * closestY - point.y());
+    }
 }
 
 Circle::Circle(QObject* parent)
@@ -137,6 +160,13 @@ void Circle::rotate(double angleDegrees, const QPointF& center)
     // For a circle, we only need to rotate its center point
     // The radius remains the same
     setCenter(rotatePoint(m_center, angleDegrees, center));
+}
+
+void Circle::mirror(const QPointF& axisPoint1, const QPointF& axisPoint2)
+{
+    // For a circle, we only need to mirror its center point
+    // The radius remains the same
+    setCenter(mirrorPoint(m_center, axisPoint1, axisPoint2));
 }
 
 void Circle::draw(QPainter* painter, const QColor& color) const

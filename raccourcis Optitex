@@ -1,0 +1,155 @@
+	Shortcut	Command
+1	)	Rotate Counter Clockwise - Rotate Piece in a Counter Clock Wise motion
+2	*	Preferences... - Application Preferences Setup
+3	0	Stitches - Show or Hide Stitch Data
+4	1	Piece Window
+5	Shift+1	Calculator - Show or Hide the Calculator window
+6	2	Grading Table - Show or Hide the Grading Table
+7	3	Toolbox
+8	4	Style Set - Show or Hide current Style Set
+9	5	Compare Length - Measure and compare segment lengths
+10	6	Pieces Table - Show or Hide the Pieces List dialog
+11	7	3D View - Show or Hide 3D View Window
+12	8	3D Properties - Show or Hide 3D Properties of currently selected stitch or piece
+13	9	Shader - Show or Hide Shader Window
+14	:	Set Baseline Direction
+15	Shift+:	Rotate to Baseline - Flip Flipped Piece and Rotate Piece so the Baseline is horizontal
+16	Ctrl+:	New Baseline - Create a new Baseline in the center of the Piece
+17	Shift+Alt+;	Screen Coordinates  - Show or Hide the interactive cursor position 
+18	=	Flip Vertically - Flip Piece Vertically
+19	Shift+=	Flip Horizontally - Flip Piece Horizontally
+20	Ctrl+=	Flip Along Line - Flip internals or Pieces along the Line
+21	A	Arc - Create an Arc on a Piece
+22	Ctrl+A	Select All - Select all Pieces
+23	B	Build Piece - Form a new Piece from existing pieces areas
+24	Ctrl+B	Trace Segments - Trace segments to create a new Piece
+25	Ctrl+Alt+B	Add Button - Add buttons (punch holes)
+26	Ctrl+Shift+B	Trace Piece - Make a new Piece from intersecting Pieces
+27	C	Cut a Piece
+28	Shift+C	Copy Grading - Copy the Grading values on the selected point
+29	Ctrl+C	Copy - Copy the selected Piece(s) to the Windows Clipboard
+30	Ctrl+Alt+C	Circle - Create an internal circle
+31	Ctrl+Shift+C	Cut a Piece Along Internal - Cut along internal line
+32	Ctrl+Shift+Alt+C	Two Circle Tangent - Create a Tangent Line for two Circles
+33	D	Draft - Draft a Piece or an internal contour
+34	Ctrl+D	Measure - Measure distances
+35	Ctrl+Alt+D	Add or Rotate Dart - Create or Rotate a dart
+36	E	Extend Internal - Extend Internal Contour, Circle, or Dart (Push Shift to Extend to External tool)
+37	Shift+E	Create Point Connection - Create a Point Connection for the selected point
+38	Ctrl+E	Add Points and Create Connection - Add points on the near contours from selected point and connect
+39	Shift+F	Fold In - Create Fold In contour and cut Piece by line
+40	Ctrl+Shift+F	Fold Out - Fold Out a contour in the shape of a selected Internal Contour
+41	G	Align Points - Align several points
+42	Shift+G	Cut by Guide Line - Cut the current Piece by the active Guide Line
+43	Ctrl+G	Copy - Copy the selected segment to the clipboard
+44	Ctrl+Alt+G	Delete All Guide Lines
+45	Ctrl+Shift+G	Grid - Show Grid Points
+46	Ctrl+Shift+Alt+G	Guide Lines - Show or Hide Guide Lines
+47	H	Set Half Piece Line - Set Half line for the Piece
+48	Shift+H	Open Half - Open Half Piece
+49	Ctrl+H	Close Half - Close Half Piece
+50	Ctrl+Alt+H	Set Mirror Line
+51	I	Move Internal - Move or Copy internal
+52	Shift+I	Select Internals - Drag a rectangle around internal objects 
+53	Ctrl+I	Piece Info... - View current Piece Information
+54	Ctrl+Alt+I	Copy Internal objects - Copy selected internal objects from current Piece
+55	Ctrl+Shift+I	Change Internal attributes... - Change Internals parameters globally
+56	J	Join Pieces - Join and combine two Pieces
+57	Shift+J	Join Contours - Join two non-closed Internal Contours
+58	Ctrl+K	Arrange on Working Area - Arrange for Plot All Pieces on the Working Area
+59	Ctrl+Shift+K	Arrange on Working Area with Large Gap - Arrange for Plot All Pieces on the Working Area with Large Shift
+60	L	Pleat - Create a box or a knife pleat
+61	Shift+L	Pleat lines - Create pleat lines in a Piece
+62	Ctrl+L	Plot... - Plot the Pieces on the Working Area 
+63	M	Move Point - Move a point
+64	Shift+M	Move Point Along Contour
+65	Ctrl+M	Move Points Proportionally - Move selection proportionally
+66	Ctrl+Alt+M	Move Points - Move a chain of points
+67	Ctrl+Shift+M	Move Points Parallelly - Move Fixed segment(Move Parallelly)
+68	N	Add Notch - Add a notch
+69	Shift+N	Add Notch on Point - Add a notch on a point
+70	Ctrl+N	New - Create a new Style file
+71	Ctrl+Shift+N	Add Points to all the Notches... - Add Points to existing Notches on Contour
+72	O	Add Point on Contour - Add a point on a segment
+73	Shift+O	Add Point - Add a point to Piece Contour
+74	Ctrl+O	Open - Open an existing Style file
+75	P	Create parallel - Create an internal contour parallel to the selected segment
+76	Shift+P	Extend in parallel - Extend the selected part of Piece or internal Contour parallel
+77	Ctrl+P	Print - Print the Pieces on the Working Area
+78	Ctrl+Alt+P	Paste Internal objects - Paste internal objects on current Piece
+79	Q	Multi Move - Move points and internal objects by dragging a Rectangle around them
+80	Shift+Q	Add Spline Support Points... - Add necessary support points for splines
+81	Ctrl+Q	Points Cleanup... - Delete extra points, can be use after importing or digitizing pieces
+82	Ctrl+Alt+Q	Definition... - Equal Segments: create or delete groups and segments
+83	R	Rotate Piece - Rotate a Piece or (Select tool with Shift) All Selected Pieces
+84	Alt+R	Rotate Contour or Text - Rotate Internal or External Contour or Text Separately
+85	Ctrl+R	Round Corner - Round piece corner
+86	Ctrl+Alt+R	Restore Placement - Restore the previously saved placement of the pieces.
+87	Ctrl+Shift+Alt+R	Rules Library - Show or Hide the Grading Rules Library
+88	S	Add Seam - Add seam allowance to a segment
+89	Shift+S	Remove Seam - Remove Seam of selected Pieces or Holes (with Shift of all Pieces by dialog)
+90	Ctrl+S	Save - Save the current file
+91	Ctrl+Alt+S	Save Placement - Save the current placement of the pieces.
+92	Ctrl+Shift+S	Save As... - Save the current file under a new file name
+93	Ctrl+Shift+Alt+S	Remove Seam on Segment - Remove Seam on a segment
+94	T	Text - Add or edit Text inside a Piece
+95	Shift+T	Trim - Trim Internal lines
+96	Ctrl+T	Clear Track Lines - Remove all track lines from all the Pieces
+97	Ctrl+Alt+T	Track Lines - Create track Lines for every Move
+98	Ctrl+Shift+T	Trace and Trim - Trace and Trim Internal lines
+99	Ctrl+Shift+Alt+T	Show Track Lines
+100	Shift+V	Paste Grading - Paste the X & Y grade values
+101	Ctrl+V	Paste - Paste the selected Piece(s) from the Clipboard to the open Style file
+102	W	Walk - Piece Walking
+103	Shift+W	Walk Segments Options - Walk Segments State and Options
+104	Ctrl+W	Walk Options... - Define the step and ratio values for the walk tool
+105	Shift+Alt+W	Walk Segments - Walking by Segments
+106	Shift+X	Paste X Grading - Paste the X grade values
+107	Ctrl+X	Cut - Cut the current Piece and copy it to the Windows Clipboard
+108	Shift+Y	Paste Y Grading - Paste the Y grade values
+109	Ctrl+Y	Redo - Redo the previous undo command
+110	Z	Select tool
+111	Shift+Z	Trace Piece Zones - Use the Trace tool to create a Zone
+112	Ctrl+Z	Undo - Undo the previous command
+113	Ctrl+Shift+Z	Build Piece Zones - Use the Build tool to create a zone
+114	F1	Online help
+115	F3	Lock Piece - Allows only the current Piece to be edited
+116	Shift+F4	Sizes Table... - Define the size names and base size
+117	F4	Show Base Size Only - Show all sizes or base size only
+118	Ctrl+F4	Grading Table - Show or Hide the Grading Table
+119	Ctrl+Shift+F4	Small, Big and Base Sizes Only - Show Small, Big and Base Sizes only / Show Base Size only
+120	F5	Switch to Cut/Sew - Switch the selected Pieces or Holes to Cut or Sew contour
+121	Shift+F5	Switch Pieces to SEW... - Switch Pieces to work on Sew line
+122	Ctrl+F5	Switch Pieces to CUT... - Switch Pieces to work on Cut line
+123	F6	Reseam - Reseam the selected Holes or Pieces
+124	Shift+F6	Update Notches, Darts, and Pleats - Update Notches, Darts, and Pleats on seam of the selected Pieces or Holes
+125	Ctrl+F6	Seam - Show Seam
+126	F9	Separate Piece - Separate current Piece on Working Area
+127		Rotate selected line Horizontally
+128	Shift+	Rotate selected line Vertically
+129	Num +	Zoom In
+130	Ctrl+Num +	Zoom by Rectangle - Zoom in to selected Rectangle
+131	Shift+Num +	Stripes - Show Stripe Lines
+132	Ctrl+Shift+Num +	Rulers - Show or Hide the Rulers
+133	Shift+Del	Delete - Delete Selected Pieces
+134	End	Select tool
+135	F10	View & Selection
+136	Shift+F11	Rotate CW
+137	F11	Switch Direction - Change the walk direction (CW, CCW)
+138	Ctrl+F11	Rotate CCW
+139	Shift+F12	Notch Moving Piece - Add a notch to the moving Piece
+140	F12	Notch Both - Add notches both to stationary and moving Pieces
+141	Ctrl+F12	Notch Stationary Piece - Add notch to stationary Piece
+142	Shift+Ins	Paste - Paste the selected Piece(s) from the Clipboard to the open Style file
+143	Ctrl+Ins	Copy - Copy the selected Piece(s) to the Windows Clipboard
+144	Home	Zoom All - Zoom all (with Shift zoom selected)
+145	Ctrl+Home	Zoom Selection - Zoom to Selected Piece
+146	Shift+Home	Zoom Selection - Zoom to Selected Piece
+147	Num *	Zoom All - Zoom all (with Shift zoom selected)
+148	Num -	Zoom Out
+149	Backspace	Delete - Delete points, notches, internals...
+150	Alt+Backspace	Undo - Undo the previous command
+151	Shift+Alt+Backspace	Redo - Redo the previous undo command
+152	Accent circonflexe	Rotate Clockwise - Rotate Piece in a ClockWise motion
+153	Ctrl+Shift+Ù	Simulation Properties... - Simulation Properties
+

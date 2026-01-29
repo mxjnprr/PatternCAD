@@ -480,7 +480,7 @@ epics:
     name: "Transformation and Manipulation Tools"
     description: "Implement transformation tools (rotate, mirror, scale, align) with visual feedback and parametric preservation"
     priority: "must-have"
-    status: "not-started"
+    status: "in-progress"
     estimated_stories: "4-6"
     actual_stories: 5
     stories:
@@ -528,11 +528,11 @@ epics:
           - Mirrored objects can optionally maintain parametric link to original
           - Mirror operation works on single objects or groups
           - Mirror is undoable
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-003/story-003-02.md"
         assigned_to: ""
         estimate: "5 points"
-        actual: ""
+        actual: "5 points"
         technical_notes: |
           - Implement MirrorTool
           - Create MirrorObjectsCommand

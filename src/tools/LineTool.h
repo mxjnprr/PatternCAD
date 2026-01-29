@@ -50,6 +50,10 @@ public:
     // Drawing overlay
     void drawOverlay(QPainter* painter) override;
 
+public slots:
+    // Apply dimension value (called when user enters exact length)
+    void applyLength(double lengthInMm);
+
 private:
     QPointF m_startPoint;
     QPointF m_currentPoint;

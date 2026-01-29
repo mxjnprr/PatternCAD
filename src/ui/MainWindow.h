@@ -82,6 +82,7 @@ private slots:
 
     // Modify menu
     void onModifyRotate();
+    void onModifyMirror();
 
     // Help menu
     void onHelpKeyboardShortcuts();

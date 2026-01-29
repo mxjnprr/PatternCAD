@@ -85,11 +85,14 @@ public:
 signals:
     void stateChanged(ToolState state);
     void statusMessage(const QString& message);
+    void objectCreated(); // Signal emitted when tool creates an object
+    void dimensionInputRequested(const QString& mode, double initialLength, double initialAngle); // Request dimension input with initial values
 
 protected:
     void setState(ToolState state);
 
     // Helper methods
+    QPointF mapToScene(const QPoint& viewPos) const;
     QPointF snapToGrid(const QPointF& point) const;
     void showStatusMessage(const QString& message);
 

@@ -92,6 +92,7 @@ public:
     virtual bool contains(const QPointF& point) const = 0;
     virtual void translate(const QPointF& delta) = 0;
     virtual void rotate(double angleDegrees, const QPointF& center) = 0;
+    virtual void mirror(const QPointF& axisPoint1, const QPointF& axisPoint2) = 0;
 
     // Drawing
     virtual void draw(QPainter* painter, const QColor& color = Qt::black) const = 0;

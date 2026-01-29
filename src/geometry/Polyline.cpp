@@ -41,6 +41,51 @@ namespace {
 
         return QPointF(rotatedX, rotatedY);
     }
+
+    // Helper function to mirror a point across an axis
+    QPointF mirrorPoint(const QPointF& point, const QPointF& axisPoint1, const QPointF& axisPoint2) {
+        double dx = axisPoint2.x() - axisPoint1.x();
+        double dy = axisPoint2.y() - axisPoint1.y();
+
+        double length = qSqrt(dx * dx + dy * dy);
+        if (length < 1e-10) {
+            return point;
+        }
+        double ux = dx / length;
+        double uy = dy / length;
+
+        double vx = point.x() - axisPoint1.x();
+        double vy = point.y() - axisPoint1.y();
+
+        double projection = vx * ux + vy * uy;
+
+        double closestX = axisPoint1.x() + projection * ux;
+        double closestY = axisPoint1.y() + projection * uy;
+
+        return QPointF(2.0 * closestX - point.x(), 2.0 * closestY - point.y());
+    }
+
+    // Helper to mirror a vector (for tangent mirroring, no translation)
+    QPointF mirrorVector(const QPointF& vec, const QPointF& axisPoint1, const QPointF& axisPoint2) {
+        double dx = axisPoint2.x() - axisPoint1.x();
+        double dy = axisPoint2.y() - axisPoint1.y();
+
+        double length = qSqrt(dx * dx + dy * dy);
+        if (length < 1e-10) {
+            return vec;
+        }
+        double ux = dx / length;
+        double uy = dy / length;
+
+        // Project vector onto axis
+        double projection = vec.x() * ux + vec.y() * uy;
+
+        // Mirror the vector
+        double mirroredX = 2.0 * projection * ux - vec.x();
+        double mirroredY = 2.0 * projection * uy - vec.y();
+
+        return QPointF(mirroredX, mirroredY);
+    }
 }
 
 Polyline::Polyline(QObject* parent)
@@ -129,6 +174,19 @@ void Polyline::rotate(double angleDegrees, const QPointF& center)
         // Rotate the tangent vector (if it exists)
         if (vertex.tangent != QPointF()) {
             vertex.tangent = rotateVector(vertex.tangent, angleDegrees);
+        }
+    }
+    notifyChanged();
+}
+
+void Polyline::mirror(const QPointF& axisPoint1, const QPointF& axisPoint2)
+{
+    for (auto& vertex : m_vertices) {
+        // Mirror the position
+        vertex.position = mirrorPoint(vertex.position, axisPoint1, axisPoint2);
+        // Mirror the tangent vector (if it exists)
+        if (vertex.tangent != QPointF()) {
+            vertex.tangent = mirrorVector(vertex.tangent, axisPoint1, axisPoint2);
         }
     }
     notifyChanged();

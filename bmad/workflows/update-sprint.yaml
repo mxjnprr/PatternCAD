@@ -1,0 +1,270 @@
+# BMAD Method v6 - Workflow Definition
+# Update Sprint Workflow
+
+name: "update-sprint"
+version: "1.0.0"
+description: "Workflow for updating sprint status and tracking progress"
+
+triggers:
+  - "Story status changes (started, completed, blocked)"
+  - "Sprint planning or review session"
+  - "Daily standup or status check"
+  - "User requests sprint status update"
+
+inputs:
+  - name: "update_type"
+    type: "enum"
+    description: "Type of update: status_change, planning, review, report"
+    required: true
+    values:
+      - "status_change"
+      - "sprint_planning"
+      - "sprint_review"
+      - "status_report"
+
+outputs:
+  - "Updated sprint-status.yaml"
+  - "Progress report"
+  - "Risk assessment"
+  - "Git commits"
+
+agents_involved:
+  - scrum-master
+  - dev (for input)
+  - qa (for input)
+
+steps_for_status_change:
+  - step: 1
+    name: "Identify Change"
+    agent: "scrum-master"
+    actions:
+      - "Determine which story status changed"
+      - "Verify change is valid (correct status transition)"
+      - "Gather relevant information (assignee, effort, etc.)"
+    outputs:
+      - "Story ID and new status"
+
+  - step: 2
+    name: "Update sprint-status.yaml"
+    agent: "scrum-master"
+    actions:
+      - "Open sprint-status.yaml"
+      - "Find story in epic"
+      - "Update status field"
+      - "Update assigned_to if needed"
+      - "Update actual effort if completing"
+      - "Update timestamp (last_updated)"
+    outputs:
+      - "Modified sprint-status.yaml"
+
+  - step: 3
+    name: "Update Epic Metrics"
+    agent: "scrum-master"
+    actions:
+      - "Recalculate epic completion percentage"
+      - "Update stories_completed count"
+      - "Update stories_in_progress count"
+      - "Update epic status if all stories done"
+    outputs:
+      - "Updated epic metrics"
+
+  - step: 4
+    name: "Commit Changes"
+    agent: "scrum-master"
+    actions:
+      - "Stage sprint-status.yaml"
+      - "Write clear commit message"
+      - "Example: 'Update story-001-03 to completed, 5 points'"
+      - "Push commit"
+    outputs:
+      - "Git commit"
+
+steps_for_sprint_planning:
+  - step: 1
+    name: "Review Current Sprint"
+    agent: "scrum-master"
+    actions:
+      - "Check current sprint status"
+      - "Identify completed stories"
+      - "Identify in-progress stories"
+      - "Identify blocked stories"
+      - "Calculate velocity (points completed)"
+    outputs:
+      - "Current sprint summary"
+
+  - step: 2
+    name: "Select Stories for Next Sprint"
+    agent: "scrum-master"
+    actions:
+      - "Review epic priorities"
+      - "Check story dependencies"
+      - "Follow recommended phase sequence"
+      - "Select stories based on team capacity"
+      - "Consider risks and blockers"
+    outputs:
+      - "List of stories for next sprint"
+
+  - step: 3
+    name: "Update Sprint Metadata"
+    agent: "scrum-master"
+    actions:
+      - "Increment sprint_number"
+      - "Set new sprint_goal"
+      - "Set sprint_start_date"
+      - "Set sprint_end_date"
+      - "Update last_updated timestamp"
+    outputs:
+      - "Updated sprint metadata"
+
+  - step: 4
+    name: "Assign Stories"
+    agent: "scrum-master"
+    actions:
+      - "Assign stories to developers"
+      - "Distribute workload evenly"
+      - "Consider developer expertise"
+      - "Update assigned_to fields"
+    outputs:
+      - "Story assignments"
+
+  - step: 5
+    name: "Commit Sprint Plan"
+    agent: "scrum-master"
+    actions:
+      - "Commit sprint-status.yaml"
+      - "Write message: 'Sprint N planning: M stories selected'"
+      - "Push commit"
+    outputs:
+      - "Git commit"
+
+steps_for_sprint_review:
+  - step: 1
+    name: "Calculate Sprint Metrics"
+    agent: "scrum-master"
+    actions:
+      - "Count stories completed"
+      - "Sum story points completed"
+      - "Calculate completion percentage"
+      - "Calculate velocity"
+      - "Identify uncompleted stories"
+    outputs:
+      - "Sprint metrics"
+
+  - step: 2
+    name: "Analyze Performance"
+    agent: "scrum-master"
+    actions:
+      - "Compare actual vs estimated effort"
+      - "Identify stories that took longer than expected"
+      - "Identify blockers that impacted sprint"
+      - "Note any process improvements needed"
+    outputs:
+      - "Performance analysis"
+
+  - step: 3
+    name: "Update Epic Progress"
+    agent: "scrum-master"
+    actions:
+      - "Update epic completion percentages"
+      - "Mark completed epics"
+      - "Update epic status fields"
+    outputs:
+      - "Updated epic status"
+
+  - step: 4
+    name: "Create Sprint Report"
+    agent: "scrum-master"
+    actions:
+      - "Summarize sprint achievements"
+      - "List completed stories"
+      - "Report velocity and metrics"
+      - "Note any issues or blockers"
+      - "Suggest improvements"
+    outputs:
+      - "Sprint review report"
+
+  - step: 5
+    name: "Commit Sprint Review"
+    agent: "scrum-master"
+    actions:
+      - "Commit sprint-status.yaml updates"
+      - "Write message: 'Sprint N review: M stories completed'"
+      - "Push commit"
+    outputs:
+      - "Git commit"
+
+steps_for_status_report:
+  - step: 1
+    name: "Gather Current Data"
+    agent: "scrum-master"
+    actions:
+      - "Read sprint-status.yaml"
+      - "Count stories by status"
+      - "Calculate story points by status"
+      - "Identify blocked stories"
+      - "Check dependencies"
+    outputs:
+      - "Current sprint data"
+
+  - step: 2
+    name: "Calculate Metrics"
+    agent: "scrum-master"
+    actions:
+      - "Stories completed / total"
+      - "Points completed / total"
+      - "Completion percentage"
+      - "Current velocity"
+      - "Projected completion date"
+      - "Epic progress percentages"
+    outputs:
+      - "Calculated metrics"
+
+  - step: 3
+    name: "Assess Risks"
+    agent: "scrum-master"
+    actions:
+      - "Identify stories behind schedule"
+      - "Identify blockers without resolution"
+      - "Check for dependency issues"
+      - "Note team capacity concerns"
+    outputs:
+      - "Risk assessment"
+
+  - step: 4
+    name: "Generate Report"
+    agent: "scrum-master"
+    actions:
+      - "Format status report"
+      - "Include metrics and progress"
+      - "Highlight blockers and risks"
+      - "Suggest actions if needed"
+      - "Provide clear summary"
+    outputs:
+      - "Status report"
+
+completion_criteria:
+  - "sprint-status.yaml is updated"
+  - "Changes are committed"
+  - "Metrics are accurate"
+  - "Report is generated (if requested)"
+
+notes: |
+  This workflow handles all sprint status updates and tracking.
+
+  Four main update types:
+  1. **status_change**: When a story moves between states
+  2. **sprint_planning**: Planning the next sprint
+  3. **sprint_review**: Reviewing completed sprint
+  4. **status_report**: Generating current status report
+
+  The Scrum Master is responsible for keeping sprint-status.yaml accurate
+  and up-to-date at all times.
+
+  Key principles:
+  - Update immediately when status changes
+  - Always commit changes with clear messages
+  - Keep metrics accurate
+  - Identify and track risks
+  - Communicate proactively
+
+  The sprint-status.yaml file is the single source of truth for sprint progress.

@@ -141,6 +141,39 @@ void Point2D::rotate(double angleDegrees, const QPointF& center)
     setPosition(center.x() + rotatedX, center.y() + rotatedY);
 }
 
+void Point2D::mirror(const QPointF& axisPoint1, const QPointF& axisPoint2)
+{
+    // Direction vector of the mirror axis
+    double dx = axisPoint2.x() - axisPoint1.x();
+    double dy = axisPoint2.y() - axisPoint1.y();
+
+    // Normalize the direction vector
+    double length = qSqrt(dx * dx + dy * dy);
+    if (length < 1e-10) {
+        // Degenerate axis (two points are the same), no mirroring
+        return;
+    }
+    double ux = dx / length;
+    double uy = dy / length;
+
+    // Vector from axis point to our point
+    double vx = m_position.x() - axisPoint1.x();
+    double vy = m_position.y() - axisPoint1.y();
+
+    // Project onto axis
+    double projection = vx * ux + vy * uy;
+
+    // Closest point on axis
+    double closestX = axisPoint1.x() + projection * ux;
+    double closestY = axisPoint1.y() + projection * uy;
+
+    // Mirror across the closest point
+    double mirroredX = 2.0 * closestX - m_position.x();
+    double mirroredY = 2.0 * closestY - m_position.y();
+
+    setPosition(mirroredX, mirroredY);
+}
+
 void Point2D::draw(QPainter* painter, const QColor& color) const
 {
     if (!m_visible) {

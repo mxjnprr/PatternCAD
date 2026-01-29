@@ -24,6 +24,7 @@
 #include "../tools/PolylineTool.h"
 #include "../tools/AddPointOnContourTool.h"
 #include "../tools/RotateTool.h"
+#include "../tools/MirrorTool.h"
 
 #include <QMenuBar>
 #include <QToolBar>
@@ -83,6 +84,7 @@ MainWindow::MainWindow(QWidget* parent)
     m_tools["Polyline"] = new Tools::PolylineTool(this);
     m_tools["AddPointOnContour"] = new Tools::AddPointOnContourTool(this);
     m_tools["Rotate"] = new Tools::RotateTool(this);
+    m_tools["Mirror"] = new Tools::MirrorTool(this);
 
     // Set document for all tools and connect status messages
     for (auto* tool : m_tools) {
@@ -204,6 +206,7 @@ void MainWindow::setupMenuBar()
     // Modify menu
     QMenu* modifyMenu = menuBar()->addMenu(tr("&Modify"));
     modifyMenu->addAction(tr("&Rotate..."), this, &MainWindow::onModifyRotate, QKeySequence(tr("Ctrl+R")));
+    modifyMenu->addAction(tr("&Mirror..."), this, &MainWindow::onModifyMirror, QKeySequence(tr("Ctrl+M")));
 
     // Tools menu (placeholder)
     menuBar()->addMenu(tr("&Tools"));
@@ -638,6 +641,12 @@ void MainWindow::onModifyRotate()
 {
     // Activate the Rotate tool
     onToolSelected("Rotate");
+}
+
+void MainWindow::onModifyMirror()
+{
+    // Activate the Mirror tool
+    onToolSelected("Mirror");
 }
 
 // Help menu slots

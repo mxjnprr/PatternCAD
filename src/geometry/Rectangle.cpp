@@ -26,6 +26,29 @@ namespace {
 
         return QPointF(center.x() + rotatedX, center.y() + rotatedY);
     }
+
+    // Helper function to mirror a point across an axis
+    QPointF mirrorPoint(const QPointF& point, const QPointF& axisPoint1, const QPointF& axisPoint2) {
+        double dx = axisPoint2.x() - axisPoint1.x();
+        double dy = axisPoint2.y() - axisPoint1.y();
+
+        double length = qSqrt(dx * dx + dy * dy);
+        if (length < 1e-10) {
+            return point;
+        }
+        double ux = dx / length;
+        double uy = dy / length;
+
+        double vx = point.x() - axisPoint1.x();
+        double vy = point.y() - axisPoint1.y();
+
+        double projection = vx * ux + vy * uy;
+
+        double closestX = axisPoint1.x() + projection * ux;
+        double closestY = axisPoint1.y() + projection * uy;
+
+        return QPointF(2.0 * closestX - point.x(), 2.0 * closestY - point.y());
+    }
 }
 
 Rectangle::Rectangle(QObject* parent)
@@ -196,6 +219,30 @@ void Rectangle::rotate(double angleDegrees, const QPointF& center)
     topRight = rotatePoint(topRight, angleDegrees, center);
     bottomLeft = rotatePoint(bottomLeft, angleDegrees, center);
     bottomRight = rotatePoint(bottomRight, angleDegrees, center);
+
+    // Find new axis-aligned bounding rect
+    double minX = qMin(qMin(topLeft.x(), topRight.x()), qMin(bottomLeft.x(), bottomRight.x()));
+    double maxX = qMax(qMax(topLeft.x(), topRight.x()), qMax(bottomLeft.x(), bottomRight.x()));
+    double minY = qMin(qMin(topLeft.y(), topRight.y()), qMin(bottomLeft.y(), bottomRight.y()));
+    double maxY = qMax(qMax(topLeft.y(), topRight.y()), qMax(bottomLeft.y(), bottomRight.y()));
+
+    setTopLeft(QPointF(minX, minY));
+    setWidth(maxX - minX);
+    setHeight(maxY - minY);
+}
+
+void Rectangle::mirror(const QPointF& axisPoint1, const QPointF& axisPoint2)
+{
+    // Mirror all four corners and compute new axis-aligned bounding rect
+    QPointF topLeft = m_topLeft;
+    QPointF topRight(m_topLeft.x() + m_width, m_topLeft.y());
+    QPointF bottomLeft(m_topLeft.x(), m_topLeft.y() + m_height);
+    QPointF bottomRight(m_topLeft.x() + m_width, m_topLeft.y() + m_height);
+
+    topLeft = mirrorPoint(topLeft, axisPoint1, axisPoint2);
+    topRight = mirrorPoint(topRight, axisPoint1, axisPoint2);
+    bottomLeft = mirrorPoint(bottomLeft, axisPoint1, axisPoint2);
+    bottomRight = mirrorPoint(bottomRight, axisPoint1, axisPoint2);
 
     // Find new axis-aligned bounding rect
     double minX = qMin(qMin(topLeft.x(), topRight.x()), qMin(bottomLeft.x(), bottomRight.x()));

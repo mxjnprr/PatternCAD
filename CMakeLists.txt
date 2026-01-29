@@ -64,6 +64,7 @@ set(SOURCES
     src/tools/PolylineTool.cpp
     src/tools/AddPointOnContourTool.cpp
     src/tools/RotateTool.cpp
+    src/tools/MirrorTool.cpp
     src/io/FileFormat.cpp
     src/io/NativeFormat.cpp
 )
@@ -101,6 +102,7 @@ set(HEADERS
     src/tools/PolylineTool.h
     src/tools/AddPointOnContourTool.h
     src/tools/RotateTool.h
+    src/tools/MirrorTool.h
     src/io/FileFormat.h
     src/io/NativeFormat.h
 )

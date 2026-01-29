@@ -1,0 +1,203 @@
+# BMAD Method v6 - Workflow Definition
+# Dev Story Workflow
+
+name: "dev-story"
+version: "1.0.0"
+description: "Workflow for implementing a user story from start to completion"
+
+triggers:
+  - "User requests implementation of a story"
+  - "Story is assigned to developer"
+  - "Sprint planning selects story for current sprint"
+
+inputs:
+  - name: "story_id"
+    type: "string"
+    description: "Story identifier (e.g., story-001-01)"
+    required: true
+
+outputs:
+  - "Implemented code"
+  - "Updated story file"
+  - "Unit tests"
+  - "Git commits"
+
+agents_involved:
+  - dev
+  - qa
+  - scrum-master
+
+steps:
+  - step: 1
+    name: "Read and Understand Story"
+    agent: "dev"
+    actions:
+      - "Read story file from docs/stories/"
+      - "Review acceptance criteria"
+      - "Review technical notes"
+      - "Check story dependencies"
+      - "Review architecture document sections relevant to story"
+    outputs:
+      - "Understanding of requirements"
+      - "List of questions or clarifications needed"
+
+  - step: 2
+    name: "Update Story Status to In Progress"
+    agent: "scrum-master"
+    actions:
+      - "Update sprint-status.yaml"
+      - "Set story status to 'in-progress'"
+      - "Set assigned_to field"
+      - "Commit status update"
+    outputs:
+      - "Updated sprint-status.yaml"
+
+  - step: 3
+    name: "Plan Implementation"
+    agent: "dev"
+    actions:
+      - "Identify classes/files to create or modify"
+      - "Plan Command class for undo/redo"
+      - "Design class interfaces"
+      - "Identify dependencies on other code"
+      - "Create implementation checklist"
+    outputs:
+      - "Implementation plan"
+      - "List of files to create/modify"
+
+  - step: 4
+    name: "Implement Code"
+    agent: "dev"
+    actions:
+      - "Create new classes following architecture"
+      - "Implement business logic"
+      - "Implement Command class for undoable operations"
+      - "Add UI elements if required"
+      - "Follow Qt best practices"
+      - "Add code comments for complex logic"
+      - "Handle errors gracefully"
+    outputs:
+      - "Implemented code"
+      - "Command classes for undo/redo"
+
+  - step: 5
+    name: "Write Unit Tests"
+    agent: "dev"
+    actions:
+      - "Write unit tests for new classes"
+      - "Test happy path"
+      - "Test edge cases"
+      - "Test error handling"
+      - "Verify all tests pass"
+    outputs:
+      - "Unit test files"
+      - "Passing test suite"
+
+  - step: 6
+    name: "Verify Acceptance Criteria"
+    agent: "dev"
+    actions:
+      - "Test each acceptance criterion"
+      - "Verify feature works as specified"
+      - "Test on both Linux and Windows if possible"
+      - "Check performance requirements"
+      - "Test undo/redo"
+    outputs:
+      - "Verification checklist"
+
+  - step: 7
+    name: "Commit Code"
+    agent: "dev"
+    actions:
+      - "Stage changed files"
+      - "Write clear commit message"
+      - "Reference story ID in commit message"
+      - "Push commits"
+    outputs:
+      - "Git commits"
+
+  - step: 8
+    name: "Request QA Review"
+    agent: "dev"
+    actions:
+      - "Notify QA that story is ready for testing"
+      - "Provide testing notes if needed"
+      - "Update story file with implementation notes"
+    outputs:
+      - "QA notification"
+
+  - step: 9
+    name: "QA Testing"
+    agent: "qa"
+    actions:
+      - "Create test plan based on acceptance criteria"
+      - "Execute functional tests"
+      - "Test edge cases"
+      - "Verify performance requirements"
+      - "Test on both platforms"
+      - "Test undo/redo"
+      - "Report any bugs found"
+    outputs:
+      - "Test results"
+      - "Bug reports (if any)"
+      - "QA sign-off or rejection"
+
+  - step: 10
+    name: "Fix Bugs (if needed)"
+    agent: "dev"
+    actions:
+      - "Review bug reports"
+      - "Fix reported issues"
+      - "Re-test locally"
+      - "Commit fixes"
+      - "Return to QA for re-test"
+    outputs:
+      - "Bug fixes"
+      - "Updated code"
+    condition: "If bugs were found"
+
+  - step: 11
+    name: "Update Story to Completed"
+    agent: "scrum-master"
+    actions:
+      - "Verify QA sign-off"
+      - "Update sprint-status.yaml"
+      - "Set story status to 'completed'"
+      - "Record actual effort"
+      - "Update epic progress metrics"
+      - "Commit status update"
+    outputs:
+      - "Updated sprint-status.yaml"
+      - "Completed story"
+
+  - step: 12
+    name: "Update Story File"
+    agent: "scrum-master"
+    actions:
+      - "Update story markdown file"
+      - "Add completion date"
+      - "Add any lessons learned"
+      - "Note any technical debt created"
+    outputs:
+      - "Updated story file"
+
+completion_criteria:
+  - "All acceptance criteria met"
+  - "QA has signed off"
+  - "Code is committed and pushed"
+  - "Story status is 'completed'"
+  - "sprint-status.yaml is updated"
+
+notes: |
+  This workflow implements a complete story from assignment through QA sign-off.
+
+  Key points:
+  - Dev owns implementation and initial testing
+  - QA performs thorough testing before sign-off
+  - Scrum Master tracks status updates
+  - All changes are committed with clear messages
+  - Story only marked complete after QA approval
+
+  If bugs are found during QA, the workflow loops back to step 10 for fixes.
+
+  This ensures quality and completeness before moving to the next story.

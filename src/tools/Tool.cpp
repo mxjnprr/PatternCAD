@@ -127,6 +127,14 @@ void Tool::setState(ToolState state)
     }
 }
 
+QPointF Tool::mapToScene(const QPoint& viewPos) const
+{
+    if (m_canvas) {
+        return m_canvas->mapToScene(viewPos);
+    }
+    return QPointF(viewPos);
+}
+
 QPointF Tool::snapToGrid(const QPointF& point) const
 {
     if (m_canvas) {

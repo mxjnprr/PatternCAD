@@ -241,6 +241,33 @@ private:
     QPointF m_center;
 };
 
+/**
+ * MirrorObjectsCommand - Command to create mirrored copies of objects
+ */
+class MirrorObjectsCommand : public QUndoCommand
+{
+public:
+    MirrorObjectsCommand(Document* document,
+                         const QList<Geometry::GeometryObject*>& objects,
+                         const QPointF& axisPoint1,
+                         const QPointF& axisPoint2,
+                         QUndoCommand* parent = nullptr);
+    ~MirrorObjectsCommand();
+
+    void undo() override;
+    void redo() override;
+
+    QList<Geometry::GeometryObject*> mirroredObjects() const { return m_mirroredObjects; }
+
+private:
+    Document* m_document;
+    QList<Geometry::GeometryObject*> m_originalObjects;
+    QList<Geometry::GeometryObject*> m_mirroredObjects;
+    QPointF m_axisPoint1;
+    QPointF m_axisPoint2;
+    bool m_firstRedo;
+};
+
 } // namespace PatternCAD
 
 #endif // PATTERNCAD_COMMANDS_H

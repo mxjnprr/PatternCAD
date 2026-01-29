@@ -7,10 +7,12 @@
 #include "Commands.h"
 #include "Document.h"
 #include "../geometry/GeometryObject.h"
-#include "../geometry/Polyline.h"
+#include "../geometry/Point2D.h"
 #include "../geometry/Line.h"
-#include "../geometry/Rectangle.h"
 #include "../geometry/Circle.h"
+#include "../geometry/Rectangle.h"
+#include "../geometry/Polyline.h"
+#include "../geometry/CubicBezier.h"
 
 namespace PatternCAD {
 
@@ -543,6 +545,178 @@ void RotateObjectsCommand::redo()
     for (auto* obj : m_objects) {
         if (obj) {
             obj->rotate(m_angleDegrees, m_center);
+        }
+    }
+}
+
+// ============================================================================
+// MirrorObjectsCommand
+// ============================================================================
+
+namespace {
+    // Helper function to clone a geometry object
+    Geometry::GeometryObject* cloneObject(Geometry::GeometryObject* obj) {
+        if (!obj) return nullptr;
+
+        using namespace Geometry;
+
+        switch (obj->type()) {
+            case ObjectType::Point: {
+                auto* point = qobject_cast<Point2D*>(obj);
+                if (point) {
+                    auto* clone = new Point2D(point->position());
+                    clone->setName(point->name());
+                    clone->setLayer(point->layer());
+                    clone->setLineWeight(point->lineWeight());
+                    clone->setLineColor(point->lineColor());
+                    clone->setLineStyle(point->lineStyle());
+                    return clone;
+                }
+                break;
+            }
+            case ObjectType::Line: {
+                auto* line = qobject_cast<Line*>(obj);
+                if (line) {
+                    auto* clone = new Line(line->start(), line->end());
+                    clone->setName(line->name());
+                    clone->setLayer(line->layer());
+                    clone->setLineWeight(line->lineWeight());
+                    clone->setLineColor(line->lineColor());
+                    clone->setLineStyle(line->lineStyle());
+                    return clone;
+                }
+                break;
+            }
+            case ObjectType::Circle: {
+                auto* circle = qobject_cast<Circle*>(obj);
+                if (circle) {
+                    auto* clone = new Circle(circle->center(), circle->radius());
+                    clone->setName(circle->name());
+                    clone->setLayer(circle->layer());
+                    clone->setLineWeight(circle->lineWeight());
+                    clone->setLineColor(circle->lineColor());
+                    clone->setLineStyle(circle->lineStyle());
+                    return clone;
+                }
+                break;
+            }
+            case ObjectType::Rectangle: {
+                auto* rect = qobject_cast<Rectangle*>(obj);
+                if (rect) {
+                    auto* clone = new Rectangle(rect->topLeft(), rect->width(), rect->height());
+                    clone->setName(rect->name());
+                    clone->setLayer(rect->layer());
+                    clone->setLineWeight(rect->lineWeight());
+                    clone->setLineColor(rect->lineColor());
+                    clone->setLineStyle(rect->lineStyle());
+                    return clone;
+                }
+                break;
+            }
+            case ObjectType::Polyline: {
+                auto* poly = qobject_cast<Polyline*>(obj);
+                if (poly) {
+                    auto* clone = new Polyline();
+                    clone->setVertices(poly->vertices());
+                    clone->setClosed(poly->isClosed());
+                    clone->setName(poly->name());
+                    clone->setLayer(poly->layer());
+                    clone->setLineWeight(poly->lineWeight());
+                    clone->setLineColor(poly->lineColor());
+                    clone->setLineStyle(poly->lineStyle());
+                    return clone;
+                }
+                break;
+            }
+            case ObjectType::CubicBezier: {
+                auto* bezier = qobject_cast<CubicBezier*>(obj);
+                if (bezier) {
+                    auto* clone = new CubicBezier();
+                    clone->setPoints(bezier->p0(), bezier->p1(), bezier->p2(), bezier->p3());
+                    clone->setName(bezier->name());
+                    clone->setLayer(bezier->layer());
+                    clone->setLineWeight(bezier->lineWeight());
+                    clone->setLineColor(bezier->lineColor());
+                    clone->setLineStyle(bezier->lineStyle());
+                    return clone;
+                }
+                break;
+            }
+            default:
+                break;
+        }
+
+        return nullptr;
+    }
+}
+
+MirrorObjectsCommand::MirrorObjectsCommand(Document* document,
+                                         const QList<Geometry::GeometryObject*>& objects,
+                                         const QPointF& axisPoint1,
+                                         const QPointF& axisPoint2,
+                                         QUndoCommand* parent)
+    : QUndoCommand(parent)
+    , m_document(document)
+    , m_originalObjects(objects)
+    , m_axisPoint1(axisPoint1)
+    , m_axisPoint2(axisPoint2)
+    , m_firstRedo(true)
+{
+    setText(QObject::tr("Mirror %n object(s)", "", objects.size()));
+}
+
+MirrorObjectsCommand::~MirrorObjectsCommand()
+{
+    // Clean up mirrored objects if we own them (they're not in the document)
+    // We own them when the command is undone
+    if (!m_mirroredObjects.isEmpty()) {
+        // Check if first object is in document
+        bool inDocument = false;
+        if (!m_mirroredObjects.isEmpty() && m_document) {
+            inDocument = m_document->objects().contains(m_mirroredObjects.first());
+        }
+        if (!inDocument) {
+            qDeleteAll(m_mirroredObjects);
+        }
+    }
+}
+
+void MirrorObjectsCommand::undo()
+{
+    // Remove mirrored objects from document
+    for (auto* obj : m_mirroredObjects) {
+        if (obj) {
+            m_document->removeObjectDirect(obj);
+        }
+    }
+}
+
+void MirrorObjectsCommand::redo()
+{
+    if (m_firstRedo) {
+        // First execution: create the mirrored copies
+        m_mirroredObjects.clear();
+        for (auto* original : m_originalObjects) {
+            if (original) {
+                // Clone the object
+                auto* mirrored = cloneObject(original);
+                if (mirrored) {
+                    // Mirror the clone
+                    mirrored->mirror(m_axisPoint1, m_axisPoint2);
+                    // Add to document
+                    m_document->addObjectDirect(mirrored);
+                    // Store the mirrored object
+                    m_mirroredObjects.append(mirrored);
+                }
+            }
+        }
+        m_firstRedo = false;
+    } else {
+        // Subsequent executions: re-add existing mirrored objects
+        for (auto* obj : m_mirroredObjects) {
+            if (obj) {
+                m_document->addObjectDirect(obj);
+            }
         }
     }
 }

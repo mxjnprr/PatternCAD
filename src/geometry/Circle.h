@@ -55,6 +55,7 @@ public:
     bool contains(const QPointF& point) const override;
     void translate(const QPointF& delta) override;
     void rotate(double angleDegrees, const QPointF& center) override;
+    void mirror(const QPointF& axisPoint1, const QPointF& axisPoint2) override;
 
     // Drawing
     void draw(QPainter* painter, const QColor& color = Qt::black) const override;

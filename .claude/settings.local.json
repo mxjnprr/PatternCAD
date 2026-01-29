@@ -16,7 +16,23 @@
       "Bash(QT_QPA_PLATFORM=offscreen timeout 2 ./PatternCAD:*)",
       "Bash(echo:*)",
       "Bash(chmod:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(cd:*)",
+      "Bash(grep:*)",
+      "Bash(make:*)",
+      "Bash(tree:*)",
+      "Bash(xdpyinfo:*)",
+      "Bash(kill:*)",
+      "Bash(DISPLAY=:0 wmctrl:*)",
+      "Bash(DISPLAY=:0 import:*)",
+      "Bash(pkill:*)",
+      "Bash(git reset:*)",
+      "Bash(git push:*)",
+      "Bash(for:*)",
+      "Bash(do echo -n \"story-008-$i: \")",
+      "Bash(done)",
+      "Bash(do echo -n \"story-001-$i: \")",
+      "Bash(do echo \"=== EPIC-$epic ===\")"
     ]
   }
 }

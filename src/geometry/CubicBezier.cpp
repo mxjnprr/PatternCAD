@@ -26,6 +26,29 @@ namespace {
 
         return QPointF(center.x() + rotatedX, center.y() + rotatedY);
     }
+
+    // Helper function to mirror a point across an axis
+    QPointF mirrorPoint(const QPointF& point, const QPointF& axisPoint1, const QPointF& axisPoint2) {
+        double dx = axisPoint2.x() - axisPoint1.x();
+        double dy = axisPoint2.y() - axisPoint1.y();
+
+        double length = qSqrt(dx * dx + dy * dy);
+        if (length < 1e-10) {
+            return point;
+        }
+        double ux = dx / length;
+        double uy = dy / length;
+
+        double vx = point.x() - axisPoint1.x();
+        double vy = point.y() - axisPoint1.y();
+
+        double projection = vx * ux + vy * uy;
+
+        double closestX = axisPoint1.x() + projection * ux;
+        double closestY = axisPoint1.y() + projection * uy;
+
+        return QPointF(2.0 * closestX - point.x(), 2.0 * closestY - point.y());
+    }
 }
 
 CubicBezier::CubicBezier(QObject* parent)
@@ -237,6 +260,15 @@ void CubicBezier::rotate(double angleDegrees, const QPointF& center)
     m_p1 = rotatePoint(m_p1, angleDegrees, center);
     m_p2 = rotatePoint(m_p2, angleDegrees, center);
     m_p3 = rotatePoint(m_p3, angleDegrees, center);
+    notifyChanged();
+}
+
+void CubicBezier::mirror(const QPointF& axisPoint1, const QPointF& axisPoint2)
+{
+    m_p0 = mirrorPoint(m_p0, axisPoint1, axisPoint2);
+    m_p1 = mirrorPoint(m_p1, axisPoint1, axisPoint2);
+    m_p2 = mirrorPoint(m_p2, axisPoint1, axisPoint2);
+    m_p3 = mirrorPoint(m_p3, axisPoint1, axisPoint2);
     notifyChanged();
 }
 

@@ -13,10 +13,12 @@
 #include "geometry/Circle.h"
 #include "geometry/Rectangle.h"
 #include "geometry/CubicBezier.h"
+#include "geometry/Polyline.h"
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QColor>
 
 namespace PatternCAD {
 namespace IO {
@@ -154,10 +156,15 @@ QJsonObject NativeFormat::serializeDocument(const Document* document) const
     json["type"] = "document";
     json["name"] = document->name();
 
-    // Serialize layers
+    // Serialize layers with colors and visibility
     QJsonArray layersArray;
     for (const QString& layer : document->layers()) {
-        layersArray.append(layer);
+        QJsonObject layerObj;
+        layerObj["name"] = layer;
+        QColor color = document->layerColor(layer);
+        layerObj["color"] = color.name(); // Store as hex string #RRGGBB
+        layerObj["visible"] = document->isLayerVisible(layer);
+        layersArray.append(layerObj);
     }
     json["layers"] = layersArray;
     json["activeLayer"] = document->activeLayer();
@@ -184,13 +191,29 @@ bool NativeFormat::deserializeDocument(const QJsonObject& json, Document* docume
     // Load document properties
     document->setName(json["name"].toString("Untitled"));
 
-    // Load layers
+    // Load layers with colors and visibility
     document->clear();
     QJsonArray layersArray = json["layers"].toArray();
     for (const QJsonValue& value : layersArray) {
-        QString layerName = value.toString();
-        if (layerName != "Default") { // Default already exists
-            document->addLayer(layerName);
+        if (value.isObject()) {
+            // New format with color and visibility
+            QJsonObject layerObj = value.toObject();
+            QString layerName = layerObj["name"].toString();
+            QColor color(layerObj["color"].toString("#000000"));
+            bool visible = layerObj["visible"].toBool(true);
+
+            if (layerName != "Default") { // Default already exists
+                document->addLayer(layerName, color);
+            } else {
+                document->setLayerColor(layerName, color);
+            }
+            document->setLayerVisible(layerName, visible);
+        } else {
+            // Legacy format (just layer name string)
+            QString layerName = value.toString();
+            if (layerName != "Default") {
+                document->addLayer(layerName);
+            }
         }
     }
     document->setActiveLayer(json["activeLayer"].toString("Default"));
@@ -247,11 +270,58 @@ QJsonObject NativeFormat::serializeGeometryObject(const Geometry::GeometryObject
     json["id"] = object->id();
     json["name"] = object->name();
     json["type"] = object->typeName();
+    json["layer"] = object->layer();
     json["visible"] = object->isVisible();
     json["locked"] = object->isLocked();
 
-    // TODO: Serialize geometry-specific data based on type
-    // This would require dynamic casting to specific geometry types
+    // Serialize geometry-specific data based on type
+    if (auto* point = dynamic_cast<const Geometry::Point2D*>(object)) {
+        QJsonObject data;
+        data["x"] = point->position().x();
+        data["y"] = point->position().y();
+        json["data"] = data;
+    }
+    else if (auto* line = dynamic_cast<const Geometry::Line*>(object)) {
+        QJsonObject data;
+        data["x1"] = line->start().x();
+        data["y1"] = line->start().y();
+        data["x2"] = line->end().x();
+        data["y2"] = line->end().y();
+        json["data"] = data;
+    }
+    else if (auto* circle = dynamic_cast<const Geometry::Circle*>(object)) {
+        QJsonObject data;
+        data["cx"] = circle->center().x();
+        data["cy"] = circle->center().y();
+        data["radius"] = circle->radius();
+        json["data"] = data;
+    }
+    else if (auto* rect = dynamic_cast<const Geometry::Rectangle*>(object)) {
+        QJsonObject data;
+        data["x"] = rect->topLeft().x();
+        data["y"] = rect->topLeft().y();
+        data["width"] = rect->width();
+        data["height"] = rect->height();
+        json["data"] = data;
+    }
+    else if (auto* polyline = dynamic_cast<const Geometry::Polyline*>(object)) {
+        QJsonObject data;
+        QJsonArray verticesArray;
+        for (const auto& vertex : polyline->vertices()) {
+            QJsonObject vertexObj;
+            vertexObj["x"] = vertex.position.x();
+            vertexObj["y"] = vertex.position.y();
+            vertexObj["type"] = (vertex.type == Geometry::VertexType::Sharp) ? "sharp" : "smooth";
+            vertexObj["incomingTension"] = vertex.incomingTension;
+            vertexObj["outgoingTension"] = vertex.outgoingTension;
+            vertexObj["tangent_x"] = vertex.tangent.x();
+            vertexObj["tangent_y"] = vertex.tangent.y();
+            verticesArray.append(vertexObj);
+        }
+        data["vertices"] = verticesArray;
+        data["closed"] = polyline->isClosed();
+        json["data"] = data;
+    }
 
     return json;
 }
@@ -259,12 +329,78 @@ QJsonObject NativeFormat::serializeGeometryObject(const Geometry::GeometryObject
 Geometry::GeometryObject* NativeFormat::deserializeGeometryObject(const QJsonObject& json)
 {
     QString type = json["type"].toString();
+    QJsonObject data = json["data"].toObject();
 
-    // TODO: Create appropriate geometry object based on type
-    // and deserialize its properties
-    Q_UNUSED(type);
+    Geometry::GeometryObject* object = nullptr;
 
-    return nullptr;
+    // Create appropriate geometry object based on type
+    if (type == "Point") {
+        double x = data["x"].toDouble();
+        double y = data["y"].toDouble();
+        object = new Geometry::Point2D(x, y);
+    }
+    else if (type == "Line") {
+        double x1 = data["x1"].toDouble();
+        double y1 = data["y1"].toDouble();
+        double x2 = data["x2"].toDouble();
+        double y2 = data["y2"].toDouble();
+        object = new Geometry::Line(QPointF(x1, y1), QPointF(x2, y2));
+    }
+    else if (type == "Circle") {
+        double cx = data["cx"].toDouble();
+        double cy = data["cy"].toDouble();
+        double radius = data["radius"].toDouble();
+        object = new Geometry::Circle(QPointF(cx, cy), radius);
+    }
+    else if (type == "Rectangle") {
+        double x = data["x"].toDouble();
+        double y = data["y"].toDouble();
+        double width = data["width"].toDouble();
+        double height = data["height"].toDouble();
+        object = new Geometry::Rectangle(QPointF(x, y), width, height);
+    }
+    else if (type == "Polyline") {
+        QJsonArray verticesArray = data["vertices"].toArray();
+        QVector<Geometry::PolylineVertex> vertices;
+
+        for (const QJsonValue& value : verticesArray) {
+            QJsonObject vertexObj = value.toObject();
+            QPointF position(vertexObj["x"].toDouble(), vertexObj["y"].toDouble());
+            QString typeStr = vertexObj["type"].toString("sharp");
+            Geometry::VertexType vertexType = (typeStr == "smooth") ? Geometry::VertexType::Smooth : Geometry::VertexType::Sharp;
+
+            // Support both old format (single "tension") and new format (two separate tensions)
+            double incomingTension, outgoingTension;
+            if (vertexObj.contains("incomingTension")) {
+                incomingTension = vertexObj["incomingTension"].toDouble(0.5);
+                outgoingTension = vertexObj["outgoingTension"].toDouble(0.5);
+            } else {
+                // Legacy format - use same tension for both
+                double tension = vertexObj["tension"].toDouble(0.5);
+                incomingTension = tension;
+                outgoingTension = tension;
+            }
+
+            QPointF tangent(vertexObj["tangent_x"].toDouble(), vertexObj["tangent_y"].toDouble());
+
+            vertices.append(Geometry::PolylineVertex(position, vertexType, incomingTension, outgoingTension, tangent));
+        }
+
+        auto* polyline = new Geometry::Polyline(vertices);
+        polyline->setClosed(data["closed"].toBool(false));
+        object = polyline;
+    }
+
+    // Set common properties
+    if (object) {
+        object->setId(json["id"].toString());
+        object->setName(json["name"].toString());
+        object->setLayer(json["layer"].toString("Default"));
+        object->setVisible(json["visible"].toBool(true));
+        object->setLocked(json["locked"].toBool(false));
+    }
+
+    return object;
 }
 
 bool NativeFormat::writeJsonToFile(const QString& filepath, const QJsonObject& json)

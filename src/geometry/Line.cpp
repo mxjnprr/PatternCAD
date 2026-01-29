@@ -26,6 +26,29 @@ namespace {
 
         return QPointF(center.x() + rotatedX, center.y() + rotatedY);
     }
+
+    // Helper function to mirror a point across an axis
+    QPointF mirrorPoint(const QPointF& point, const QPointF& axisPoint1, const QPointF& axisPoint2) {
+        double dx = axisPoint2.x() - axisPoint1.x();
+        double dy = axisPoint2.y() - axisPoint1.y();
+
+        double length = qSqrt(dx * dx + dy * dy);
+        if (length < 1e-10) {
+            return point;
+        }
+        double ux = dx / length;
+        double uy = dy / length;
+
+        double vx = point.x() - axisPoint1.x();
+        double vy = point.y() - axisPoint1.y();
+
+        double projection = vx * ux + vy * uy;
+
+        double closestX = axisPoint1.x() + projection * ux;
+        double closestY = axisPoint1.y() + projection * uy;
+
+        return QPointF(2.0 * closestX - point.x(), 2.0 * closestY - point.y());
+    }
 }
 
 Line::Line(QObject* parent)
@@ -188,6 +211,13 @@ void Line::rotate(double angleDegrees, const QPointF& center)
 {
     m_start = rotatePoint(m_start, angleDegrees, center);
     m_end = rotatePoint(m_end, angleDegrees, center);
+    notifyChanged();
+}
+
+void Line::mirror(const QPointF& axisPoint1, const QPointF& axisPoint2)
+{
+    m_start = mirrorPoint(m_start, axisPoint1, axisPoint2);
+    m_end = mirrorPoint(m_end, axisPoint1, axisPoint2);
     notifyChanged();
 }
 

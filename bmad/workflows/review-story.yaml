@@ -1,0 +1,229 @@
+# BMAD Method v6 - Workflow Definition
+# Review Story Workflow
+
+name: "review-story"
+version: "1.0.0"
+description: "Workflow for reviewing and quality-checking a completed story"
+
+triggers:
+  - "Developer marks story as ready for review"
+  - "Code is committed and pushed"
+  - "Developer requests QA review"
+
+inputs:
+  - name: "story_id"
+    type: "string"
+    description: "Story identifier (e.g., story-001-01)"
+    required: true
+
+outputs:
+  - "Test results"
+  - "Bug reports (if issues found)"
+  - "QA sign-off or rejection"
+  - "Updated story status"
+
+agents_involved:
+  - qa
+  - dev
+  - scrum-master
+  - architect (optional, for architecture review)
+
+steps:
+  - step: 1
+    name: "Review Story Requirements"
+    agent: "qa"
+    actions:
+      - "Read story file"
+      - "Review all acceptance criteria"
+      - "Review technical notes"
+      - "Check performance requirements"
+      - "Review architecture document if needed"
+    outputs:
+      - "Understanding of requirements"
+      - "Test plan outline"
+
+  - step: 2
+    name: "Create Test Plan"
+    agent: "qa"
+    actions:
+      - "Create test case for each acceptance criterion"
+      - "Design positive and negative test cases"
+      - "Plan edge case and boundary tests"
+      - "Plan performance tests if applicable"
+      - "Plan cross-platform tests"
+    outputs:
+      - "Comprehensive test plan"
+
+  - step: 3
+    name: "Functional Testing"
+    agent: "qa"
+    actions:
+      - "Test each acceptance criterion systematically"
+      - "Test happy path"
+      - "Test with invalid inputs"
+      - "Test edge cases and boundaries"
+      - "Test error handling"
+      - "Verify error messages are clear"
+      - "Test keyboard shortcuts"
+      - "Test undo/redo functionality"
+    outputs:
+      - "Functional test results"
+      - "Screenshots of issues (if any)"
+
+  - step: 4
+    name: "UI/UX Testing"
+    agent: "qa"
+    actions:
+      - "Verify UI is intuitive and responsive"
+      - "Test visual feedback (selection, hover, etc.)"
+      - "Test with different window sizes"
+      - "Check for visual glitches"
+      - "Verify tooltips and help text"
+      - "Test context menus"
+    outputs:
+      - "UI/UX test results"
+
+  - step: 5
+    name: "Performance Testing"
+    agent: "qa"
+    actions:
+      - "Measure operation response times"
+      - "Verify 60fps for interactive operations (<16ms)"
+      - "Test with realistic data volumes"
+      - "Check memory usage"
+      - "Look for memory leaks"
+      - "Profile CPU usage if needed"
+    outputs:
+      - "Performance test results"
+      - "Performance metrics"
+
+  - step: 6
+    name: "Cross-Platform Testing"
+    agent: "qa"
+    actions:
+      - "Test on Linux (if not primary platform)"
+      - "Test on Windows (if not primary platform)"
+      - "Verify keyboard shortcuts work on both"
+      - "Check for platform-specific bugs"
+      - "Verify file paths work correctly"
+    outputs:
+      - "Cross-platform test results"
+    condition: "If applicable"
+
+  - step: 7
+    name: "Architecture Review (Optional)"
+    agent: "architect"
+    actions:
+      - "Review code changes"
+      - "Verify architectural compliance"
+      - "Check design pattern usage"
+      - "Verify Command pattern for undoable ops"
+      - "Check separation of concerns"
+      - "Review error handling"
+      - "Check for code quality issues"
+    outputs:
+      - "Architecture review feedback"
+    condition: "For complex or critical stories"
+
+  - step: 8
+    name: "Compile Test Results"
+    agent: "qa"
+    actions:
+      - "Summarize all test results"
+      - "List all issues found"
+      - "Categorize bugs by severity"
+      - "Determine if story passes or fails"
+      - "Create bug reports for each issue"
+    outputs:
+      - "Test summary report"
+      - "Bug reports"
+      - "Pass/Fail decision"
+
+  - step: 9a
+    name: "Sign Off (If Pass)"
+    agent: "qa"
+    actions:
+      - "Document QA approval"
+      - "Notify Scrum Master"
+      - "Provide test summary"
+    outputs:
+      - "QA sign-off"
+    condition: "If all tests pass"
+
+  - step: 9b
+    name: "Reject and Report Bugs (If Fail)"
+    agent: "qa"
+    actions:
+      - "Create detailed bug reports"
+      - "Provide steps to reproduce"
+      - "Assign severity to each bug"
+      - "Notify developer"
+      - "Notify Scrum Master"
+    outputs:
+      - "Bug reports"
+      - "Rejection notice"
+    condition: "If critical/high bugs found"
+
+  - step: 10
+    name: "Update Story Status"
+    agent: "scrum-master"
+    actions:
+      - "If passed: Update to 'completed'"
+      - "If failed: Keep as 'in-progress', add bug notes"
+      - "Update sprint-status.yaml"
+      - "Notify team of outcome"
+    outputs:
+      - "Updated sprint-status.yaml"
+
+completion_criteria:
+  - "All acceptance criteria tested"
+  - "Performance requirements verified"
+  - "Cross-platform compatibility checked"
+  - "QA decision made (pass or fail)"
+  - "Story status updated"
+  - "Bug reports created if needed"
+
+bug_severity_guide:
+  critical:
+    - "Application crashes"
+    - "Data loss or corruption"
+    - "Core feature completely broken"
+    - "Security vulnerability"
+  high:
+    - "Feature doesn't work as specified"
+    - "Major usability issue"
+    - "Performance requirement not met"
+    - "Undo/redo doesn't work"
+  medium:
+    - "Partial functionality"
+    - "Workaround exists"
+    - "Minor usability issue"
+    - "Visual inconsistency"
+  low:
+    - "Minor visual issue"
+    - "Cosmetic problem"
+    - "Typo in UI text"
+    - "Minor optimization opportunity"
+
+pass_criteria:
+  - "All acceptance criteria met"
+  - "No critical or high-severity bugs"
+  - "Performance requirements met"
+  - "Works on both Linux and Windows"
+  - "Undo/redo works correctly"
+  - "Error handling is appropriate"
+
+notes: |
+  This workflow ensures thorough quality checking before stories are marked complete.
+
+  Key points:
+  - QA tests all acceptance criteria systematically
+  - Performance and cross-platform testing are mandatory
+  - Architecture review for complex stories
+  - Clear pass/fail criteria
+  - Detailed bug reporting if issues found
+
+  Stories with critical or high-severity bugs must be fixed before completion.
+  Medium and low bugs can be tracked separately and fixed later if needed.
+
+  The goal is to maintain high quality and prevent technical debt.
