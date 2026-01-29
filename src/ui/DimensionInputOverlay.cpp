@@ -29,6 +29,8 @@ DimensionInputOverlay::~DimensionInputOverlay()
 
 void DimensionInputOverlay::setupUI()
 {
+    m_isAngleMode = false;  // Initialize flag
+
     m_layout = new QVBoxLayout(this);
     m_layout->setContentsMargins(10, 10, 10, 10);
     m_layout->setSpacing(8);
@@ -134,15 +136,21 @@ void DimensionInputOverlay::setupUI()
 
 void DimensionInputOverlay::showAtPosition(const QPoint& globalPos, const QString& prompt,
                                            bool withAngle, double initialLength, double initialAngle,
-                                           bool withResizeMode)
+                                           bool withResizeMode, bool isAngleMode)
 {
+    m_isAngleMode = isAngleMode;
     m_promptLabel->setText(prompt);
 
     // Pre-fill with initial values if provided
-    if (initialLength > 0.0) {
-        // Convert from internal (mm) to display units (cm)
-        double lengthInCm = Units::fromInternal(initialLength, Unit::Centimeters);
-        m_input->setText(QString::number(lengthInCm, 'f', 2));
+    if (initialLength != 0.0) {
+        if (m_isAngleMode) {
+            // For angle mode, no conversion needed - use raw value
+            m_input->setText(QString::number(initialLength, 'f', 1));
+        } else {
+            // Convert from internal (mm) to display units (cm)
+            double lengthInCm = Units::fromInternal(initialLength, Unit::Centimeters);
+            m_input->setText(QString::number(lengthInCm, 'f', 2));
+        }
     } else {
         m_input->clear();
     }
@@ -174,10 +182,6 @@ void DimensionInputOverlay::showAtPosition(const QPoint& globalPos, const QStrin
     // Adjust size to content
     adjustSize();
 
-    // Select all text in first field for easy editing
-    m_input->setFocus();
-    m_input->selectAll();
-
     // Position near the given point, but ensure it's visible on screen
     QPoint pos = globalPos + QPoint(10, 10);
 
@@ -206,6 +210,11 @@ void DimensionInputOverlay::showAtPosition(const QPoint& globalPos, const QStrin
     show();
     raise();
     activateWindow();
+
+    // Set focus and select text AFTER showing the widget
+    // This ensures the widget has proper focus for Enter key handling
+    m_input->setFocus();
+    m_input->selectAll();
 }
 
 double DimensionInputOverlay::getValue() const
@@ -214,6 +223,11 @@ double DimensionInputOverlay::getValue() const
     double value = m_input->text().toDouble(&ok);
     if (!ok) {
         return 0.0;
+    }
+
+    // For angle mode, return raw value without unit conversion
+    if (m_isAngleMode) {
+        return value;
     }
 
     // Convert from current project units to internal (mm)

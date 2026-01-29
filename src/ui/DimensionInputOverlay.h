@@ -42,7 +42,7 @@ public:
     // Show overlay at specific position with a prompt
     void showAtPosition(const QPoint& globalPos, const QString& prompt = "Length:",
                        bool withAngle = false, double initialLength = 0.0, double initialAngle = 0.0,
-                       bool withResizeMode = false);
+                       bool withResizeMode = false, bool isAngleMode = false);
 
     // Get entered value in internal units (mm)
     double getValue() const;
@@ -78,6 +78,7 @@ private:
     QHBoxLayout* m_buttonLayout;
     QPushButton* m_okButton;
     QPushButton* m_cancelButton;
+    bool m_isAngleMode;  // Flag to indicate no unit conversion needed
 
     void setupUI();
 };

@@ -865,8 +865,14 @@ void MainWindow::onDimensionInputRequested(const QString& mode, double initialLe
     QPoint globalPos = QCursor::pos();
 
     // Show the overlay at cursor position with initial values
-    m_dimensionInput->showAtPosition(globalPos, prompt, withAngle, initialLength, initialAngle, withResizeMode);
-    statusBar()->showMessage(tr("📏 Enter length and angle (Enter=apply, Esc=cancel)"));
+    bool isAngleMode = (mode == "angle");
+    m_dimensionInput->showAtPosition(globalPos, prompt, withAngle, initialLength, initialAngle, withResizeMode, isAngleMode);
+
+    if (isAngleMode) {
+        statusBar()->showMessage(tr("🔄 Enter angle in degrees (Enter=apply, Esc=cancel)"));
+    } else {
+        statusBar()->showMessage(tr("📏 Enter length and angle (Enter=apply, Esc=cancel)"));
+    }
 }
 
 // File operations

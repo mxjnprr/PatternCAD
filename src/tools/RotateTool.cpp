@@ -171,7 +171,8 @@ void RotateTool::keyPressEvent(QKeyEvent* event)
         // Tab key: open numeric input for angle
         if (m_mode == RotateMode::ReadyToRotate || m_mode == RotateMode::Rotating) {
             // Use existing dimensionInputRequested signal with mode "angle"
-            emit dimensionInputRequested("angle", 0.0, m_currentAngle);
+            // First parameter is the main input field value (angle in this case)
+            emit dimensionInputRequested("angle", m_currentAngle, 0.0);
             event->accept();
         }
     }
