@@ -56,7 +56,6 @@ signals:
 
 private slots:
     void onPropertyEdited();
-    void onColorButtonClicked();
 
 private:
     // UI setup
@@ -78,8 +77,6 @@ private:
     QComboBox* m_layerCombo;
     QDoubleSpinBox* m_widthEdit;   // Bounding box width (read-only)
     QDoubleSpinBox* m_heightEdit;  // Bounding box height (read-only)
-    QPushButton* m_lineColorButton;
-    QComboBox* m_lineStyleCombo;
 };
 
 } // namespace UI

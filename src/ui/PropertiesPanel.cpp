@@ -13,7 +13,6 @@
 #include "core/Document.h"
 #include "core/Commands.h"
 #include <QScrollArea>
-#include <QColorDialog>
 
 namespace PatternCAD {
 namespace UI {
@@ -29,8 +28,6 @@ PropertiesPanel::PropertiesPanel(QWidget* parent)
     , m_layerCombo(nullptr)
     , m_widthEdit(nullptr)
     , m_heightEdit(nullptr)
-    , m_lineColorButton(nullptr)
-    , m_lineStyleCombo(nullptr)
 {
     setupUi();
 }
@@ -102,22 +99,6 @@ void PropertiesPanel::createCommonProperties()
     m_heightEdit->setReadOnly(true);
     m_heightEdit->setButtonSymbols(QAbstractSpinBox::NoButtons);
     m_formLayout->addRow("Height:", m_heightEdit);
-
-    // Line color
-    m_lineColorButton = new QPushButton(m_formWidget);
-    m_lineColorButton->setMaximumWidth(100);
-    connect(m_lineColorButton, &QPushButton::clicked,
-            this, &PropertiesPanel::onColorButtonClicked);
-    m_formLayout->addRow("Line Color:", m_lineColorButton);
-
-    // Line style
-    m_lineStyleCombo = new QComboBox(m_formWidget);
-    m_lineStyleCombo->addItem("Solid");
-    m_lineStyleCombo->addItem("Dashed");
-    m_lineStyleCombo->addItem("Dotted");
-    connect(m_lineStyleCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &PropertiesPanel::onPropertyEdited);
-    m_formLayout->addRow("Line Style:", m_lineStyleCombo);
 }
 
 void PropertiesPanel::createGeometryProperties()
@@ -180,7 +161,6 @@ void PropertiesPanel::updateProperties()
     // Block signals while updating to avoid triggering onPropertyEdited
     m_nameEdit->blockSignals(true);
     m_layerCombo->blockSignals(true);
-    m_lineStyleCombo->blockSignals(true);
 
     if (m_selectedObjects.isEmpty()) {
         // No selection - disable panel
@@ -209,14 +189,6 @@ void PropertiesPanel::updateProperties()
             m_layerCombo->setCurrentText(obj->layer());
         }
 
-        m_lineStyleCombo->setCurrentIndex(static_cast<int>(obj->lineStyle()));
-
-        // Update color button
-        QColor color = obj->lineColor();
-        QString colorStyle = QString("background-color: %1").arg(color.name());
-        m_lineColorButton->setStyleSheet(colorStyle);
-        m_lineColorButton->setText(color.name());
-
         // Show bounding box dimensions (always visible, read-only)
         QRectF bounds = obj->boundingRect();
         m_widthEdit->setValue(bounds.width());
@@ -242,7 +214,7 @@ void PropertiesPanel::updateProperties()
         m_widthEdit->setValue(combinedBounds.width());
         m_heightEdit->setValue(combinedBounds.height());
 
-        // Show first object's properties for layer and style
+        // Show first object's properties for layer
         if (!m_selectedObjects.isEmpty()) {
             Geometry::GeometryObject* first = m_selectedObjects.first();
 
@@ -251,20 +223,12 @@ void PropertiesPanel::updateProperties()
                 m_layerCombo->addItems(m_document->layers());
                 m_layerCombo->setCurrentText(first->layer());
             }
-
-            m_lineStyleCombo->setCurrentIndex(static_cast<int>(first->lineStyle()));
-
-            QColor color = first->lineColor();
-            QString colorStyle = QString("background-color: %1").arg(color.name());
-            m_lineColorButton->setStyleSheet(colorStyle);
-            m_lineColorButton->setText(color.name());
         }
     }
 
     // Unblock signals
     m_nameEdit->blockSignals(false);
     m_layerCombo->blockSignals(false);
-    m_lineStyleCombo->blockSignals(false);
 }
 
 void PropertiesPanel::onPropertyEdited()
@@ -281,9 +245,6 @@ void PropertiesPanel::onPropertyEdited()
     if (senderObj == m_nameEdit) {
         propertyName = "name";
         value = m_nameEdit->text();
-    } else if (senderObj == m_lineStyleCombo) {
-        propertyName = "lineStyle";
-        value = m_lineStyleCombo->currentIndex();
     } else if (senderObj == m_layerCombo) {
         propertyName = "layer";
         value = m_layerCombo->currentText();
@@ -297,33 +258,6 @@ void PropertiesPanel::onPropertyEdited()
     m_document->undoStack()->push(cmd);
 
     emit propertyChanged(propertyName, value);
-}
-
-void PropertiesPanel::onColorButtonClicked()
-{
-    if (m_selectedObjects.isEmpty() || !m_document) {
-        return;
-    }
-
-    // Get current color from first selected object
-    QColor currentColor = m_selectedObjects.first()->lineColor();
-
-    // Show color dialog
-    QColor newColor = QColorDialog::getColor(currentColor, this, "Choose Line Color");
-
-    if (newColor.isValid() && newColor != currentColor) {
-        // Create and execute command
-        UpdatePropertyCommand* cmd = new UpdatePropertyCommand(
-            m_selectedObjects, "lineColor", newColor);
-        m_document->undoStack()->push(cmd);
-
-        // Update button appearance
-        QString colorStyle = QString("background-color: %1").arg(newColor.name());
-        m_lineColorButton->setStyleSheet(colorStyle);
-        m_lineColorButton->setText(newColor.name());
-
-        emit propertyChanged("lineColor", newColor);
-    }
 }
 
 } // namespace UI
