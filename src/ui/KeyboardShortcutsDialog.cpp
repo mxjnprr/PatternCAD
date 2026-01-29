@@ -80,11 +80,10 @@ QString KeyboardShortcutsDialog::getShortcutsHTML() const
 <table>
     <tr><th>Raccourci</th><th>Outil</th><th>Status</th></tr>
     <tr><td class="shortcut">Z</td><td>Select tool - Sélection et manipulation</td><td class="status-ok">✅</td></tr>
-    <tr><td class="shortcut">D</td><td>Draft/Polyline - Polylignes avec courbes</td><td class="status-ok">✅</td></tr>
+    <tr><td class="shortcut">D</td><td>Draw/Polyline - Dessiner polylignes avec courbes</td><td class="status-ok">✅</td></tr>
     <tr><td class="shortcut">L</td><td>Line (temporaire) - Sera "Pleat"</td><td class="status-ok">✅</td></tr>
     <tr><td class="shortcut">O</td><td>Add Point on Contour - Modifier forme de ligne</td><td class="status-planned">🔜</td></tr>
     <tr><td class="shortcut">C</td><td>Circle (temporaire) - Sera "Cut a Piece"</td><td class="status-ok">✅</td></tr>
-    <tr><td class="shortcut">R</td><td>Rectangle (temporaire) - Sera "Rotate"</td><td class="status-ok">✅</td></tr>
 </table>
 
 <h2>🖱️ Outil Select (Z)</h2>
@@ -100,7 +99,7 @@ QString KeyboardShortcutsDialog::getShortcutsHTML() const
     <tr><td class="shortcut">Échap</td><td>Annuler l'action en cours / Désélectionner</td></tr>
 </table>
 
-<h2>✏️ Outil Draft/Polyline (D)</h2>
+<h2>✏️ Outil Draw/Polyline (D)</h2>
 <table>
     <tr><th>Raccourci</th><th>Action</th></tr>
     <tr><td class="shortcut">Clic</td><td>Ajouter un point pointu (angle)</td></tr>
@@ -123,18 +122,13 @@ QString KeyboardShortcutsDialog::getShortcutsHTML() const
     <tr><th>Raccourci</th><th>Outil</th></tr>
     <tr><td class="shortcut">O</td><td>Add Point on Contour</td></tr>
     <tr><td class="shortcut">B</td><td>Build Piece - Former une nouvelle pièce</td></tr>
-    <tr><td class="shortcut">C</td><td>Cut a Piece - Couper une pièce</td></tr>
-    <tr><td class="shortcut">D</td><td>Draft - Drafter une pièce</td></tr>
     <tr><td class="shortcut">E</td><td>Extend Internal - Étendre contour interne</td></tr>
     <tr><td class="shortcut">H</td><td>Set Half Piece Line</td></tr>
     <tr><td class="shortcut">I</td><td>Move Internal - Déplacer objet interne</td></tr>
     <tr><td class="shortcut">J</td><td>Join Pieces - Joindre deux pièces</td></tr>
-    <tr><td class="shortcut">L</td><td>Pleat - Créer un pli</td></tr>
     <tr><td class="shortcut">N</td><td>Add Notch - Ajouter un cran</td></tr>
-    <tr><td class="shortcut">P</td><td>Create parallel - Contour parallèle</td></tr>
+    <tr><td class="shortcut">P</td><td>Create Parallel - Contour parallèle</td></tr>
     <tr><td class="shortcut">Q</td><td>Multi Move - Déplacer par rectangle</td></tr>
-    <tr><td class="shortcut">R</td><td>Rotate Piece - Faire pivoter une pièce</td></tr>
-    <tr><td class="shortcut">S</td><td>Add Seam - Ajouter marge de couture</td></tr>
     <tr><td class="shortcut">T</td><td>Text - Ajouter/éditer du texte</td></tr>
     <tr><td class="shortcut">Ctrl+Alt+C</td><td>Circle - Créer un cercle interne</td></tr>
     <tr><td class="shortcut">Ctrl+Alt+D</td><td>Add or Rotate Dart - Créer/pivoter une pince</td></tr>

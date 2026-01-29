@@ -256,7 +256,7 @@ void MainWindow::setupMenuBar()
     addAction(selectToolAction);
 
     QAction* polylineToolAction = new QAction(tr("&Polyline Tool"), this);
-    polylineToolAction->setShortcut(QKeySequence(Qt::Key_P));
+    polylineToolAction->setShortcut(QKeySequence(Qt::Key_D));
     connect(polylineToolAction, &QAction::triggered, [this]() { onToolSelected("Polyline"); });
     addAction(polylineToolAction);
 
