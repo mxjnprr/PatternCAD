@@ -66,7 +66,7 @@ private:
     void processLine(const DXFEntity& entity, Document* document);
     void processCircle(const DXFEntity& entity, Document* document);
     void processArc(const DXFEntity& entity, Document* document);
-    void processPolyline(QTextStream& stream, const DXFEntity& entity, Document* document);
+    void processPolyline(const DXFEntity& polylineEntity, const QList<DXFEntity>& vertices, Document* document);
     void processLWPolyline(const DXFEntity& entity, Document* document);
     void processPoint(const DXFEntity& entity, Document* document);
 

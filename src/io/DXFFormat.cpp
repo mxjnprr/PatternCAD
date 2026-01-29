@@ -110,6 +110,11 @@ bool DXFFormat::parseDXF(QTextStream& stream, Document* document)
     QMap<QString, QList<DXFEntity>> blocks; // Store blocks for INSERT expansion
     QString currentBlockName;
 
+    // POLYLINE handling
+    bool inPolyline = false;
+    DXFEntity polylineEntity;
+    QList<DXFEntity> vertexEntities;
+
     qDebug() << "DXF: Starting parse";
 
     while (!stream.atEnd()) {
@@ -173,14 +178,57 @@ bool DXFFormat::parseDXF(QTextStream& stream, Document* document)
                 }
             }
             else if (inEntitiesSection) {
-                // Process previous entity if any
-                if (!currentEntityType.isEmpty()) {
-                    currentEntity.type = currentEntityType;
-                    processEntity(currentEntity, document);
+                // Special handling for POLYLINE/VERTEX/SEQEND sequence
+                if (value == "POLYLINE") {
+                    // Process previous entity if any
+                    if (!currentEntityType.isEmpty() && !inPolyline) {
+                        currentEntity.type = currentEntityType;
+                        processEntity(currentEntity, document);
+                    }
+                    // Start POLYLINE collection
+                    inPolyline = true;
+                    polylineEntity = DXFEntity();
+                    vertexEntities.clear();
+                    currentEntityType = value;
+                    currentEntity = DXFEntity();
                 }
-                // Start new entity
-                currentEntityType = value;
-                currentEntity = DXFEntity();
+                else if (value == "VERTEX" && inPolyline) {
+                    // Save previous vertex if any
+                    if (currentEntityType == "VERTEX") {
+                        currentEntity.type = "VERTEX";
+                        vertexEntities.append(currentEntity);
+                        qDebug() << "DXF: Stored VERTEX" << vertexEntities.size();
+                    }
+                    // Start new vertex
+                    currentEntityType = value;
+                    currentEntity = DXFEntity();
+                }
+                else if (value == "SEQEND" && inPolyline) {
+                    // Save last vertex if any
+                    if (currentEntityType == "VERTEX") {
+                        currentEntity.type = "VERTEX";
+                        vertexEntities.append(currentEntity);
+                        qDebug() << "DXF: Stored last VERTEX" << vertexEntities.size();
+                    }
+                    // End of POLYLINE - process it
+                    qDebug() << "DXF: Processing POLYLINE with" << vertexEntities.size() << "vertices";
+                    processPolyline(polylineEntity, vertexEntities, document);
+                    inPolyline = false;
+                    polylineEntity = DXFEntity();
+                    vertexEntities.clear();
+                    currentEntityType.clear();
+                    currentEntity = DXFEntity();
+                }
+                else if (!inPolyline) {
+                    // Process previous entity if any
+                    if (!currentEntityType.isEmpty()) {
+                        currentEntity.type = currentEntityType;
+                        processEntity(currentEntity, document);
+                    }
+                    // Start new entity
+                    currentEntityType = value;
+                    currentEntity = DXFEntity();
+                }
             }
             else if (inBlocksSection && !currentEntityType.isEmpty()) {
                 // Process previous entity in block
@@ -198,10 +246,32 @@ bool DXFFormat::parseDXF(QTextStream& stream, Document* document)
         }
         else if (inEntitiesSection && !currentEntityType.isEmpty()) {
             // Accumulate entity attributes
-            if (code == 8) {
-                currentEntity.layer = value;
+            if (inPolyline) {
+                if (currentEntityType == "POLYLINE") {
+                    // Accumulate POLYLINE header attributes
+                    if (code == 8) {
+                        polylineEntity.layer = value;
+                    }
+                    polylineEntity.attributes.insert(code, value);
+                }
+                else if (currentEntityType == "VERTEX") {
+                    // Accumulate VERTEX attributes
+                    if (code == 8) {
+                        currentEntity.layer = value;
+                    }
+                    currentEntity.attributes.insert(code, value);
+
+                    // When we hit code 0 next, this vertex is complete
+                    // But we're still reading, so we need to check in next iteration
+                }
             }
-            currentEntity.attributes.insert(code, value);
+            else {
+                // Normal entity attribute accumulation
+                if (code == 8) {
+                    currentEntity.layer = value;
+                }
+                currentEntity.attributes.insert(code, value);
+            }
         }
         else if (inBlocksSection) {
             // Accumulate block data
@@ -253,12 +323,58 @@ void DXFFormat::processEntity(const DXFEntity& entity, Document* document)
     }
     else if (entity.type == "INSERT") {
         // INSERT entities reference blocks - we skip them for now
-        // They would need block expansion which is complex
         qDebug() << "DXF: Skipping INSERT entity (block references not yet supported)";
+    }
+    else if (entity.type == "POLYLINE") {
+        // POLYLINE handled separately in parseDXF
+        qDebug() << "DXF: POLYLINE should be handled with vertices, not here";
+    }
+    else if (entity.type == "VERTEX" || entity.type == "SEQEND") {
+        // These are handled as part of POLYLINE
     }
     else {
         qDebug() << "DXF: Unsupported entity type:" << entity.type;
     }
+}
+
+void DXFFormat::processPolyline(const DXFEntity& polylineEntity, const QList<DXFEntity>& vertices, Document* document)
+{
+    if (vertices.isEmpty()) {
+        qDebug() << "DXF: POLYLINE has no vertices, skipping";
+        return;
+    }
+
+    QVector<Geometry::PolylineVertex> polylineVertices;
+
+    // Extract coordinates from VERTEX entities
+    for (const DXFEntity& vertex : vertices) {
+        double x = getDouble(vertex, 10);
+        double y = getDouble(vertex, 20);
+        polylineVertices.append(Geometry::PolylineVertex(QPointF(x, y), Geometry::VertexType::Sharp));
+    }
+
+    if (polylineVertices.size() < 2) {
+        qDebug() << "DXF: POLYLINE has less than 2 valid vertices, skipping";
+        return;
+    }
+
+    // Code 70: polyline flags (1 = closed)
+    QList<QString> flagsList = polylineEntity.attributes.values(70);
+    int flags = flagsList.isEmpty() ? 0 : flagsList.first().toInt();
+    bool closed = (flags & 1) != 0;
+
+    auto* polyline = new Geometry::Polyline(polylineVertices);
+    polyline->setClosed(closed);
+
+    QString layerName = polylineEntity.layer.isEmpty() ? "Imported" : polylineEntity.layer;
+    if (!document->layers().contains(layerName)) {
+        document->addLayer(layerName);
+    }
+    polyline->setLayer(layerName);
+
+    document->addObjectDirect(polyline);
+    qDebug() << "DXF: POLYLINE added with" << polylineVertices.size() << "vertices, closed:" << closed
+             << "layer:" << layerName << "document now has" << document->objects().size() << "objects";
 }
 
 void DXFFormat::processLine(const DXFEntity& entity, Document* document)
