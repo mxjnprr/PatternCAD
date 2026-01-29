@@ -8,6 +8,7 @@
 #include "Commands.h"
 #include "geometry/GeometryObject.h"
 #include "io/NativeFormat.h"
+#include <QDebug>
 
 namespace PatternCAD {
 
@@ -245,10 +246,13 @@ bool Document::isLayerVisible(const QString& layerName) const
 
 void Document::setLayerVisible(const QString& layerName, bool visible)
 {
+    qDebug() << "Document::setLayerVisible - layer:" << layerName << "visible:" << visible << "contains:" << m_layers.contains(layerName);
     if (m_layers.contains(layerName)) {
         bool oldVisible = m_layerVisibility.value(layerName, true);
+        qDebug() << "  oldVisible:" << oldVisible << "new:" << visible;
         if (oldVisible != visible) {
             m_layerVisibility[layerName] = visible;
+            qDebug() << "  Emitting layerVisibilityChanged signal";
             emit layerVisibilityChanged(layerName, visible);
         }
     }

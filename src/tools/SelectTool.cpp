@@ -1040,10 +1040,15 @@ void SelectTool::drawOverlay(QPainter* painter)
     // Note: Hover and selection highlights are now drawn directly on the polyline
     // in Polyline::draw() instead of drawing bounding boxes
 
-    // Draw vertex handles for selected objects
+    // Draw vertex handles for selected objects (only if layer is visible)
     if (m_document) {
         auto selected = m_document->selectedObjects();
         for (auto* obj : selected) {
+            // Skip if object's layer is not visible
+            if (!m_document->isLayerVisible(obj->layer())) {
+                continue;
+            }
+
             // Draw vertex handles for polylines
             if (m_mode != SelectMode::Dragging && m_mode != SelectMode::Selecting) {
                 drawVertexHandles(painter, obj);
@@ -1051,9 +1056,15 @@ void SelectTool::drawOverlay(QPainter* painter)
         }
     }
 
-    // Draw curve handles for selected smooth vertex
+    // Draw curve handles for selected smooth vertex (only if layer is visible)
     if ((m_mode == SelectMode::VertexSelected || m_mode == SelectMode::DraggingVertex || m_mode == SelectMode::DraggingHandle)
         && m_selectedVertexObject) {
+        // Skip if object's layer is not visible
+        if (m_document && !m_document->isLayerVisible(m_selectedVertexObject->layer())) {
+            painter->restore();
+            return;
+        }
+
         if (auto* polyline = dynamic_cast<Geometry::Polyline*>(m_selectedVertexObject)) {
             auto vertices = polyline->vertices();
             if (m_selectedVertexIndex >= 0 && m_selectedVertexIndex < vertices.size()) {
@@ -1157,8 +1168,14 @@ void SelectTool::drawOverlay(QPainter* painter)
         }
     }
 
-    // Draw selected segment indicator
+    // Draw selected segment indicator (only if layer is visible)
     if (m_selectedSegmentObject && m_selectedSegmentIndex >= 0) {
+        // Skip if object's layer is not visible
+        if (m_document && !m_document->isLayerVisible(m_selectedSegmentObject->layer())) {
+            painter->restore();
+            return;
+        }
+
         if (auto* polyline = dynamic_cast<Geometry::Polyline*>(m_selectedSegmentObject)) {
             auto vertices = polyline->vertices();
             int n = vertices.size();

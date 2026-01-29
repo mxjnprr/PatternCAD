@@ -14,6 +14,7 @@
 #include <QScrollBar>
 #include <QMenu>
 #include <QContextMenuEvent>
+#include <QDebug>
 #include <cmath>
 
 namespace PatternCAD {
@@ -87,8 +88,12 @@ void Canvas::setDocument(Document* document)
         connect(m_document, &Document::objectChanged, this, [this]() {
             viewport()->update();
         });
-        connect(m_document, &Document::layerVisibilityChanged, this, [this]() {
-            viewport()->update();
+        connect(m_document, &Document::layerVisibilityChanged, this, [this](const QString& layerName, bool visible) {
+            qDebug() << "Canvas: layerVisibilityChanged received - layer:" << layerName << "visible:" << visible;
+            // Force full repaint when layer visibility changes
+            scene()->invalidate();
+            update();
+            qDebug() << "Canvas: update() called";
         });
     }
 }
@@ -427,11 +432,22 @@ void Canvas::drawForeground(QPainter* painter, const QRectF& rect)
 
     // Render all document objects that are on visible layers
     painter->setRenderHint(QPainter::Antialiasing);
+    int drawnCount = 0;
+    int skippedCount = 0;
     for (Geometry::GeometryObject* obj : m_document->objects()) {
-        if (obj && m_document->isLayerVisible(obj->layer())) {
-            QColor layerColor = m_document->layerColor(obj->layer());
-            obj->draw(painter, layerColor);
+        if (obj) {
+            bool visible = m_document->isLayerVisible(obj->layer());
+            if (visible) {
+                QColor layerColor = m_document->layerColor(obj->layer());
+                obj->draw(painter, layerColor);
+                drawnCount++;
+            } else {
+                skippedCount++;
+            }
         }
+    }
+    if (skippedCount > 0) {
+        qDebug() << "Canvas::drawForeground - drawn:" << drawnCount << "skipped:" << skippedCount;
     }
 
     // Render dimensions for selected objects

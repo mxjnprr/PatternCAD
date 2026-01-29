@@ -172,6 +172,9 @@ void LayersPanel::refreshLayers()
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(m_document->isLayerVisible(layerName) ? Qt::Checked : Qt::Unchecked);
 
+        // Store the real layer name in UserRole for later retrieval
+        item->setData(Qt::UserRole, layerName);
+
         // Store layer name and lock state in user data
         item->setData(Qt::UserRole, layerName);
         bool isLocked = m_document->isLayerLocked(layerName);
@@ -268,7 +271,8 @@ void LayersPanel::onRemoveLayer()
         return;
     }
 
-    QString layerName = currentItem->text();
+    // Get the real layer name from UserRole
+    QString layerName = currentItem->data(Qt::UserRole).toString();
     int result = QMessageBox::question(this, "Remove Layer",
                                        QString("Remove layer '%1'?").arg(layerName),
                                        QMessageBox::Yes | QMessageBox::No);
@@ -336,7 +340,8 @@ void LayersPanel::onLayerSelectionChanged()
 {
     QListWidgetItem* currentItem = m_layerList->currentItem();
     if (currentItem) {
-        QString layerName = currentItem->text();
+        // Get the real layer name from UserRole
+        QString layerName = currentItem->data(Qt::UserRole).toString();
         m_activeLayer = layerName;
 
         // Update document's active layer
@@ -352,7 +357,8 @@ void LayersPanel::onLayerItemChanged(QListWidgetItem* item)
 {
     if (item) {
         bool visible = (item->checkState() == Qt::Checked);
-        QString layerName = item->text();
+        // Get the real layer name from UserRole (not the display text with object count)
+        QString layerName = item->data(Qt::UserRole).toString();
 
         // Update layer visibility in document
         if (m_document) {
@@ -372,7 +378,8 @@ void LayersPanel::onChangeColor()
         return;
     }
 
-    QString layerName = currentItem->text();
+    // Get the real layer name from UserRole
+    QString layerName = currentItem->data(Qt::UserRole).toString();
     QColor currentColor = m_document ? m_document->layerColor(layerName) : Qt::black;
 
     QColor newColor = QColorDialog::getColor(currentColor, this, "Choose Layer Color");
@@ -385,10 +392,8 @@ void LayersPanel::onChangeColor()
 void LayersPanel::onLayerDoubleClicked(QListWidgetItem* item)
 {
     if (item) {
+        // Get the real layer name from UserRole
         QString layerName = item->data(Qt::UserRole).toString();
-        if (layerName.isEmpty()) {
-            layerName = item->text().split(" (")[0]; // Extract name before count
-        }
         QColor currentColor = m_document ? m_document->layerColor(layerName) : Qt::black;
 
         QColor newColor = QColorDialog::getColor(currentColor, this, "Choose Layer Color");

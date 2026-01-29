@@ -382,7 +382,7 @@ cd /path/to/PatternCAD/build
 
 ## Phase 5: Layers
 
-### TEST-27: Layers Panel ⏳
+### TEST-27: Layers Panel ✅
 **À tester:**
 - Créer nouveau layer
 
@@ -391,10 +391,10 @@ cd /path/to/PatternCAD/build
 2. Clic bouton "+" ou "New Layer"
 
 **Critère de succès:**
-- Nouveau layer dans liste
-- Nom éditable
+- Nouveau layer dans liste ✅
+- Nom éditable ✅
 
-**Statut:** ⏳ À tester
+**Statut:** ✅ VALIDÉ
 
 ---
 
