@@ -69,6 +69,7 @@ private slots:
     void onEditDelete();
     void onEditSelectAll();
     void onEditDeselect();
+    void onEditPreferences();
 
     // View menu
     void onViewZoomIn();

@@ -10,6 +10,7 @@
 #include "PropertiesPanel.h"
 #include "LayersPanel.h"
 #include "KeyboardShortcutsDialog.h"
+#include "PreferencesDialog.h"
 #include "DimensionInputOverlay.h"
 #include "../core/Application.h"
 #include "../core/Project.h"
@@ -181,6 +182,8 @@ void MainWindow::setupMenuBar()
     editMenu->addAction(tr("&Deselect"), this, &MainWindow::onEditDeselect);
     editMenu->addSeparator();
     editMenu->addAction(tr("&Delete"), this, &MainWindow::onEditDelete, QKeySequence::Delete);
+    editMenu->addSeparator();
+    editMenu->addAction(tr("&Preferences..."), this, &MainWindow::onEditPreferences, QKeySequence::Preferences);
 
     // View menu
     QMenu* viewMenu = menuBar()->addMenu(tr("&View"));
@@ -619,6 +622,12 @@ void MainWindow::onEditDeselect()
 
     document->clearSelection();
     statusBar()->showMessage(tr("Selection cleared"), 2000);
+}
+
+void MainWindow::onEditPreferences()
+{
+    PreferencesDialog dialog(this);
+    dialog.exec();
 }
 
 // Help menu slots

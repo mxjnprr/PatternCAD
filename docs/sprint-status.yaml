@@ -1783,11 +1783,11 @@ epics:
           - Settings include: Undo history memory limit, Recent files count
           - Apply/OK/Cancel buttons work correctly
           - Settings are organized into categories/tabs
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-008/story-008-12.md"
         assigned_to: ""
         estimate: "5 points"
-        actual: ""
+        actual: "5 points"
         technical_notes: |
           - Implement PreferencesDialog
           - Use QSettings for persistence

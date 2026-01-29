@@ -35,20 +35,34 @@ set(SOURCES
     src/core/Application.cpp
     src/core/Project.cpp
     src/core/Document.cpp
+    src/core/Commands.cpp
+    src/core/Units.cpp
+    src/core/SettingsManager.cpp
     src/ui/MainWindow.cpp
     src/ui/Canvas.cpp
+    src/ui/DimensionRenderer.cpp
+    src/ui/DimensionInputWidget.cpp
+    src/ui/DimensionInputOverlay.cpp
     src/ui/ToolPalette.cpp
     src/ui/PropertiesPanel.cpp
     src/ui/LayersPanel.cpp
+    src/ui/KeyboardShortcutsDialog.cpp
+    src/ui/PreferencesDialog.cpp
     src/geometry/GeometryObject.cpp
     src/geometry/Point2D.cpp
     src/geometry/Line.cpp
     src/geometry/Circle.cpp
     src/geometry/Rectangle.cpp
+    src/geometry/Polyline.cpp
     src/geometry/CubicBezier.cpp
     src/tools/Tool.cpp
     src/tools/SelectTool.cpp
     src/tools/LineTool.cpp
+    src/tools/PointTool.cpp
+    src/tools/CircleTool.cpp
+    src/tools/RectangleTool.cpp
+    src/tools/PolylineTool.cpp
+    src/tools/AddPointOnContourTool.cpp
     src/io/FileFormat.cpp
     src/io/NativeFormat.cpp
 )
@@ -57,20 +71,34 @@ set(HEADERS
     src/core/Application.h
     src/core/Project.h
     src/core/Document.h
+    src/core/Commands.h
+    src/core/Units.h
+    src/core/SettingsManager.h
     src/ui/MainWindow.h
     src/ui/Canvas.h
+    src/ui/DimensionRenderer.h
+    src/ui/DimensionInputWidget.h
+    src/ui/DimensionInputOverlay.h
     src/ui/ToolPalette.h
     src/ui/PropertiesPanel.h
     src/ui/LayersPanel.h
+    src/ui/KeyboardShortcutsDialog.h
+    src/ui/PreferencesDialog.h
     src/geometry/GeometryObject.h
     src/geometry/Point2D.h
     src/geometry/Line.h
     src/geometry/Circle.h
     src/geometry/Rectangle.h
+    src/geometry/Polyline.h
     src/geometry/CubicBezier.h
     src/tools/Tool.h
     src/tools/SelectTool.h
     src/tools/LineTool.h
+    src/tools/PointTool.h
+    src/tools/CircleTool.h
+    src/tools/RectangleTool.h
+    src/tools/PolylineTool.h
+    src/tools/AddPointOnContourTool.h
     src/io/FileFormat.h
     src/io/NativeFormat.h
 )
