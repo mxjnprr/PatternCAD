@@ -542,10 +542,10 @@ cd /path/to/PatternCAD/build
 ## Résumé
 
 **Total tests:** 27 (9 supprimés)
-**Réussis:** 11 ✅
+**Réussis:** 12 ✅
 **Échoués:** 0 ❌
 **Supprimés:** 9 ❌ (Point + Line + 2 Line deps + Circle + Rectangle + 1 Rectangle dep + Déplacement objet + Sélection multiple)
-**Non testés:** 16 ⏳
+**Non testés:** 15 ⏳
 
 ---
 
