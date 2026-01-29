@@ -1,0 +1,328 @@
+/**
+ * DXFFormat.cpp
+ *
+ * Implementation of DXFFormat
+ */
+
+#include "DXFFormat.h"
+#include "core/Document.h"
+#include "geometry/GeometryObject.h"
+#include "geometry/Point2D.h"
+#include "geometry/Line.h"
+#include "geometry/Circle.h"
+#include "geometry/Polyline.h"
+#include <QFile>
+#include <QTextStream>
+#include <cmath>
+
+namespace PatternCAD {
+namespace IO {
+
+DXFFormat::DXFFormat(QObject* parent)
+    : FileFormat(parent)
+{
+}
+
+DXFFormat::~DXFFormat()
+{
+}
+
+QString DXFFormat::formatName() const
+{
+    return "DXF";
+}
+
+QString DXFFormat::formatDescription() const
+{
+    return "AutoCAD Drawing Exchange Format";
+}
+
+QStringList DXFFormat::fileExtensions() const
+{
+    return QStringList() << "dxf";
+}
+
+FormatType DXFFormat::formatType() const
+{
+    return FormatType::DXF;
+}
+
+FormatCapability DXFFormat::capabilities() const
+{
+    return FormatCapability::Import; // Export not yet implemented
+}
+
+bool DXFFormat::importFile(const QString& filepath, Document* document)
+{
+    if (!document) {
+        setError("Invalid document pointer");
+        return false;
+    }
+
+    clearError();
+    reportProgress(0);
+
+    // Read file
+    QFile file(filepath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        setError(QString("Failed to open file for reading: %1").arg(file.errorString()));
+        return false;
+    }
+
+    QTextStream stream(&file);
+    reportProgress(30);
+
+    // Parse DXF
+    if (!parseDXF(stream, document)) {
+        file.close();
+        return false;
+    }
+
+    file.close();
+    reportProgress(100);
+    return true;
+}
+
+bool DXFFormat::exportFile(const QString& filepath, const Document* document)
+{
+    Q_UNUSED(filepath);
+    Q_UNUSED(document);
+    setError("DXF export not yet implemented");
+    return false;
+}
+
+QString DXFFormat::readPair(QTextStream& stream, int& code)
+{
+    QString codeLine = stream.readLine().trimmed();
+    QString valueLine = stream.readLine().trimmed();
+    
+    code = codeLine.toInt();
+    return valueLine;
+}
+
+bool DXFFormat::parseDXF(QTextStream& stream, Document* document)
+{
+    bool inEntitiesSection = false;
+    QString currentEntityType;
+    DXFEntity currentEntity;
+
+    while (!stream.atEnd()) {
+        int code;
+        QString value = readPair(stream, code);
+
+        if (code == 0) {
+            // Code 0 marks entity boundaries
+            if (value == "SECTION") {
+                // Start of section
+                int nextCode;
+                QString sectionName = readPair(stream, nextCode);
+                if (nextCode == 2 && sectionName == "ENTITIES") {
+                    inEntitiesSection = true;
+                }
+            }
+            else if (value == "ENDSEC") {
+                // End of section - process last entity if any
+                if (inEntitiesSection && !currentEntityType.isEmpty()) {
+                    currentEntity.type = currentEntityType;
+                    processEntity(currentEntity, document);
+                    currentEntityType.clear();
+                    currentEntity = DXFEntity();
+                }
+                inEntitiesSection = false;
+            }
+            else if (inEntitiesSection) {
+                // Process previous entity if any
+                if (!currentEntityType.isEmpty()) {
+                    currentEntity.type = currentEntityType;
+                    processEntity(currentEntity, document);
+                }
+                // Start new entity
+                currentEntityType = value;
+                currentEntity = DXFEntity();
+            }
+        }
+        else if (inEntitiesSection && !currentEntityType.isEmpty()) {
+            // Accumulate entity attributes
+            if (code == 8) {
+                currentEntity.layer = value;
+            }
+            currentEntity.attributes.insert(code, value);
+        }
+    }
+
+    // Process last entity
+    if (inEntitiesSection && !currentEntityType.isEmpty()) {
+        currentEntity.type = currentEntityType;
+        processEntity(currentEntity, document);
+    }
+
+    return true;
+}
+
+void DXFFormat::processEntity(const DXFEntity& entity, Document* document)
+{
+    if (entity.type == "LINE") {
+        processLine(entity, document);
+    }
+    else if (entity.type == "CIRCLE") {
+        processCircle(entity, document);
+    }
+    else if (entity.type == "ARC") {
+        processArc(entity, document);
+    }
+    else if (entity.type == "POINT") {
+        processPoint(entity, document);
+    }
+    else if (entity.type == "LWPOLYLINE") {
+        processLWPolyline(entity, document);
+    }
+    // POLYLINE is more complex - needs VERTEX entities
+}
+
+void DXFFormat::processLine(const DXFEntity& entity, Document* document)
+{
+    double x1 = getDouble(entity, 10);
+    double y1 = getDouble(entity, 20);
+    double x2 = getDouble(entity, 11);
+    double y2 = getDouble(entity, 21);
+    
+    auto* line = new Geometry::Line(QPointF(x1, y1), QPointF(x2, y2));
+    
+    QString layerName = entity.layer.isEmpty() ? "Imported" : entity.layer;
+    if (!document->layers().contains(layerName)) {
+        document->addLayer(layerName);
+    }
+    line->setLayer(layerName);
+    
+    document->addObjectDirect(line);
+}
+
+void DXFFormat::processCircle(const DXFEntity& entity, Document* document)
+{
+    double cx = getDouble(entity, 10);
+    double cy = getDouble(entity, 20);
+    double radius = getDouble(entity, 40);
+    
+    auto* circle = new Geometry::Circle(QPointF(cx, cy), radius);
+    
+    QString layerName = entity.layer.isEmpty() ? "Imported" : entity.layer;
+    if (!document->layers().contains(layerName)) {
+        document->addLayer(layerName);
+    }
+    circle->setLayer(layerName);
+    
+    document->addObjectDirect(circle);
+}
+
+void DXFFormat::processArc(const DXFEntity& entity, Document* document)
+{
+    double cx = getDouble(entity, 10);
+    double cy = getDouble(entity, 20);
+    double radius = getDouble(entity, 40);
+    double startAngle = getDouble(entity, 50); // degrees
+    double endAngle = getDouble(entity, 51);   // degrees
+    
+    // Convert arc to polyline approximation
+    QVector<Geometry::PolylineVertex> vertices;
+    
+    // Number of segments based on arc length
+    double arcLength = std::abs(endAngle - startAngle);
+    int numSegments = std::max(8, static_cast<int>(arcLength / 10.0));
+    
+    for (int i = 0; i <= numSegments; ++i) {
+        double t = static_cast<double>(i) / numSegments;
+        double angle = startAngle + t * (endAngle - startAngle);
+        double radians = angle * M_PI / 180.0;
+        
+        double x = cx + radius * std::cos(radians);
+        double y = cy + radius * std::sin(radians);
+        
+        vertices.append(Geometry::PolylineVertex(QPointF(x, y), Geometry::VertexType::Sharp));
+    }
+    
+    auto* polyline = new Geometry::Polyline(vertices);
+    polyline->setClosed(false);
+    
+    QString layerName = entity.layer.isEmpty() ? "Imported" : entity.layer;
+    if (!document->layers().contains(layerName)) {
+        document->addLayer(layerName);
+    }
+    polyline->setLayer(layerName);
+    
+    document->addObjectDirect(polyline);
+}
+
+void DXFFormat::processLWPolyline(const DXFEntity& entity, Document* document)
+{
+    QVector<Geometry::PolylineVertex> vertices;
+
+    // Code 70: polyline flags (1 = closed)
+    QList<QString> flagsList = entity.attributes.values(70);
+    int flags = flagsList.isEmpty() ? 0 : flagsList.first().toInt();
+    bool closed = (flags & 1) != 0;
+
+    // Collect all X and Y coordinates using QMultiMap::values()
+    QList<QString> xValues = entity.attributes.values(10);
+    QList<QString> yValues = entity.attributes.values(20);
+
+    // Create vertices
+    int count = std::min(xValues.size(), yValues.size());
+    for (int i = 0; i < count; ++i) {
+        double x = xValues[i].toDouble();
+        double y = yValues[i].toDouble();
+        vertices.append(Geometry::PolylineVertex(QPointF(x, y),
+                                                  Geometry::VertexType::Sharp));
+    }
+
+    if (vertices.size() < 2) {
+        return;
+    }
+
+    auto* polyline = new Geometry::Polyline(vertices);
+    polyline->setClosed(closed);
+
+    QString layerName = entity.layer.isEmpty() ? "Imported" : entity.layer;
+    if (!document->layers().contains(layerName)) {
+        document->addLayer(layerName);
+    }
+    polyline->setLayer(layerName);
+
+    document->addObjectDirect(polyline);
+}
+
+void DXFFormat::processPoint(const DXFEntity& entity, Document* document)
+{
+    double x = getDouble(entity, 10);
+    double y = getDouble(entity, 20);
+    
+    auto* point = new Geometry::Point2D(x, y);
+    
+    QString layerName = entity.layer.isEmpty() ? "Imported" : entity.layer;
+    if (!document->layers().contains(layerName)) {
+        document->addLayer(layerName);
+    }
+    point->setLayer(layerName);
+    
+    document->addObjectDirect(point);
+}
+
+double DXFFormat::getDouble(const DXFEntity& entity, int code, double defaultValue) const
+{
+    QList<QString> values = entity.attributes.values(code);
+    if (values.isEmpty()) {
+        return defaultValue;
+    }
+    return values.first().toDouble();
+}
+
+QString DXFFormat::getString(const DXFEntity& entity, int code, const QString& defaultValue) const
+{
+    QList<QString> values = entity.attributes.values(code);
+    if (values.isEmpty()) {
+        return defaultValue;
+    }
+    return values.first();
+}
+
+} // namespace IO
+} // namespace PatternCAD

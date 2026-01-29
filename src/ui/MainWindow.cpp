@@ -23,6 +23,7 @@
 #include "../core/SettingsManager.h"
 #include "../io/SVGFormat.h"
 #include "../io/PDFFormat.h"
+#include "../io/DXFFormat.h"
 #include "../tools/SelectTool.h"
 #include "../tools/PolylineTool.h"
 #include "../tools/AddPointOnContourTool.h"
@@ -210,6 +211,7 @@ void MainWindow::setupMenuBar()
     // Import submenu
     QMenu* importMenu = fileMenu->addMenu(tr("&Import"));
     importMenu->addAction(tr("Import &SVG..."), this, &MainWindow::onFileImportSVG);
+    importMenu->addAction(tr("Import &DXF..."), this, &MainWindow::onFileImportDXF);
 
     // Export submenu
     QMenu* exportMenu = fileMenu->addMenu(tr("&Export"));
@@ -621,6 +623,40 @@ void MainWindow::onFileImportSVG()
                            tr("Failed to import SVG file: %1\n%2")
                            .arg(filepath)
                            .arg(svgFormat.lastError()));
+        statusBar()->showMessage(tr("Import failed"), 3000);
+    }
+}
+
+void MainWindow::onFileImportDXF()
+{
+    QString filepath = QFileDialog::getOpenFileName(
+        this,
+        tr("Import DXF"),
+        getDefaultDirectory(),
+        tr("DXF Files (*.dxf)")
+    );
+
+    if (filepath.isEmpty()) {
+        return;
+    }
+
+    Document* document = m_canvas->document();
+    if (!document) {
+        statusBar()->showMessage(tr("Error: No document available"), 3000);
+        return;
+    }
+
+    statusBar()->showMessage(tr("Importing DXF..."));
+
+    IO::DXFFormat dxfFormat;
+    if (dxfFormat.importFile(filepath, document)) {
+        statusBar()->showMessage(tr("Imported DXF: %1").arg(filepath), 3000);
+        m_canvas->update();
+    } else {
+        QMessageBox::warning(this, tr("Import Failed"),
+                           tr("Failed to import DXF file: %1\n%2")
+                           .arg(filepath)
+                           .arg(dxfFormat.lastError()));
         statusBar()->showMessage(tr("Import failed"), 3000);
     }
 }
