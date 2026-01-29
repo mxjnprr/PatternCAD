@@ -83,12 +83,19 @@ MainWindow::MainWindow(QWidget* parent)
     m_tools["Mirror"] = new Tools::MirrorTool(this);
     m_tools["Scale"] = new Tools::ScaleTool(this);
 
+    // Connect SelectTool's toolChangeRequested signal
+    auto* selectTool = qobject_cast<Tools::SelectTool*>(m_tools["Select"]);
+    if (selectTool) {
+        connect(selectTool, &Tools::SelectTool::toolChangeRequested,
+                this, &MainWindow::onToolSelected);
+    }
+
     // Set document for all tools and connect status messages
     for (auto* tool : m_tools) {
         tool->setDocument(document);
         connect(tool, &Tools::Tool::statusMessage,
                 this, [this](const QString& msg) {
-            statusBar()->showMessage(msg, 3000);
+            statusBar()->showMessage(msg, 0);  // 0 = permanent until next message
         });
         connect(tool, &Tools::Tool::dimensionInputRequested,
                 this, &MainWindow::onDimensionInputRequested);

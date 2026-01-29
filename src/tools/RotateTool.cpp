@@ -74,6 +74,7 @@ void RotateTool::mousePressEvent(QMouseEvent* event)
 
             if (selectedObjects.isEmpty()) {
                 // Nothing selected, do nothing
+                emit statusMessage(tr("Rotate Tool: Select objects first"));
                 return;
             }
 
@@ -83,6 +84,7 @@ void RotateTool::mousePressEvent(QMouseEvent* event)
             // First click down: start selecting rotation center
             m_mode = RotateMode::SelectingCenter;
             m_rotationCenter = m_canvas->mapToScene(event->pos());
+            emit statusMessage(tr("Release to set rotation center"));
             m_canvas->update();
         }
         else if (m_mode == RotateMode::Rotating) {
@@ -96,6 +98,8 @@ void RotateTool::mousePressEvent(QMouseEvent* event)
                 }
             }
             reset();
+            emit statusMessage(tr("Rotation applied"));
+            emit objectCreated();  // Signal to return to Select tool
             m_canvas->update();
         }
     }
@@ -112,7 +116,10 @@ void RotateTool::mouseMoveEvent(QMouseEvent* event)
     }
     else if (m_mode == RotateMode::ReadyToRotate || m_mode == RotateMode::Rotating) {
         // Mouse movement (no button down) shows rotation preview
-        m_mode = RotateMode::Rotating;
+        if (m_mode == RotateMode::ReadyToRotate) {
+            m_mode = RotateMode::Rotating;
+        }
+
         m_currentPoint = m_canvas->mapToScene(event->pos());
         m_snapEnabled = (event->modifiers() & Qt::ShiftModifier);
 
@@ -122,6 +129,9 @@ void RotateTool::mouseMoveEvent(QMouseEvent* event)
         // Apply snap if enabled
         if (m_snapEnabled) {
             m_currentAngle = snapAngle(m_currentAngle);
+            emit statusMessage(tr("Rotating: %1° (snapped) | Tab=Enter angle | Enter/Click=Apply | Esc=Cancel").arg(m_currentAngle, 0, 'f', 1));
+        } else {
+            emit statusMessage(tr("Rotating: %1° | Shift=Snap 15° | Tab=Enter angle | Enter/Click=Apply | Esc=Cancel").arg(m_currentAngle, 0, 'f', 1));
         }
 
         // Request canvas redraw to show overlay
@@ -137,6 +147,7 @@ void RotateTool::mouseReleaseEvent(QMouseEvent* event)
         // First click released: center is set, ready to rotate
         m_mode = RotateMode::ReadyToRotate;
         m_currentAngle = 0.0;
+        emit statusMessage(tr("Move mouse to rotate | Shift=Snap 15° | Tab=Enter angle | Enter/Click=Apply | Esc=Cancel"));
         m_canvas->update();
     }
 }
@@ -164,6 +175,8 @@ void RotateTool::keyPressEvent(QKeyEvent* event)
                 }
             }
             reset();
+            emit statusMessage(tr("Rotation applied"));
+            emit objectCreated();  // Signal to return to Select tool
             m_canvas->update();
             event->accept();
         }
@@ -354,6 +367,8 @@ void RotateTool::onNumericAngleEntered(double angle)
 
         // Reset state
         reset();
+        emit statusMessage(tr("Rotation applied"));
+        emit objectCreated();  // Signal to return to Select tool
         if (m_canvas) {
             m_canvas->update();
         }

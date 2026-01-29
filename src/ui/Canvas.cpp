@@ -332,6 +332,20 @@ void Canvas::keyPressEvent(QKeyEvent* event)
 
 void Canvas::contextMenuEvent(QContextMenuEvent* event)
 {
+    // Context menu is now handled by SelectTool directly in mouseReleaseEvent
+    // This prevents the two-step menu issue
+    // If the active tool is SelectTool, just consume the event and do nothing
+    // (SelectTool already handled it in mouseReleaseEvent)
+
+    if (m_activeTool && m_activeTool->name() == "Select") {
+        // SelectTool handles its own context menu in mouseReleaseEvent
+        event->accept();  // Consume the event, do nothing
+        return;
+    }
+
+    // For other tools, show a basic context menu
+    event->accept();
+
     if (!m_document) {
         return;
     }
@@ -343,24 +357,24 @@ void Canvas::contextMenuEvent(QContextMenuEvent* event)
 
     if (hasSelection) {
         // Add transformation tools for selected objects
-        QAction* rotateAction = menu.addAction(tr("Rotate (Ctrl+R)"));
+        QAction* rotateAction = menu.addAction(tr("🔄 Rotate (Ctrl+R)"));
         connect(rotateAction, &QAction::triggered, [this]() {
             emit toolRequested("Rotate");
         });
 
-        QAction* mirrorAction = menu.addAction(tr("Mirror (Ctrl+M)"));
+        QAction* mirrorAction = menu.addAction(tr("↔️ Mirror (Ctrl+M)"));
         connect(mirrorAction, &QAction::triggered, [this]() {
             emit toolRequested("Mirror");
         });
 
-        QAction* scaleAction = menu.addAction(tr("Scale"));
+        QAction* scaleAction = menu.addAction(tr("📐 Scale"));
         connect(scaleAction, &QAction::triggered, [this]() {
             emit toolRequested("Scale");
         });
 
         menu.addSeparator();
 
-        QAction* deleteAction = menu.addAction(tr("Delete (Del)"));
+        QAction* deleteAction = menu.addAction(tr("🗑️ Delete (Del)"));
         connect(deleteAction, &QAction::triggered, [this]() {
             if (m_document) {
                 auto selected = m_document->selectedObjects();
@@ -370,8 +384,9 @@ void Canvas::contextMenuEvent(QContextMenuEvent* event)
             }
         });
     } else {
-        // No selection - show drawing tools
-        menu.addAction(tr("No object selected"));
+        // No selection - inform user
+        QAction* infoAction = menu.addAction(tr("No object selected"));
+        infoAction->setEnabled(false);
     }
 
     menu.exec(event->globalPos());

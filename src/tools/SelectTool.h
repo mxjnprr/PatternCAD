@@ -85,6 +85,10 @@ public:
         }
     };
 
+signals:
+    // Request to change to a different tool
+    void toolChangeRequested(const QString& toolName);
+
 private:
     enum class SelectMode {
         None,
@@ -169,6 +173,9 @@ private:
     void drawSelectedSegments(QPainter* painter) const;
     void drawLockedSegments(QPainter* painter) const;
     QPointF constrainVertexWithLockedSegments(const QPointF& newPos, Geometry::Polyline* polyline, int vertexIndex) const;
+
+    // Status message helper
+    void updateStatusMessage();
 };
 
 } // namespace Tools

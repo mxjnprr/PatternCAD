@@ -317,6 +317,9 @@ void ScaleTool::executeScale()
         command->redo();
         delete command;
     }
+
+    emit statusMessage(tr("Scale applied"));
+    emit objectCreated();  // Signal to return to Select tool
 }
 
 } // namespace Tools

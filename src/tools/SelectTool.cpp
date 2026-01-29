@@ -78,7 +78,7 @@ void SelectTool::activate()
     m_selectedVertexObject = nullptr;
     m_selectedVertexIndex = -1;
     m_hoveredVertexIndex = -1;
-    showStatusMessage("Click object or drag box to select. Click vertex to move it. Space for pick-and-place. Ctrl+Click for multi-select");
+    updateStatusMessage();
 }
 
 void SelectTool::reset()
@@ -194,32 +194,9 @@ void SelectTool::mousePressEvent(QMouseEvent* event)
             }  // Close the else block for handle check
         }
     } else if (event->button() == Qt::RightButton) {
-        // Right click: check if clicking on a locked segment
-        Geometry::GeometryObject* segmentObject = nullptr;
-        int segmentIndex = findSegmentAt(m_currentPoint, &segmentObject);
-
-        if (segmentIndex >= 0 && isSegmentLocked(segmentObject, segmentIndex)) {
-            // Show context menu for locked segment
-            QMenu menu;
-            QAction* unlockAction = menu.addAction("🔓 Unlock Segment");
-            QAction* unlockAllAction = menu.addAction("🔓 Unlock All Segments");
-
-            QAction* selectedAction = menu.exec(event->globalPos());
-            if (selectedAction == unlockAction) {
-                unlockSegment(segmentObject, segmentIndex);
-            } else if (selectedAction == unlockAllAction) {
-                unlockAllSegments();
-            }
-
-            event->accept();
-            return;
-        } else {
-            // Regular context menu for selected objects
-            auto selected = m_document->selectedObjects();
-            if (!selected.isEmpty()) {
-                showContextMenu(event->globalPos());
-            }
-        }
+        // Right-click handling moved to mouseReleaseEvent to avoid double menu
+        event->accept();
+        return;
     }
 
     event->accept();
@@ -568,8 +545,27 @@ void SelectTool::mouseReleaseEvent(QMouseEvent* event)
     }
 
     if (event->button() == Qt::RightButton) {
-        // Show context menu
-        showContextMenu(event->globalPosition().toPoint());
+        // Right click: check if clicking on a locked segment
+        Geometry::GeometryObject* segmentObject = nullptr;
+        int segmentIndex = findSegmentAt(m_currentPoint, &segmentObject);
+
+        if (segmentIndex >= 0 && isSegmentLocked(segmentObject, segmentIndex)) {
+            // Show context menu for locked segment
+            QMenu menu;
+            QAction* unlockAction = menu.addAction("🔓 Unlock Segment");
+            QAction* unlockAllAction = menu.addAction("🔓 Unlock All Segments");
+
+            QAction* selectedAction = menu.exec(event->globalPosition().toPoint());
+            if (selectedAction == unlockAction) {
+                unlockSegment(segmentObject, segmentIndex);
+            } else if (selectedAction == unlockAllAction) {
+                unlockAllSegments();
+            }
+        } else {
+            // Show regular context menu
+            showContextMenu(event->globalPosition().toPoint());
+        }
+
         event->accept();
         return;
     }
@@ -654,7 +650,7 @@ void SelectTool::mouseReleaseEvent(QMouseEvent* event)
 
         auto selected = m_document->selectedObjects();
         if (!selected.isEmpty()) {
-            showStatusMessage(QString("%1 object(s) selected").arg(selected.size()));
+            updateStatusMessage();
         } else {
             showStatusMessage("No objects in selection box");
         }
@@ -669,13 +665,7 @@ void SelectTool::mouseReleaseEvent(QMouseEvent* event)
 
         if (distance <= 5.0) {  // It's a click, not a drag
             selectObjectAt(releasePoint, m_multiSelect);
-
-            auto selected = m_document->selectedObjects();
-            if (!selected.isEmpty()) {
-                showStatusMessage(QString("%1 object(s) selected").arg(selected.size()));
-            } else {
-                showStatusMessage("Click object or drag box to select");
-            }
+            updateStatusMessage();
         }
     }
 
@@ -828,10 +818,11 @@ void SelectTool::keyPressEvent(QKeyEvent* event)
             m_selectedVertexObject = nullptr;
             m_selectedVertexIndex = -1;
             m_constrainedSegmentIndex = -1;
-            showStatusMessage("Vertex deselected");
+            m_mode = SelectMode::None;
+            updateStatusMessage();
         } else if (m_document) {
             m_document->clearSelection();
-            showStatusMessage("Selection cleared");
+            updateStatusMessage();
         }
         event->accept();
     } else if (event->key() == Qt::Key_M) {
@@ -1575,6 +1566,27 @@ void SelectTool::showContextMenu(const QPoint& globalPos)
 
     QMenu menu;
 
+    // Transformation tools
+    QAction* rotateAction = menu.addAction(tr("🔄 Rotate (Ctrl+R)"));
+    connect(rotateAction, &QAction::triggered, [this]() {
+        // Signal to switch to Rotate tool
+        emit toolChangeRequested("Rotate");
+    });
+
+    QAction* mirrorAction = menu.addAction(tr("↔️ Mirror (Ctrl+M)"));
+    connect(mirrorAction, &QAction::triggered, [this]() {
+        // Signal to switch to Mirror tool
+        emit toolChangeRequested("Mirror");
+    });
+
+    QAction* scaleAction = menu.addAction(tr("📐 Scale"));
+    connect(scaleAction, &QAction::triggered, [this]() {
+        // Signal to switch to Scale tool
+        emit toolChangeRequested("Scale");
+    });
+
+    menu.addSeparator();
+
     // Change Layer action
     QAction* changeLayerAction = menu.addAction("Change Layer...");
     connect(changeLayerAction, &QAction::triggered, [this]() {
@@ -1622,7 +1634,7 @@ void SelectTool::showContextMenu(const QPoint& globalPos)
     menu.addSeparator();
 
     // Delete action
-    QAction* deleteAction = menu.addAction("Delete");
+    QAction* deleteAction = menu.addAction(tr("🗑️ Delete (Del)"));
     connect(deleteAction, &QAction::triggered, [this]() {
         if (!m_document) {
             return;
@@ -2666,6 +2678,25 @@ bool SelectTool::hasVertexTargeted() const
         return true;
     }
     return false;
+}
+
+void SelectTool::updateStatusMessage()
+{
+    if (!m_document) {
+        return;
+    }
+
+    auto selected = m_document->selectedObjects();
+
+    if (m_mode == SelectMode::VertexSelected) {
+        showStatusMessage("Vertex selected | Drag=Move | Tab=Enter length | C=Convert Sharp/Smooth | Del=Delete | Click elsewhere=Deselect");
+    } else if (!selected.isEmpty()) {
+        // Objects selected
+        showStatusMessage("Selection: Rotate (Ctrl+R) | Mirror (Ctrl+M) | Scale | Delete (Del) | Right-click for menu");
+    } else {
+        // No selection
+        showStatusMessage("Select Tool: Click object or drag box to select | Click vertex to edit | Ctrl+Click for multi-select");
+    }
 }
 
 } // namespace Tools

@@ -91,7 +91,8 @@ void DimensionInputOverlay::setupUI()
     m_buttonLayout = new QHBoxLayout();
     m_okButton = new QPushButton("OK", this);
     m_cancelButton = new QPushButton("Cancel", this);
-    m_okButton->setDefault(true);
+    // Don't set OK as default button - let QLineEdit's returnPressed handle Enter key
+    // m_okButton->setDefault(true);
     m_buttonLayout->addWidget(m_okButton);
     m_buttonLayout->addWidget(m_cancelButton);
     m_layout->addLayout(m_buttonLayout);
@@ -263,9 +264,11 @@ void DimensionInputOverlay::keyPressEvent(QKeyEvent* event)
     if (event->key() == Qt::Key_Escape) {
         onCancel();
         event->accept();
+    } else if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
+        // Handle Enter/Return explicitly to ensure it works even when button has focus
+        onAccept();
+        event->accept();
     } else {
-        // Don't handle Return/Enter here - let QLineEdit's returnPressed signal handle it
-        // to avoid double-triggering
         QWidget::keyPressEvent(event);
     }
 }

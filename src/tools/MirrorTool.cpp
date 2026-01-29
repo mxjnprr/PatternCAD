@@ -283,11 +283,12 @@ void MirrorTool::executeMirror()
     QList<Geometry::GeometryObject*> mirroredObjects = command->mirroredObjects();
     m_document->setSelectedObjects(mirroredObjects);
 
-    // Return to idle mode (stay in Mirror tool for potential further mirroring)
+    // Reset to idle mode
     m_mode = MirrorMode::Idle;
     m_axisType = AxisType::Horizontal;
-    calculateDefaultAxis(AxisType::Horizontal);
-    m_mode = MirrorMode::SelectingAxis;
+
+    emit statusMessage(tr("Mirror applied"));
+    emit objectCreated();  // Signal to return to Select tool
 
     if (m_canvas) {
         m_canvas->update();
