@@ -13,6 +13,7 @@
 #include <QMouseEvent>
 #include <QKeyEvent>
 #include <QtMath>
+#include <QDebug>
 
 namespace PatternCAD {
 namespace Tools {
@@ -48,7 +49,7 @@ void ScaleTool::activate()
 
     // Show usage instructions
     if (m_document && !m_document->selectedObjects().isEmpty()) {
-        emit statusMessage(tr("Scale Tool: Click to set origin | Drag to scale | U=Toggle uniform/non-uniform | Enter=Apply | Esc=Cancel"));
+        emit statusMessage(tr("Scale Tool: Click to set origin | Drag to scale | U=Toggle uniform/non-uniform | Tab=Enter value | Enter=Apply | Esc=Cancel"));
     } else {
         emit statusMessage(tr("Scale Tool: Select objects first"));
     }
@@ -156,6 +157,40 @@ void ScaleTool::keyPressEvent(QKeyEvent* event)
         if (m_canvas) {
             m_canvas->update();
         }
+        return;
+    }
+
+    if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
+        // Apply scale
+        if (m_mode == ScaleMode::Scaling) {
+            executeScale();
+            m_mode = ScaleMode::Idle;
+            return;
+        }
+    }
+
+    if (event->key() == Qt::Key_Tab) {
+        // Tab key: open numeric input for scale percentage
+        // Works even before clicking (in Idle mode) or while scaling
+        if (m_mode == ScaleMode::Idle || m_mode == ScaleMode::Scaling) {
+            // Current scale as percentage (100% if idle, current value if scaling)
+            double currentScale = (m_mode == ScaleMode::Scaling) ? (m_scaleX * 100.0) : 100.0;
+            emit dimensionInputRequested("scale", currentScale, 0.0);
+            event->accept();
+        }
+        return;
+    }
+
+    if (event->key() == Qt::Key_U) {
+        // Toggle uniform/non-uniform scale
+        m_uniformScale = !m_uniformScale;
+        if (m_mode == ScaleMode::Scaling) {
+            calculateScaleFactors();
+            if (m_canvas) {
+                m_canvas->update();
+            }
+        }
+        emit statusMessage(m_uniformScale ? tr("Uniform scale") : tr("Non-uniform scale"));
         return;
     }
 
@@ -327,6 +362,39 @@ void ScaleTool::executeScale()
 
     emit statusMessage(tr("Scale applied"));
     emit objectCreated();  // Signal to return to Select tool
+}
+
+void ScaleTool::onNumericScaleEntered(double scaleXPercent, double scaleYPercent, bool isUniform)
+{
+    qDebug() << "ScaleTool::onNumericScaleEntered - X%:" << scaleXPercent << "Y%:" << scaleYPercent << "uniform:" << isUniform;
+
+    if (m_mode == ScaleMode::Idle || m_mode == ScaleMode::Scaling) {
+        // Convert percentage to scale factor
+        double scaleXFactor = scaleXPercent / 100.0;
+        double scaleYFactor = scaleYPercent / 100.0;
+
+        // Clamp to reasonable values
+        if (scaleXFactor < 0.01) scaleXFactor = 0.01;
+        if (scaleXFactor > 100.0) scaleXFactor = 100.0;
+        if (scaleYFactor < 0.01) scaleYFactor = 0.01;
+        if (scaleYFactor > 100.0) scaleYFactor = 100.0;
+
+        // Update uniform flag from user choice
+        m_uniformScale = isUniform;
+
+        // Apply scale
+        m_scaleX = scaleXFactor;
+        m_scaleY = isUniform ? scaleXFactor : scaleYFactor;
+
+        qDebug() << "ScaleTool - Final scale factors: X=" << m_scaleX << "Y=" << m_scaleY;
+
+        executeScale();
+        m_mode = ScaleMode::Idle;
+
+        if (m_canvas) {
+            m_canvas->update();
+        }
+    }
 }
 
 } // namespace Tools

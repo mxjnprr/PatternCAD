@@ -157,7 +157,7 @@ void SelectTool::mousePressEvent(QMouseEvent* event)
                     m_constrainedSegmentIndex = -1;
                 }
 
-                showStatusMessage(QString("Vertex %1 selected | M: move | L: lock | T: toggle type | Tab: dimension | Del: delete")
+                showStatusMessage(QString("Vertex %1 selected | G: grab | L: lock | T: toggle type | Tab: dimension | Del: delete")
                     .arg(vertexIndex + 1));
             } else {
                 // Check if clicking on a segment
@@ -810,7 +810,7 @@ void SelectTool::keyPressEvent(QKeyEvent* event)
         } else if (m_mode == SelectMode::DraggingVertex) {
             // Cancel vertex drag - go back to selected
             m_mode = SelectMode::VertexSelected;
-            showStatusMessage(QString("Vertex %1 selected | M: move | L: lock | T: toggle type | Tab: dimension | Del: delete")
+            showStatusMessage(QString("Vertex %1 selected | G: grab | L: lock | T: toggle type | Tab: dimension | Del: delete")
                 .arg(m_selectedVertexIndex + 1));
         } else if (m_mode == SelectMode::VertexSelected) {
             // Deselect vertex
@@ -825,8 +825,8 @@ void SelectTool::keyPressEvent(QKeyEvent* event)
             updateStatusMessage();
         }
         event->accept();
-    } else if (event->key() == Qt::Key_M) {
-        // Activate move mode for selected vertex
+    } else if (event->key() == Qt::Key_G) {
+        // Activate move mode for selected vertex (G = Grab)
         if (m_mode == SelectMode::VertexSelected && m_selectedVertexObject) {
             m_mode = SelectMode::DraggingVertex;
             m_lastPoint = m_currentPoint;
@@ -1567,19 +1567,19 @@ void SelectTool::showContextMenu(const QPoint& globalPos)
     QMenu menu;
 
     // Transformation tools
-    QAction* rotateAction = menu.addAction(tr("🔄 Rotate (Ctrl+R)"));
+    QAction* rotateAction = menu.addAction(tr("🔄 Rotate (R)"));
     connect(rotateAction, &QAction::triggered, [this]() {
         // Signal to switch to Rotate tool
         emit toolChangeRequested("Rotate");
     });
 
-    QAction* mirrorAction = menu.addAction(tr("↔️ Mirror (Ctrl+M)"));
+    QAction* mirrorAction = menu.addAction(tr("↔️ Mirror (M)"));
     connect(mirrorAction, &QAction::triggered, [this]() {
         // Signal to switch to Mirror tool
         emit toolChangeRequested("Mirror");
     });
 
-    QAction* scaleAction = menu.addAction(tr("📐 Scale"));
+    QAction* scaleAction = menu.addAction(tr("📐 Scale (S)"));
     connect(scaleAction, &QAction::triggered, [this]() {
         // Signal to switch to Scale tool
         emit toolChangeRequested("Scale");
@@ -2692,7 +2692,7 @@ void SelectTool::updateStatusMessage()
         showStatusMessage("Vertex selected | Drag=Move | Tab=Enter length | C=Convert Sharp/Smooth | Del=Delete | Click elsewhere=Deselect");
     } else if (!selected.isEmpty()) {
         // Objects selected
-        showStatusMessage("Selection: Rotate (Ctrl+R) | Mirror (Ctrl+M) | Scale | Delete (Del) | Right-click for menu");
+        showStatusMessage("Selection: Rotate (R) | Mirror (M) | Scale (S) | Delete (Del) | Right-click for menu");
     } else {
         // No selection
         showStatusMessage("Select Tool: Click object or drag box to select | Click vertex to edit | Ctrl+Click for multi-select");

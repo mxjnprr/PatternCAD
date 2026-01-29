@@ -11,12 +11,15 @@
 #include <QDoubleValidator>
 #include <QApplication>
 #include <QScreen>
+#include <QDebug>
 
 namespace PatternCAD {
 namespace UI {
 
 DimensionInputOverlay::DimensionInputOverlay(QWidget* parent)
     : QWidget(parent, Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint)
+    , m_isAngleMode(false)
+    , m_isScaleMode(false)
 {
     setupUI();
     setFocusPolicy(Qt::StrongFocus);
@@ -29,8 +32,6 @@ DimensionInputOverlay::~DimensionInputOverlay()
 
 void DimensionInputOverlay::setupUI()
 {
-    m_isAngleMode = false;  // Initialize flag
-
     m_layout = new QVBoxLayout(this);
     m_layout->setContentsMargins(10, 10, 10, 10);
     m_layout->setSpacing(8);
@@ -128,24 +129,35 @@ void DimensionInputOverlay::setupUI()
         "}"
     );
 
+    // Set tab order
+    setTabOrder(m_input, m_angleInput);
+    setTabOrder(m_angleInput, m_resizeModeCombo);
+    setTabOrder(m_resizeModeCombo, m_okButton);
+    setTabOrder(m_okButton, m_cancelButton);
+
     // Connect signals
     connect(m_okButton, &QPushButton::clicked, this, &DimensionInputOverlay::onAccept);
     connect(m_cancelButton, &QPushButton::clicked, this, &DimensionInputOverlay::onCancel);
     connect(m_input, &QLineEdit::returnPressed, this, &DimensionInputOverlay::onAccept);
     connect(m_angleInput, &QLineEdit::returnPressed, this, &DimensionInputOverlay::onAccept);
+
+    // Connect combo change to update angle field visibility for scale mode
+    connect(m_resizeModeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &DimensionInputOverlay::onScaleModeChanged);
 }
 
 void DimensionInputOverlay::showAtPosition(const QPoint& globalPos, const QString& prompt,
                                            bool withAngle, double initialLength, double initialAngle,
-                                           bool withResizeMode, bool isAngleMode)
+                                           bool withResizeMode, bool isAngleMode, bool isScaleMode)
 {
-    m_isAngleMode = isAngleMode;
+    m_isAngleMode = (isAngleMode || isScaleMode);  // Both don't need unit conversion
+    m_isScaleMode = isScaleMode;  // Store for scale mode handling
     m_promptLabel->setText(prompt);
 
     // Pre-fill with initial values if provided
     if (initialLength != 0.0) {
-        if (m_isAngleMode) {
-            // For angle mode, no conversion needed - use raw value
+        if (isAngleMode || isScaleMode) {
+            // For angle or scale mode, no conversion needed - use raw value
             m_input->setText(QString::number(initialLength, 'f', 1));
         } else {
             // Convert from internal (mm) to display units (cm)
@@ -162,22 +174,58 @@ void DimensionInputOverlay::showAtPosition(const QPoint& globalPos, const QStrin
         m_angleInput->clear();
     }
 
-    // Show/hide angle fields
-    if (withAngle) {
-        m_angleLabel->show();
-        m_angleInput->show();
-    } else {
-        m_angleLabel->hide();
-        m_angleInput->hide();
-    }
+    // Show/hide resize mode combo - DO THIS FIRST for scale mode
+    if (withResizeMode || isScaleMode) {
+        // Clear and populate combo based on mode
+        m_resizeModeCombo->clear();
 
-    // Show/hide resize mode combo
-    if (withResizeMode) {
+        if (isScaleMode) {
+            m_resizeModeLabel->setText("Scale mode:");
+            m_resizeModeCombo->addItem("Uniform (proportional)", 1);
+            m_resizeModeCombo->addItem("Non-uniform (free)", 0);
+            m_resizeModeCombo->setCurrentIndex(0);  // Default to uniform
+        } else if (withResizeMode) {
+            m_resizeModeLabel->setText("Resize from:");
+            m_resizeModeCombo->addItem("Fix start point", static_cast<int>(ResizeMode::FixStart));
+            m_resizeModeCombo->addItem("Fix end point", static_cast<int>(ResizeMode::FixEnd));
+            m_resizeModeCombo->addItem("Center (both sides)", static_cast<int>(ResizeMode::Center));
+            m_resizeModeCombo->setCurrentIndex(0);
+        }
+
         m_resizeModeLabel->show();
         m_resizeModeCombo->show();
     } else {
         m_resizeModeLabel->hide();
         m_resizeModeCombo->hide();
+    }
+
+    // Show/hide angle fields (or Y field for scale) - NOW check combo value
+    if (withAngle) {
+        m_angleLabel->setText("Angle (°):");
+        m_angleLabel->show();
+        m_angleInput->show();
+    } else if (isScaleMode) {
+        // For scale mode, show Y field if non-uniform is selected
+        // Check current combo selection (now properly initialized)
+        bool isNonUniform = (m_resizeModeCombo->currentData().toInt() == 0);
+        if (isNonUniform) {
+            m_promptLabel->setText("Scale X (%):");
+            m_angleLabel->setText("Scale Y (%):");
+            m_angleLabel->show();
+            m_angleInput->show();
+            if (initialAngle != 0.0) {
+                m_angleInput->setText(QString::number(initialAngle, 'f', 1));
+            } else {
+                m_angleInput->setText(QString::number(initialLength, 'f', 1));  // Same as X by default
+            }
+        } else {
+            m_promptLabel->setText("Scale (%):");
+            m_angleLabel->hide();
+            m_angleInput->hide();
+        }
+    } else {
+        m_angleLabel->hide();
+        m_angleInput->hide();
     }
 
     // Adjust size to content
@@ -259,6 +307,15 @@ ResizeMode DimensionInputOverlay::getResizeMode() const
     return ResizeMode::FixStart;  // Default
 }
 
+bool DimensionInputOverlay::isUniformScale() const
+{
+    if (m_resizeModeCombo->isVisible()) {
+        // For scale mode: 1 = uniform, 0 = non-uniform
+        return m_resizeModeCombo->currentData().toInt() == 1;
+    }
+    return true;  // Default to uniform
+}
+
 void DimensionInputOverlay::keyPressEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_Escape) {
@@ -268,6 +325,9 @@ void DimensionInputOverlay::keyPressEvent(QKeyEvent* event)
         // Handle Enter/Return explicitly to ensure it works even when button has focus
         onAccept();
         event->accept();
+    } else if (event->key() == Qt::Key_Tab || event->key() == Qt::Key_Backtab) {
+        // Let Tab work normally for field navigation, don't propagate to parent
+        QWidget::keyPressEvent(event);
     } else {
         QWidget::keyPressEvent(event);
     }
@@ -278,14 +338,49 @@ void DimensionInputOverlay::onAccept()
     double value = getValue();
     double angle = getAngle();
     ResizeMode mode = getResizeMode();
+    bool uniform = isUniformScale();  // Get this BEFORE hide()
+    qDebug() << "DimensionInputOverlay::onAccept - value=" << value << "angle=" << angle << "uniform=" << uniform;
     hide();
-    emit valueAccepted(value, angle, mode);
+    emit valueAccepted(value, angle, mode, uniform);  // Pass uniform in signal
 }
 
 void DimensionInputOverlay::onCancel()
 {
     hide();
     emit valueCancelled();
+}
+
+void DimensionInputOverlay::onScaleModeChanged(int index)
+{
+    Q_UNUSED(index);
+
+    if (!m_isScaleMode) {
+        return;  // Only handle this for scale mode
+    }
+
+    // Check if uniform (1) or non-uniform (0)
+    bool isNonUniform = (m_resizeModeCombo->currentData().toInt() == 0);
+
+    if (isNonUniform) {
+        // Show Y field
+        m_promptLabel->setText("Scale X (%):");
+        m_angleLabel->setText("Scale Y (%):");
+        m_angleLabel->show();
+        m_angleInput->show();
+
+        // Copy X value to Y if Y is empty
+        if (m_angleInput->text().isEmpty() && !m_input->text().isEmpty()) {
+            m_angleInput->setText(m_input->text());
+        }
+    } else {
+        // Hide Y field
+        m_promptLabel->setText("Scale (%):");
+        m_angleLabel->hide();
+        m_angleInput->hide();
+    }
+
+    // Adjust dialog size
+    adjustSize();
 }
 
 } // namespace UI

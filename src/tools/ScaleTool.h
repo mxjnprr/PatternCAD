@@ -42,6 +42,9 @@ public:
     void keyPressEvent(QKeyEvent* event) override;
     void drawOverlay(QPainter* painter) override;
 
+    // Handle numeric scale input from overlay
+    void onNumericScaleEntered(double scaleXPercent, double scaleYPercent, bool isUniform);
+
 private:
     enum class ScaleMode {
         Idle,

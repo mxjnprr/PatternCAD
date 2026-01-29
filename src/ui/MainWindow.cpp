@@ -208,11 +208,11 @@ void MainWindow::setupMenuBar()
     // Draw menu (placeholder)
     menuBar()->addMenu(tr("&Draw"));
 
-    // Modify menu
+    // Modify menu (shortcuts defined as global actions below, not here)
     QMenu* modifyMenu = menuBar()->addMenu(tr("&Modify"));
-    modifyMenu->addAction(tr("&Rotate..."), this, &MainWindow::onModifyRotate, QKeySequence(tr("Ctrl+R")));
-    modifyMenu->addAction(tr("&Mirror..."), this, &MainWindow::onModifyMirror, QKeySequence(tr("Ctrl+M")));
-    modifyMenu->addAction(tr("&Scale..."), this, &MainWindow::onModifyScale, QKeySequence(tr("Ctrl+S")));
+    modifyMenu->addAction(tr("&Rotate... (R)"), this, &MainWindow::onModifyRotate);
+    modifyMenu->addAction(tr("&Mirror... (M)"), this, &MainWindow::onModifyMirror);
+    modifyMenu->addAction(tr("&Scale... (S)"), this, &MainWindow::onModifyScale);
     modifyMenu->addSeparator();
 
     // Align submenu
@@ -230,8 +230,15 @@ void MainWindow::setupMenuBar()
     distributeMenu->addAction(tr("Distribute &Horizontal"), this, &MainWindow::onModifyDistributeHorizontal, QKeySequence(tr("Ctrl+Shift+D")));
     distributeMenu->addAction(tr("Distribute &Vertical"), this, &MainWindow::onModifyDistributeVertical, QKeySequence(tr("Ctrl+Shift+E")));
 
-    // Tools menu (placeholder)
-    menuBar()->addMenu(tr("&Tools"));
+    // Tools menu (shortcuts defined as global actions below, not here)
+    QMenu* toolsMenu = menuBar()->addMenu(tr("&Tools"));
+    toolsMenu->addAction(tr("&Select (Z)"), [this]() { onToolSelected("Select"); });
+    toolsMenu->addAction(tr("&Polyline (P)"), [this]() { onToolSelected("Polyline"); });
+    toolsMenu->addAction(tr("&Add Point on Contour (A)"), [this]() { onToolSelected("AddPointOnContour"); });
+    toolsMenu->addSeparator();
+    toolsMenu->addAction(tr("&Rotate (R)"), this, &MainWindow::onModifyRotate);
+    toolsMenu->addAction(tr("&Mirror (M)"), this, &MainWindow::onModifyMirror);
+    toolsMenu->addAction(tr("&Scale (S)"), this, &MainWindow::onModifyScale);
 
     // Help menu
     QMenu* helpMenu = menuBar()->addMenu(tr("&Help"));
@@ -241,19 +248,35 @@ void MainWindow::setupMenuBar()
 
     // Tool keyboard shortcuts
     QAction* selectToolAction = new QAction(tr("&Select Tool"), this);
-    selectToolAction->setShortcut(QKeySequence(Qt::Key_S));
+    selectToolAction->setShortcut(QKeySequence(Qt::Key_Z));
     connect(selectToolAction, &QAction::triggered, [this]() { onToolSelected("Select"); });
     addAction(selectToolAction);
 
     QAction* polylineToolAction = new QAction(tr("&Polyline Tool"), this);
-    polylineToolAction->setShortcut(QKeySequence(Qt::Key_D));
+    polylineToolAction->setShortcut(QKeySequence(Qt::Key_P));
     connect(polylineToolAction, &QAction::triggered, [this]() { onToolSelected("Polyline"); });
     addAction(polylineToolAction);
 
     QAction* addPointToolAction = new QAction(tr("&Edit Contour Tool"), this);
-    addPointToolAction->setShortcut(QKeySequence(Qt::Key_O));
+    addPointToolAction->setShortcut(QKeySequence(Qt::Key_A));
     connect(addPointToolAction, &QAction::triggered, [this]() { onToolSelected("AddPointOnContour"); });
     addAction(addPointToolAction);
+
+    // Transformation tool shortcuts
+    QAction* rotateToolAction = new QAction(tr("&Rotate Tool"), this);
+    rotateToolAction->setShortcut(QKeySequence(Qt::Key_R));
+    connect(rotateToolAction, &QAction::triggered, this, &MainWindow::onModifyRotate);
+    addAction(rotateToolAction);
+
+    QAction* mirrorToolAction = new QAction(tr("&Mirror Tool"), this);
+    mirrorToolAction->setShortcut(QKeySequence(Qt::Key_M));
+    connect(mirrorToolAction, &QAction::triggered, this, &MainWindow::onModifyMirror);
+    addAction(mirrorToolAction);
+
+    QAction* scaleToolAction = new QAction(tr("&Scale Tool"), this);
+    scaleToolAction->setShortcut(QKeySequence(Qt::Key_S));
+    connect(scaleToolAction, &QAction::triggered, this, &MainWindow::onModifyScale);
+    addAction(scaleToolAction);
 
     // Additional global shortcuts (not in menus)
 
@@ -301,7 +324,7 @@ void MainWindow::setupStatusBar()
     m_dimensionInput->hide();
 
     // Connect dimension input signals
-    connect(m_dimensionInput, &DimensionInputOverlay::valueAccepted, [this](double value, double angle, UI::ResizeMode mode) {
+    connect(m_dimensionInput, &DimensionInputOverlay::valueAccepted, [this](double value, double angle, UI::ResizeMode mode, bool isUniform) {
         // Apply the dimension value to the active tool
         if (m_currentTool) {
             // Check tool type and apply appropriate dimension
@@ -310,6 +333,18 @@ void MainWindow::setupStatusBar()
                 if (auto* rotateTool = qobject_cast<Tools::RotateTool*>(m_currentTool)) {
                     rotateTool->onNumericAngleEntered(value);
                     statusBar()->showMessage(tr("Rotation applied: %1°").arg(value, 0, 'f', 1), 3000);
+                }
+            } else if (m_currentDimensionMode == "scale") {
+                // For scale mode, value is X percentage, angle is Y percentage
+                if (auto* scaleTool = qobject_cast<Tools::ScaleTool*>(m_currentTool)) {
+                    // isUniform is now passed directly in the signal
+                    double scaleY = isUniform ? value : angle;  // Use angle field for Y if non-uniform
+                    qDebug() << "MainWindow - Scale input: X=" << value << "angle=" << angle << "isUniform=" << isUniform << "scaleY=" << scaleY;
+                    scaleTool->onNumericScaleEntered(value, scaleY, isUniform);
+                    QString scaleMsg = isUniform
+                        ? tr("Scale applied: %1% (uniform)").arg(value, 0, 'f', 1)
+                        : tr("Scale applied: X=%1%, Y=%2% (non-uniform)").arg(value, 0, 'f', 1).arg(scaleY, 0, 'f', 1);
+                    statusBar()->showMessage(scaleMsg, 3000);
                 }
             } else if (auto* polylineTool = qobject_cast<Tools::PolylineTool*>(m_currentTool)) {
                 polylineTool->applyLength(value, angle);
@@ -867,6 +902,9 @@ void MainWindow::onDimensionInputRequested(const QString& mode, double initialLe
     } else if (mode == "angle") {
         prompt = "Angle (degrees):";
         withAngle = false;  // Don't show second angle field, we only need one input
+    } else if (mode == "scale") {
+        prompt = "Scale (%):";
+        withAngle = false;  // Don't show second angle field
     }
 
     // Get current cursor position in global coordinates
@@ -874,10 +912,13 @@ void MainWindow::onDimensionInputRequested(const QString& mode, double initialLe
 
     // Show the overlay at cursor position with initial values
     bool isAngleMode = (mode == "angle");
-    m_dimensionInput->showAtPosition(globalPos, prompt, withAngle, initialLength, initialAngle, withResizeMode, isAngleMode);
+    bool isScaleMode = (mode == "scale");
+    m_dimensionInput->showAtPosition(globalPos, prompt, withAngle, initialLength, initialAngle, withResizeMode, isAngleMode, isScaleMode);
 
     if (isAngleMode) {
         statusBar()->showMessage(tr("🔄 Enter angle in degrees (Enter=apply, Esc=cancel)"));
+    } else if (isScaleMode) {
+        statusBar()->showMessage(tr("📐 Enter scale percentage (Enter=apply, Esc=cancel)"));
     } else {
         statusBar()->showMessage(tr("📏 Enter length and angle (Enter=apply, Esc=cancel)"));
     }

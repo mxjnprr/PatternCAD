@@ -13,6 +13,7 @@
 #include "../geometry/Rectangle.h"
 #include "../geometry/Polyline.h"
 #include "../geometry/CubicBezier.h"
+#include <QDebug>
 
 namespace PatternCAD {
 
@@ -751,6 +752,7 @@ void ScaleObjectsCommand::undo()
 
 void ScaleObjectsCommand::redo()
 {
+    qDebug() << "ScaleObjectsCommand::redo - scaleX=" << m_scaleX << "scaleY=" << m_scaleY << "origin=" << m_origin;
     // Apply scale
     for (auto* obj : m_objects) {
         if (obj) {
