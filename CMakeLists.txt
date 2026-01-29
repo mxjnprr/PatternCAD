@@ -38,6 +38,7 @@ set(SOURCES
     src/core/Commands.cpp
     src/core/Units.cpp
     src/core/SettingsManager.cpp
+    src/core/AutoSaveManager.cpp
     src/ui/MainWindow.cpp
     src/ui/Canvas.cpp
     src/ui/DimensionRenderer.cpp
@@ -74,6 +75,7 @@ set(HEADERS
     src/core/Commands.h
     src/core/Units.h
     src/core/SettingsManager.h
+    src/core/AutoSaveManager.h
     src/ui/MainWindow.h
     src/ui/Canvas.h
     src/ui/DimensionRenderer.h

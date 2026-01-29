@@ -17,6 +17,7 @@ class QDockWidget;
 namespace PatternCAD {
 
 class Project;
+class AutoSaveManager;
 
 namespace Tools {
     class Tool;
@@ -152,6 +153,9 @@ private:
     QLabel* m_cursorLabel;
     QLabel* m_zoomLabel;
     class DimensionInputOverlay* m_dimensionInput;
+
+    // Auto-save
+    AutoSaveManager* m_autoSaveManager;
 
     // Recent files
     QMenu* m_recentFilesMenu;

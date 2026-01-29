@@ -18,6 +18,7 @@
 #include "../core/Document.h"
 #include "../core/Commands.h"
 #include "../core/Units.h"
+#include "../core/AutoSaveManager.h"
 #include "../tools/SelectTool.h"
 #include "../tools/PolylineTool.h"
 #include "../tools/AddPointOnContourTool.h"
@@ -56,6 +57,7 @@ MainWindow::MainWindow(QWidget* parent)
     , m_cursorLabel(nullptr)
     , m_zoomLabel(nullptr)
     , m_dimensionInput(nullptr)
+    , m_autoSaveManager(nullptr)
     , m_recentFilesMenu(nullptr)
 {
     setupUi();
@@ -74,6 +76,19 @@ MainWindow::MainWindow(QWidget* parent)
     m_canvas->setDocument(document);
     m_layersPanel->setDocument(document);
     m_propertiesPanel->setDocument(document);
+
+    // Setup auto-save
+    m_autoSaveManager = new AutoSaveManager(this);
+    m_autoSaveManager->setDocument(document);
+    connect(m_autoSaveManager, &AutoSaveManager::autoSaveCompleted,
+            this, [this](const QString& filePath) {
+        Q_UNUSED(filePath);
+        statusBar()->showMessage(tr("Auto-saved"), 2000);
+    });
+    connect(m_autoSaveManager, &AutoSaveManager::autoSaveFailed,
+            this, [this](const QString& error) {
+        statusBar()->showMessage(tr("Auto-save failed: %1").arg(error), 3000);
+    });
 
     // Initialize tools
     m_tools["Select"] = new Tools::SelectTool(this);
@@ -462,6 +477,17 @@ void MainWindow::loadSettings()
     QSettings settings;
     restoreGeometry(settings.value("mainWindow/geometry").toByteArray());
     restoreState(settings.value("mainWindow/state").toByteArray());
+
+    // Load auto-save settings
+    if (m_autoSaveManager) {
+        bool autoSaveEnabled = settings.value("autoSave/enabled", true).toBool();
+        int autoSaveInterval = settings.value("autoSave/interval", 5).toInt();
+        int maxAutoSaves = settings.value("autoSave/maxAutoSaves", 10).toInt();
+
+        m_autoSaveManager->setEnabled(autoSaveEnabled);
+        m_autoSaveManager->setInterval(autoSaveInterval);
+        m_autoSaveManager->setMaxAutoSaves(maxAutoSaves);
+    }
 }
 
 void MainWindow::saveSettings()
@@ -469,6 +495,13 @@ void MainWindow::saveSettings()
     QSettings settings;
     settings.setValue("mainWindow/geometry", saveGeometry());
     settings.setValue("mainWindow/state", saveState());
+
+    // Save auto-save settings
+    if (m_autoSaveManager) {
+        settings.setValue("autoSave/enabled", m_autoSaveManager->isEnabled());
+        settings.setValue("autoSave/interval", m_autoSaveManager->interval());
+        settings.setValue("autoSave/maxAutoSaves", m_autoSaveManager->maxAutoSaves());
+    }
 }
 
 void MainWindow::updateWindowTitle()
@@ -943,6 +976,9 @@ void MainWindow::openFile(const QString& filepath)
         if (project) {
             project->setFilepath(filepath);
         }
+        if (m_autoSaveManager) {
+            m_autoSaveManager->setFilePath(filepath);
+        }
         updateRecentFiles(filepath);
         m_canvas->viewport()->update();
         updateWindowTitle();
@@ -1008,6 +1044,9 @@ void MainWindow::saveFileAs()
             Project* project = Application::instance()->currentProject();
             if (project) {
                 project->setFilepath(filepath);
+            }
+            if (m_autoSaveManager) {
+                m_autoSaveManager->setFilePath(filepath);
             }
             updateRecentFiles(filepath);
             updateWindowTitle();
