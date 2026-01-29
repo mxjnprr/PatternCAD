@@ -474,21 +474,27 @@ cd /path/to/PatternCAD/build
 
 ---
 
-### TEST-31: Parameters Panel ⏳
+### TEST-31: Parameters Panel ✅
 **À tester:**
 - Ajouter paramètre
 
 **Procédure:**
 1. Ouvrir Parameters panel (Window → Parameters)
-2. Clic bouton "Add"
-3. Éditer nom, valeur, unité
+2. Vérifier 3 paramètres par défaut (width, height, margin)
+3. Clic bouton "Add"
+4. Éditer nom, valeur, unité (double-clic cellule)
+5. Tester Delete, Duplicate
 
 **Critère de succès:**
-- Paramètre ajouté dans table
-- Édition inline fonctionne
-- Validation nom
+- Panel s'ouvre avec 3 paramètres par défaut ✅
+- Table avec colonnes : Name, Value, Unit, Expression, Group ✅
+- Boutons Add, Delete, Duplicate, Clear All ✅
+- Édition inline fonctionne ✅
+- Validation nom (pas de doublons) ✅
 
-**Statut:** ⏳ À tester
+**Statut:** ✅ VALIDÉ
+
+**Note:** Panel fonctionnel mais pas encore connecté aux pièces (prévu Epic-002 futur). Pour l'instant, sert uniquement à stocker des variables.
 
 ---
 
@@ -546,10 +552,10 @@ cd /path/to/PatternCAD/build
 ## Résumé
 
 **Total tests:** 27 (9 supprimés)
-**Réussis:** 14 ✅
+**Réussis:** 15 ✅
 **Échoués:** 0 ❌
 **Supprimés:** 9 ❌ (Point + Line + 2 Line deps + Circle + Rectangle + 1 Rectangle dep + Déplacement objet + Sélection multiple)
-**Non testés:** 13 ⏳
+**Non testés:** 12 ⏳
 
 ---
 
