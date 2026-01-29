@@ -12,7 +12,7 @@
 
 ## Phase 1: Fondations (Application & UI)
 
-### TEST-01: Lancement de l'application ⏳
+### TEST-01: Lancement de l'application ✅
 **À tester:**
 - L'application se lance
 - Une fenêtre s'affiche
@@ -32,7 +32,7 @@ cd /path/to/PatternCAD/build
 
 ---
 
-### TEST-02: Structure de la fenêtre principale ⏳
+### TEST-02: Structure de la fenêtre principale ✅
 **À tester:**
 - Barre de menus visible (File, Edit, View, Draw, Modify, Tools, Window, Help)
 - Zone de dessin centrale (canvas)
@@ -50,7 +50,7 @@ cd /path/to/PatternCAD/build
 
 ---
 
-### TEST-03: Panneaux dockables ⏳
+### TEST-03: Panneaux dockables ✅
 **À tester:**
 - Menu Window → voir les panneaux disponibles
 - Afficher/masquer chaque panneau
@@ -67,7 +67,7 @@ cd /path/to/PatternCAD/build
 
 ---
 
-### TEST-04: Canvas - Pan (déplacement vue) ⏳
+### TEST-04: Canvas - Pan (déplacement vue) ✅
 **À tester:**
 - Bouton milieu souris pour déplacer la vue
 - Ou touche Espace + glisser
@@ -84,7 +84,7 @@ cd /path/to/PatternCAD/build
 
 ---
 
-### TEST-05: Canvas - Zoom ⏳
+### TEST-05: Canvas - Zoom ✅
 **À tester:**
 - Molette souris pour zoomer/dézoomer
 - Touches + et - pour zoomer
@@ -103,7 +103,7 @@ cd /path/to/PatternCAD/build
 
 ---
 
-### TEST-06: Grille ⏳
+### TEST-06: Grille ✅
 **À tester:**
 - Touche G pour afficher/masquer grille
 
@@ -120,20 +120,12 @@ cd /path/to/PatternCAD/build
 
 ## Phase 2: Outils de Dessin Basiques
 
-### TEST-07: Point Tool ⏳
-**À tester:**
-- Outil Point sélectionnable
-- Placer des points sur le canvas
+### TEST-07: Point Tool ❌ SUPPRIMÉ
+**Raison:** Fonctionnalité inutile - les points standalone ne servent à rien dans une application de design de patrons.
 
-**Procédure:**
-1. Touche P ou clic sur l'icône Point dans palette
-2. Cliquer sur le canvas
+**Note:** La classe géométrique Point2D est conservée en interne pour d'autres usages.
 
-**Critère de succès:**
-- Points apparaissent aux emplacements cliqués
-- Visible sur le canvas
-
-**Statut:** ⏳ À tester
+**Statut:** ❌ Supprimé (pas de test nécessaire)
 
 ---
 
@@ -631,10 +623,11 @@ cd /path/to/PatternCAD/build
 
 ## Résumé
 
-**Total tests:** 34
-**Réussis:** 0 ⏳
+**Total tests:** 33 (1 supprimé)
+**Réussis:** 6 ✅
 **Échoués:** 0 ❌
-**Non testés:** 34 ⏳
+**Supprimés:** 1 ❌
+**Non testés:** 27 ⏳
 
 ---
 

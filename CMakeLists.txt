@@ -59,7 +59,6 @@ set(SOURCES
     src/tools/Tool.cpp
     src/tools/SelectTool.cpp
     src/tools/LineTool.cpp
-    src/tools/PointTool.cpp
     src/tools/CircleTool.cpp
     src/tools/RectangleTool.cpp
     src/tools/PolylineTool.cpp
@@ -99,7 +98,6 @@ set(HEADERS
     src/tools/Tool.h
     src/tools/SelectTool.h
     src/tools/LineTool.h
-    src/tools/PointTool.h
     src/tools/CircleTool.h
     src/tools/RectangleTool.h
     src/tools/PolylineTool.h

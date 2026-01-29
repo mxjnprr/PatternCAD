@@ -22,7 +22,6 @@
 #include "../tools/LineTool.h"
 #include "../tools/CircleTool.h"
 #include "../tools/RectangleTool.h"
-#include "../tools/PointTool.h"
 #include "../tools/PolylineTool.h"
 #include "../tools/AddPointOnContourTool.h"
 #include "../tools/RotateTool.h"
@@ -84,7 +83,6 @@ MainWindow::MainWindow(QWidget* parent)
     m_tools["Line"] = new Tools::LineTool(this);
     m_tools["Circle"] = new Tools::CircleTool(this);
     m_tools["Rectangle"] = new Tools::RectangleTool(this);
-    m_tools["Point"] = new Tools::PointTool(this);
     m_tools["Polyline"] = new Tools::PolylineTool(this);
     m_tools["AddPointOnContour"] = new Tools::AddPointOnContourTool(this);
     m_tools["Rotate"] = new Tools::RotateTool(this);
