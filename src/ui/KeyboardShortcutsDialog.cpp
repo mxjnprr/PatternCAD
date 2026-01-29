@@ -94,6 +94,7 @@ QString KeyboardShortcutsDialog::getShortcutsHTML() const
     <tr><td class="shortcut">Clic-glissé</td><td>Sélection par rectangle (bounding box)</td></tr>
     <tr><td class="shortcut">Ctrl+Clic</td><td>Ajouter/retirer un objet de la sélection</td></tr>
     <tr><td class="shortcut">Espace</td><td>Ramasser/poser les objets sélectionnés (pick & place)</td></tr>
+    <tr><td class="shortcut">G</td><td>Grab - Déplacer un vertex sélectionné</td></tr>
     <tr><td class="shortcut">Clic droit</td><td>Menu contextuel (changer layer, supprimer)</td></tr>
     <tr><td class="shortcut">Suppr</td><td>Supprimer les objets sélectionnés</td></tr>
     <tr><td class="shortcut">Échap</td><td>Annuler l'action en cours / Désélectionner</td></tr>
@@ -109,16 +110,22 @@ QString KeyboardShortcutsDialog::getShortcutsHTML() const
     <tr><td class="shortcut">Échap</td><td>Annuler la polyligne en cours</td></tr>
 </table>
 
+<h2>🔄 Outils de Transformation</h2>
+<table>
+    <tr><th>Raccourci</th><th>Outil</th><th>Status</th></tr>
+    <tr><td class="shortcut">R</td><td>Rotate - Rotation des objets sélectionnés</td><td class="status-ok">✅</td></tr>
+    <tr><td class="shortcut">M</td><td>Mirror - Effet miroir (H/V/Custom)</td><td class="status-ok">✅</td></tr>
+    <tr><td class="shortcut">S</td><td>Scale - Mise à échelle (uniforme/non-uniforme)</td><td class="status-ok">✅</td></tr>
+</table>
+
 <h2>📋 Outils Planifiés</h2>
 <table>
     <tr><th>Raccourci</th><th>Outil</th></tr>
     <tr><td class="shortcut">O</td><td>Add Point on Contour</td></tr>
-    <tr><td class="shortcut">M</td><td>Move Point - Déplacer un point</td></tr>
     <tr><td class="shortcut">B</td><td>Build Piece - Former une nouvelle pièce</td></tr>
     <tr><td class="shortcut">C</td><td>Cut a Piece - Couper une pièce</td></tr>
     <tr><td class="shortcut">D</td><td>Draft - Drafter une pièce</td></tr>
     <tr><td class="shortcut">E</td><td>Extend Internal - Étendre contour interne</td></tr>
-    <tr><td class="shortcut">G</td><td>Align Points - Aligner plusieurs points</td></tr>
     <tr><td class="shortcut">H</td><td>Set Half Piece Line</td></tr>
     <tr><td class="shortcut">I</td><td>Move Internal - Déplacer objet interne</td></tr>
     <tr><td class="shortcut">J</td><td>Join Pieces - Joindre deux pièces</td></tr>

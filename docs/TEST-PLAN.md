@@ -343,24 +343,30 @@ cd /path/to/PatternCAD/build
 
 ---
 
-### TEST-24: Scale Tool ⏳
+### TEST-24: Scale Tool ✅
 **À tester:**
 - Mise à échelle
 
 **Procédure:**
 1. Dessiner un cercle
-2. Menu Modify → Scale
-3. Clic sur cercle
-4. Clic pour définir origine
-5. Déplacer pour agrandir/réduire
-6. Clic pour valider
+2. Menu Modify → Scale ou raccourci S
+3. Clic-glissé pour agrandir/réduire
+4. Ou Tab pour entrer valeur numérique
+5. Mode uniforme/non-uniforme avec combo
 
 **Critère de succès:**
-- Cercle change de taille
-- Pourcentage affiché
-- Undo possible
+- Cercle change de taille ✅
+- Pourcentage affiché ✅
+- Tab ouvre dialogue avec X/Y séparés ✅
+- Mode uniforme/non-uniforme fonctionne ✅
+- Undo possible ✅
 
-**Statut:** ⏳ À tester
+**Statut:** ✅ VALIDÉ
+
+**Bugs corrigés:**
+- Flag uniform passé dans signal avant hide()
+- Dialog mode uniform par défaut
+- Raccourci S global ajouté
 
 ---
 
