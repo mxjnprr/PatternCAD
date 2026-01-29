@@ -49,6 +49,7 @@ void RotateTool::activate()
 {
     Tool::activate();
     reset();
+    emit statusMessage(tr("Rotate Tool: Click to set rotation center | Shift=Snap 15° | Tab=Enter angle | Esc=Cancel"));
 }
 
 void RotateTool::reset()

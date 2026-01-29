@@ -72,6 +72,7 @@ signals:
     void zoomChanged(double zoom);
     void cursorPositionChanged(const QPointF& position);
     void escapePressed();
+    void toolRequested(const QString& toolName);
 
 protected:
     // Event handlers
@@ -81,6 +82,7 @@ protected:
     void mouseMoveEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
+    void contextMenuEvent(QContextMenuEvent* event) override;
     void drawBackground(QPainter* painter, const QRectF& rect) override;
     void drawForeground(QPainter* painter, const QRectF& rect) override;
 

@@ -12,6 +12,8 @@
 #include "geometry/GeometryObject.h"
 #include <QPainter>
 #include <QScrollBar>
+#include <QMenu>
+#include <QContextMenuEvent>
 #include <cmath>
 
 namespace PatternCAD {
@@ -326,6 +328,53 @@ void Canvas::keyPressEvent(QKeyEvent* event)
     }
 
     QGraphicsView::keyPressEvent(event);
+}
+
+void Canvas::contextMenuEvent(QContextMenuEvent* event)
+{
+    if (!m_document) {
+        return;
+    }
+
+    QMenu menu(this);
+
+    // Check if there are selected objects
+    bool hasSelection = !m_document->selectedObjects().isEmpty();
+
+    if (hasSelection) {
+        // Add transformation tools for selected objects
+        QAction* rotateAction = menu.addAction(tr("Rotate (Ctrl+R)"));
+        connect(rotateAction, &QAction::triggered, [this]() {
+            emit toolRequested("Rotate");
+        });
+
+        QAction* mirrorAction = menu.addAction(tr("Mirror (Ctrl+M)"));
+        connect(mirrorAction, &QAction::triggered, [this]() {
+            emit toolRequested("Mirror");
+        });
+
+        QAction* scaleAction = menu.addAction(tr("Scale"));
+        connect(scaleAction, &QAction::triggered, [this]() {
+            emit toolRequested("Scale");
+        });
+
+        menu.addSeparator();
+
+        QAction* deleteAction = menu.addAction(tr("Delete (Del)"));
+        connect(deleteAction, &QAction::triggered, [this]() {
+            if (m_document) {
+                auto selected = m_document->selectedObjects();
+                for (auto* obj : selected) {
+                    m_document->removeObject(obj);
+                }
+            }
+        });
+    } else {
+        // No selection - show drawing tools
+        menu.addAction(tr("No object selected"));
+    }
+
+    menu.exec(event->globalPos());
 }
 
 void Canvas::drawBackground(QPainter* painter, const QRectF& rect)

@@ -47,10 +47,13 @@ void MirrorTool::activate()
         // Calculate default horizontal axis through selection center
         calculateDefaultAxis(AxisType::Horizontal);
         m_mode = MirrorMode::SelectingAxis;
+        emit statusMessage(tr("Mirror Tool: H=Horizontal | V=Vertical | C=Custom | Enter=Apply | Esc=Cancel"));
 
         if (m_canvas) {
             m_canvas->update();
         }
+    } else {
+        emit statusMessage(tr("Mirror Tool: Select objects first"));
     }
 }
 
@@ -124,6 +127,7 @@ void MirrorTool::keyPressEvent(QKeyEvent* event)
         m_axisType = AxisType::Horizontal;
         calculateDefaultAxis(AxisType::Horizontal);
         m_mode = MirrorMode::SelectingAxis;
+        emit statusMessage(tr("Horizontal Mirror | Enter=Apply | V=Vertical | C=Custom | Esc=Cancel"));
         if (m_canvas) {
             m_canvas->update();
         }
@@ -135,6 +139,7 @@ void MirrorTool::keyPressEvent(QKeyEvent* event)
         m_axisType = AxisType::Vertical;
         calculateDefaultAxis(AxisType::Vertical);
         m_mode = MirrorMode::SelectingAxis;
+        emit statusMessage(tr("Vertical Mirror | Enter=Apply | H=Horizontal | C=Custom | Esc=Cancel"));
         if (m_canvas) {
             m_canvas->update();
         }
@@ -145,6 +150,7 @@ void MirrorTool::keyPressEvent(QKeyEvent* event)
         // Switch to custom mirror axis
         m_axisType = AxisType::Custom;
         m_mode = MirrorMode::Idle;
+        emit statusMessage(tr("Custom Mirror: Click two points to define axis | H=Horizontal | V=Vertical | Esc=Cancel"));
         if (m_canvas) {
             m_canvas->update();
         }
