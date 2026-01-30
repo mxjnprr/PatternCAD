@@ -17,6 +17,7 @@ namespace PatternCAD {
 class SeamAllowance;
 class Notch;
 class MatchPoint;
+class GradingSystem;
 
 namespace Geometry {
 
@@ -115,6 +116,10 @@ public:
     // Clone for pattern duplication (story-004-07)
     Polyline* clone(QObject* parent = nullptr) const;
 
+    // Grading system (story-004-04)
+    GradingSystem* gradingSystem() const { return m_gradingSystem; }
+    void setGradingSystem(GradingSystem* system);
+
     // Geometry interface
     QRectF boundingRect() const override;
     bool contains(const QPointF& point) const override;
@@ -132,6 +137,7 @@ private:
     SeamAllowance* m_seamAllowance;
     QVector<Notch*> m_notches;
     QVector<MatchPoint*> m_matchPoints;
+    GradingSystem* m_gradingSystem;
 
     // Helper methods
     QPainterPath createPath() const;

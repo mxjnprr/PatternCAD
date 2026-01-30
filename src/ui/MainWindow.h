@@ -92,6 +92,7 @@ private slots:
     void onModifyRotate();
     void onModifyMirror();
     void onModifyScale();
+    void onModifyGradingRules();
     void onModifyAlignLeft();
     void onModifyAlignRight();
     void onModifyAlignTop();

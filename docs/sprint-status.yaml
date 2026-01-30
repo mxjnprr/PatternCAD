@@ -752,16 +752,20 @@ epics:
           - Grading rules specify increments (e.g., +2cm waist per size)
           - User can define different increments for different dimensions
           - Grading rules are saved with project
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-004/story-004-04.md"
         assigned_to: ""
         estimate: "5 points"
-        actual: ""
+        actual: "5 points"
         technical_notes: |
-          - Implement GradeRule class (parameter, increments per size)
-          - Create Grading UI dialog or panel
-          - Store grading rules in Pattern or Project
-          - Validate grading rules (parameters exist, increments valid)
+          - [DONE] Implement GradingSystem class with SizeInfo and GradeRule
+          - [DONE] Implement size presets (XS-XL, numeric 34-46)
+          - [DONE] Create GradingDialog UI with size/rule tables
+          - [DONE] Store grading rules in Polyline (m_gradingSystem)
+          - [DONE] Implement SetGradingRulesCommand for undo/redo
+          - [DONE] Add menu item (Modify → Grading Rules, G key)
+          - [DONE] Implement JSON serialization for grading
+          - [DONE] Validate grading rules
         dependencies: ["story-002-01"]
 
       - id: "story-004-05"

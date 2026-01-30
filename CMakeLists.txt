@@ -71,6 +71,7 @@ set(SOURCES
     src/geometry/SeamAllowance.cpp
     src/geometry/Notch.cpp
     src/geometry/MatchPoint.cpp
+    src/geometry/GradingSystem.cpp
     src/tools/Tool.cpp
     src/tools/SelectTool.cpp
     src/tools/PolylineTool.cpp
@@ -86,6 +87,8 @@ set(SOURCES
     src/io/SVGFormat.cpp
     src/io/PDFFormat.cpp
     src/io/DXFFormat.cpp
+    src/ui/GradingDialog.cpp
+    src/core/GradingCommands.cpp
 )
 
 set(HEADERS

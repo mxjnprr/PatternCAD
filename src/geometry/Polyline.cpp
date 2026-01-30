@@ -8,6 +8,7 @@
 #include "SeamAllowance.h"
 #include "Notch.h"
 #include "MatchPoint.h"
+#include "GradingSystem.h"
 #include <QPainter>
 #include <QPainterPath>
 #include <QtMath>
@@ -106,6 +107,7 @@ Polyline::Polyline(QObject* parent)
     : GeometryObject(parent)
     , m_closed(true)
     , m_seamAllowance(new SeamAllowance(this))
+    , m_gradingSystem(nullptr)
 {
     m_seamAllowance->setSourcePolyline(this);
     connect(m_seamAllowance, &SeamAllowance::changed, this, [this]() { notifyChanged(); });
@@ -116,6 +118,7 @@ Polyline::Polyline(const QVector<PolylineVertex>& vertices, QObject* parent)
     , m_vertices(vertices)
     , m_closed(true)
     , m_seamAllowance(new SeamAllowance(this))
+    , m_gradingSystem(nullptr)
 {
     m_seamAllowance->setSourcePolyline(this);
     connect(m_seamAllowance, &SeamAllowance::changed, this, [this]() { notifyChanged(); });
@@ -828,7 +831,30 @@ Polyline* Polyline::clone(QObject* parent) const
         copy->addMatchPoint(mpCopy);
     }
     
+    // Clone grading system
+    if (m_gradingSystem) {
+        copy->m_gradingSystem = m_gradingSystem->clone(copy);
+    }
+    
     return copy;
+}
+
+// --- Grading System ---
+
+void Polyline::setGradingSystem(GradingSystem* system)
+{
+    if (m_gradingSystem != system) {
+        // Clean up old system if owned
+        if (m_gradingSystem && m_gradingSystem->parent() == this) {
+            delete m_gradingSystem;
+        }
+        m_gradingSystem = system;
+        if (m_gradingSystem) {
+            m_gradingSystem->setParent(this);
+            connect(m_gradingSystem, &GradingSystem::changed, this, [this]() { notifyChanged(); });
+        }
+        notifyChanged();
+    }
 }
 
 } // namespace Geometry

@@ -34,6 +34,10 @@
 #include "../tools/SeamAllowanceTool.h"
 #include "../tools/NotchTool.h"
 #include "../tools/MatchPointTool.h"
+#include "GradingDialog.h"
+#include "../core/GradingCommands.h"
+#include "../geometry/Polyline.h"
+#include "../geometry/GradingSystem.h"
 
 #include <QMenuBar>
 #include <QToolBar>
@@ -287,6 +291,10 @@ void MainWindow::setupMenuBar()
     QMenu* distributeMenu = modifyMenu->addMenu(tr("&Distribute"));
     distributeMenu->addAction(tr("Distribute &Horizontal"), this, &MainWindow::onModifyDistributeHorizontal, QKeySequence(tr("Ctrl+Shift+D")));
     distributeMenu->addAction(tr("Distribute &Vertical"), this, &MainWindow::onModifyDistributeVertical, QKeySequence(tr("Ctrl+Shift+E")));
+    
+    // Grading
+    modifyMenu->addSeparator();
+    modifyMenu->addAction(tr("&Grading Rules... (G)"), this, &MainWindow::onModifyGradingRules, QKeySequence(tr("G")));
 
     // Tools menu (shortcuts defined as global actions below, not here)
     QMenu* toolsMenu = menuBar()->addMenu(tr("&Tools"));
@@ -990,6 +998,38 @@ void MainWindow::onModifyScale()
 {
     // Activate the Scale tool
     onToolSelected("Scale");
+}
+
+void MainWindow::onModifyGradingRules()
+{
+    Document* document = m_canvas ? m_canvas->document() : nullptr;
+    if (!document) return;
+    
+    // Get selected polyline
+    QList<Geometry::GeometryObject*> selectedObjects = document->selectedObjects();
+    Geometry::Polyline* polyline = nullptr;
+    
+    for (Geometry::GeometryObject* obj : selectedObjects) {
+        polyline = dynamic_cast<Geometry::Polyline*>(obj);
+        if (polyline) break;
+    }
+    
+    if (!polyline) {
+        statusBar()->showMessage(tr("Select a polyline to configure grading rules"), 3000);
+        return;
+    }
+    
+    // Open grading dialog
+    GradingDialog dialog(polyline, this);
+    if (dialog.exec() == QDialog::Accepted) {
+        // Apply grading rules via command
+        GradingSystem* newGrading = dialog.gradingSystem()->clone();
+        auto* command = new SetGradingRulesCommand(polyline, newGrading);
+        if (document->undoStack()) {
+            document->undoStack()->push(command);
+        }
+        statusBar()->showMessage(tr("Grading rules applied"), 3000);
+    }
 }
 
 void MainWindow::onModifyAlignLeft()
