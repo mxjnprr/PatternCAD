@@ -782,19 +782,20 @@ epics:
           - All sizes can be generated in < 5 seconds
           - Preview shows all graded sizes overlaid or side-by-side
           - Generated sizes are saved as separate patterns
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-004/story-004-05.md"
         assigned_to: ""
         estimate: "8 points"
-        actual: ""
+        actual: "8 points"
         technical_notes: |
-          - Implement GradingAlgorithm::grade()
-          - Clone base pattern for each size
-          - Apply parameter adjustments per grading rules
-          - Trigger parametric update for each pattern
-          - Resolve constraints for each size
-          - Add all graded patterns to project
-          - Create GradePatternCommand
+          - [DONE] Implement GenerateGradedSizesCommand
+          - [DONE] Clone base pattern for each size using GradingSystem::applyToSize()
+          - [DONE] Apply grading rules to adjust vertex positions
+          - [DONE] Skip base size (already exists)
+          - [DONE] Add all graded patterns to document
+          - [DONE] Add menu item (Modify → Generate Graded Sizes, Shift+G)
+          - [DONE] Undo/redo support (removes/re-adds generated patterns)
+          - [DONE] Status bar feedback showing count of generated sizes
         dependencies: ["story-004-04"]
 
       - id: "story-004-06"

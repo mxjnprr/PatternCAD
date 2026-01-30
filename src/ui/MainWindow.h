@@ -93,6 +93,7 @@ private slots:
     void onModifyMirror();
     void onModifyScale();
     void onModifyGradingRules();
+    void onModifyGenerateGradedSizes();
     void onModifyAlignLeft();
     void onModifyAlignRight();
     void onModifyAlignTop();

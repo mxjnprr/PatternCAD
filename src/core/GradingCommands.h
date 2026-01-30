@@ -9,10 +9,12 @@
 
 #include <QUndoCommand>
 #include <QJsonObject>
+#include <QVector>
 
 namespace PatternCAD {
 
 class GradingSystem;
+class Document;
 
 namespace Geometry {
     class Polyline;
@@ -37,6 +39,30 @@ private:
     QJsonObject m_oldGradingJson;
     QJsonObject m_newGradingJson;
     bool m_hadOldGrading;
+};
+
+/**
+ * Command to generate all graded sizes from a base pattern
+ */
+class GenerateGradedSizesCommand : public QUndoCommand
+{
+public:
+    GenerateGradedSizesCommand(Document* document,
+                                Geometry::Polyline* basePolyline,
+                                QUndoCommand* parent = nullptr);
+    ~GenerateGradedSizesCommand();
+
+    void undo() override;
+    void redo() override;
+    
+    // Get generated polylines
+    QVector<Geometry::Polyline*> generatedPolylines() const { return m_generatedPolylines; }
+
+private:
+    Document* m_document;
+    Geometry::Polyline* m_basePolyline;
+    QVector<Geometry::Polyline*> m_generatedPolylines;
+    bool m_firstRedo;
 };
 
 } // namespace PatternCAD

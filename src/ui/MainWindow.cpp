@@ -295,6 +295,7 @@ void MainWindow::setupMenuBar()
     // Grading
     modifyMenu->addSeparator();
     modifyMenu->addAction(tr("&Grading Rules... (G)"), this, &MainWindow::onModifyGradingRules, QKeySequence(tr("G")));
+    modifyMenu->addAction(tr("Generate Graded &Sizes (Shift+G)"), this, &MainWindow::onModifyGenerateGradedSizes, QKeySequence(tr("Shift+G")));
 
     // Tools menu (shortcuts defined as global actions below, not here)
     QMenu* toolsMenu = menuBar()->addMenu(tr("&Tools"));
@@ -1030,6 +1031,46 @@ void MainWindow::onModifyGradingRules()
         }
         statusBar()->showMessage(tr("Grading rules applied"), 3000);
     }
+}
+
+void MainWindow::onModifyGenerateGradedSizes()
+{
+    Document* document = m_canvas ? m_canvas->document() : nullptr;
+    if (!document) return;
+    
+    // Get selected polyline
+    QList<Geometry::GeometryObject*> selectedObjects = document->selectedObjects();
+    Geometry::Polyline* polyline = nullptr;
+    
+    for (Geometry::GeometryObject* obj : selectedObjects) {
+        polyline = dynamic_cast<Geometry::Polyline*>(obj);
+        if (polyline) break;
+    }
+    
+    if (!polyline) {
+        statusBar()->showMessage(tr("Select a polyline with grading rules to generate sizes"), 3000);
+        return;
+    }
+    
+    GradingSystem* grading = polyline->gradingSystem();
+    if (!grading || grading->sizeCount() == 0) {
+        statusBar()->showMessage(tr("No grading rules defined. Use Grading Rules (G) first."), 3000);
+        return;
+    }
+    
+    if (grading->ruleCount() == 0) {
+        statusBar()->showMessage(tr("No grading rules defined. Add rules in Grading Rules dialog."), 3000);
+        return;
+    }
+    
+    // Generate all sizes
+    auto* command = new GenerateGradedSizesCommand(document, polyline);
+    if (document->undoStack()) {
+        document->undoStack()->push(command);
+    }
+    
+    int generatedCount = command->generatedPolylines().size();
+    statusBar()->showMessage(tr("Generated %1 graded sizes").arg(generatedCount), 3000);
 }
 
 void MainWindow::onModifyAlignLeft()
