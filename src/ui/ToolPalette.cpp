@@ -22,6 +22,7 @@ ToolPalette::ToolPalette(QWidget* parent)
     , m_currentToolName("Select")
     , m_selectButton(nullptr)
     , m_polylineButton(nullptr)
+    , m_seamAllowanceButton(nullptr)
 {
     setupUi();
 }
@@ -55,6 +56,10 @@ void ToolPalette::setupUi()
     // Drawing Tools group
     addGroupSeparator("Drawing");
     m_polylineButton = createToolButton("Polyline", "polyline", "Polyline/Draft Tool (D)", 1);
+
+    // Pattern Tools group
+    addGroupSeparator("Pattern");
+    m_seamAllowanceButton = createToolButton("Seam Allow.", "seam", "Seam Allowance Tool (S)", 2);
 
     // Add stretch at the end
     m_layout->addStretch();
@@ -103,6 +108,8 @@ void ToolPalette::setCurrentTool(const QString& toolName)
             m_selectButton->setChecked(true);
         } else if (toolName == "Polyline") {
             m_polylineButton->setChecked(true);
+        } else if (toolName == "SeamAllowance") {
+            m_seamAllowanceButton->setChecked(true);
         }
 
         emit toolSelected(toolName);
@@ -115,6 +122,7 @@ void ToolPalette::onToolButtonClicked(int id)
     switch (id) {
         case 0: toolName = "Select"; break;
         case 1: toolName = "Polyline"; break;
+        case 2: toolName = "SeamAllowance"; break;
         default: toolName = "Select"; break;
     }
 
@@ -165,6 +173,18 @@ QIcon ToolPalette::createToolIcon(const QString& toolType)
         painter.drawEllipse(QPoint(6, 22), 2, 2);
         painter.drawEllipse(QPoint(14, 10), 2, 2);
         painter.drawEllipse(QPoint(22, 22), 2, 2);
+    } else if (toolType == "seam") {
+        // Draw seam allowance icon (square with dashed offset)
+        // Inner square (pattern)
+        QPen solidPen(QColor(60, 60, 60), 2);
+        painter.setPen(solidPen);
+        painter.drawRect(10, 10, 12, 12);
+
+        // Outer square (seam allowance) - dashed
+        QPen dashedPen(QColor(200, 60, 60), 1.5);
+        dashedPen.setStyle(Qt::DashLine);
+        painter.setPen(dashedPen);
+        painter.drawRect(6, 6, 20, 20);
     }
 
     painter.end();

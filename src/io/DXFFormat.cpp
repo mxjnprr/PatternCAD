@@ -13,6 +13,8 @@
 #include "geometry/Polyline.h"
 #include "geometry/Rectangle.h"
 #include "geometry/CubicBezier.h"
+#include "geometry/Notch.h"
+#include "geometry/MatchPoint.h"
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>
@@ -747,6 +749,16 @@ void DXFFormat::writePolyline(QTextStream& stream, const Geometry::GeometryObjec
             writePair(stream, 10, vertex.position.x());
             writePair(stream, 20, vertex.position.y());
         }
+
+        // Export notches as separate geometry
+        for (Notch* notch : polyline->notches()) {
+            writeNotch(stream, notch, obj->layer());
+        }
+
+        // Export match points as separate geometry
+        for (MatchPoint* mp : polyline->matchPoints()) {
+            writeMatchPoint(stream, mp, obj->layer());
+        }
         return;
     }
 
@@ -835,6 +847,16 @@ void DXFFormat::writePolyline(QTextStream& stream, const Geometry::GeometryObjec
         writePair(stream, 10, point.x());
         writePair(stream, 20, point.y());
     }
+
+    // Export notches as separate geometry
+    for (Notch* notch : polyline->notches()) {
+        writeNotch(stream, notch, obj->layer());
+    }
+
+    // Export match points as separate geometry
+    for (MatchPoint* mp : polyline->matchPoints()) {
+        writeMatchPoint(stream, mp, obj->layer());
+    }
 }
 
 void DXFFormat::writeRectangle(QTextStream& stream, const Geometry::GeometryObject* obj) const
@@ -907,6 +929,122 @@ void DXFFormat::writePoint(QTextStream& stream, const Geometry::GeometryObject* 
     writePair(stream, 10, pos.x());
     writePair(stream, 20, pos.y());
     writePair(stream, 30, 0.0);
+}
+
+void DXFFormat::writeNotch(QTextStream& stream, const Notch* notch, const QString& layer) const
+{
+    if (!notch) return;
+
+    QPointF pos = notch->getLocation();
+    QPointF normal = notch->getNormal();
+    double depth = notch->depth();
+
+    switch (notch->style()) {
+        case NotchStyle::VNotch: {
+            // V-notch: two lines forming a V shape
+            QPointF perp(-normal.y(), normal.x());
+            double width = depth * 0.5;  // V-notch width
+            
+            QPointF tipPoint = pos + normal * depth;
+            QPointF leftPoint = pos + perp * width;
+            QPointF rightPoint = pos - perp * width;
+
+            // Left line of V
+            writePair(stream, 0, "LINE");
+            writePair(stream, 8, layer);
+            writePair(stream, 10, leftPoint.x());
+            writePair(stream, 20, leftPoint.y());
+            writePair(stream, 30, 0.0);
+            writePair(stream, 11, tipPoint.x());
+            writePair(stream, 21, tipPoint.y());
+            writePair(stream, 31, 0.0);
+
+            // Right line of V
+            writePair(stream, 0, "LINE");
+            writePair(stream, 8, layer);
+            writePair(stream, 10, rightPoint.x());
+            writePair(stream, 20, rightPoint.y());
+            writePair(stream, 30, 0.0);
+            writePair(stream, 11, tipPoint.x());
+            writePair(stream, 21, tipPoint.y());
+            writePair(stream, 31, 0.0);
+            break;
+        }
+        case NotchStyle::Slit: {
+            // Slit: single line perpendicular to edge
+            QPointF endPoint = pos + normal * depth;
+
+            writePair(stream, 0, "LINE");
+            writePair(stream, 8, layer);
+            writePair(stream, 10, pos.x());
+            writePair(stream, 20, pos.y());
+            writePair(stream, 30, 0.0);
+            writePair(stream, 11, endPoint.x());
+            writePair(stream, 21, endPoint.y());
+            writePair(stream, 31, 0.0);
+            break;
+        }
+        case NotchStyle::Dot: {
+            // Dot: small circle
+            double radius = depth * 0.3;
+
+            writePair(stream, 0, "CIRCLE");
+            writePair(stream, 8, layer);
+            writePair(stream, 10, pos.x());
+            writePair(stream, 20, pos.y());
+            writePair(stream, 30, 0.0);
+            writePair(stream, 40, radius);
+            break;
+        }
+    }
+}
+
+void DXFFormat::writeMatchPoint(QTextStream& stream, const MatchPoint* mp, const QString& layer) const
+{
+    if (!mp) return;
+
+    QPointF pos = mp->position();
+
+    // Write as a POINT entity
+    writePair(stream, 0, "POINT");
+    writePair(stream, 8, layer);
+    writePair(stream, 10, pos.x());
+    writePair(stream, 20, pos.y());
+    writePair(stream, 30, 0.0);
+
+    // Also write a small cross for visibility (two short lines)
+    double size = 2.0;  // 2mm cross
+
+    // Horizontal line of cross
+    writePair(stream, 0, "LINE");
+    writePair(stream, 8, layer);
+    writePair(stream, 10, pos.x() - size);
+    writePair(stream, 20, pos.y());
+    writePair(stream, 30, 0.0);
+    writePair(stream, 11, pos.x() + size);
+    writePair(stream, 21, pos.y());
+    writePair(stream, 31, 0.0);
+
+    // Vertical line of cross
+    writePair(stream, 0, "LINE");
+    writePair(stream, 8, layer);
+    writePair(stream, 10, pos.x());
+    writePair(stream, 20, pos.y() - size);
+    writePair(stream, 30, 0.0);
+    writePair(stream, 11, pos.x());
+    writePair(stream, 21, pos.y() + size);
+    writePair(stream, 31, 0.0);
+
+    // Optional: Add TEXT entity for label (not all DXF readers support this)
+    if (!mp->label().isEmpty()) {
+        writePair(stream, 0, "TEXT");
+        writePair(stream, 8, layer);
+        writePair(stream, 10, pos.x() + size * 1.5);
+        writePair(stream, 20, pos.y());
+        writePair(stream, 30, 0.0);
+        writePair(stream, 40, 3.0);  // Text height: 3mm
+        writePair(stream, 1, mp->label());  // Text content
+    }
 }
 
 } // namespace IO

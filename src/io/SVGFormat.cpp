@@ -13,6 +13,8 @@
 #include "geometry/Rectangle.h"
 #include "geometry/Polyline.h"
 #include "geometry/CubicBezier.h"
+#include "geometry/Notch.h"
+#include "geometry/MatchPoint.h"
 #include <QFile>
 #include <QTextStream>
 #include <QDateTime>
@@ -637,6 +639,16 @@ QString SVGFormat::geometryToSVG(const Geometry::GeometryObject* object, int ind
         out << indentStr << QString("<path d=\"%1\" style=\"%2\" />\n")
                .arg(pathData)
                .arg(style);
+
+        // Export notches
+        for (const Notch* notch : polyline->notches()) {
+            out << notchToSVG(notch, indent);
+        }
+
+        // Export match points
+        for (const MatchPoint* mp : polyline->matchPoints()) {
+            out << matchPointToSVG(mp, indent);
+        }
     }
     else if (auto* bezier = dynamic_cast<const Geometry::CubicBezier*>(object)) {
         // Cubic bezier as path
@@ -684,5 +696,93 @@ QRectF SVGFormat::calculateBounds(const Document* document) const
     return bounds;
 }
 
+QString SVGFormat::notchToSVG(const Notch* notch, int indent) const
+{
+    if (!notch) return "";
+
+    QString svg;
+    QTextStream out(&svg);
+    QString indentStr = formatIndent(indent);
+
+    QPointF pos = notch->getLocation();
+    QPointF normal = notch->getNormal();
+    double depth = notch->depth();
+    NotchStyle style = notch->style();
+
+    QString notchStyle = "fill:none;stroke:#0000FF;stroke-width:0.5";  // Blue for notches
+
+    switch (style) {
+        case NotchStyle::VNotch: {
+            // V-notch: two lines forming a V
+            QPointF perpendicular(-normal.y(), normal.x());
+            QPointF tip = pos + normal * depth;
+            QPointF left = pos - perpendicular * (depth * 0.5);
+            QPointF right = pos + perpendicular * (depth * 0.5);
+            
+            out << indentStr << QString("<path d=\"M %1,%2 L %3,%4 L %5,%6\" style=\"%7\" />\n")
+                   .arg(left.x()).arg(left.y())
+                   .arg(tip.x()).arg(tip.y())
+                   .arg(right.x()).arg(right.y())
+                   .arg(notchStyle);
+            break;
+        }
+        case NotchStyle::Slit: {
+            // Slit: single line perpendicular to edge
+            QPointF end = pos + normal * depth;
+            out << indentStr << QString("<line x1=\"%1\" y1=\"%2\" x2=\"%3\" y2=\"%4\" style=\"%5\" />\n")
+                   .arg(pos.x()).arg(pos.y())
+                   .arg(end.x()).arg(end.y())
+                   .arg(notchStyle);
+            break;
+        }
+        case NotchStyle::Dot: {
+            // Dot: small circle
+            double radius = depth * 0.3;
+            out << indentStr << QString("<circle cx=\"%1\" cy=\"%2\" r=\"%3\" style=\"fill:#0000FF;stroke:none\" />\n")
+                   .arg(pos.x()).arg(pos.y())
+                   .arg(radius);
+            break;
+        }
+    }
+
+    return svg;
+}
+
+QString SVGFormat::matchPointToSVG(const MatchPoint* mp, int indent) const
+{
+    if (!mp) return "";
+
+    QString svg;
+    QTextStream out(&svg);
+    QString indentStr = formatIndent(indent);
+
+    QPointF pos = mp->position();
+    QString label = mp->label();
+    double crossSize = 3.0;  // Size of the cross marker
+
+    QString mpStyle = "fill:none;stroke:#FF00FF;stroke-width:0.5";  // Magenta for match points
+
+    // Draw cross
+    out << indentStr << QString("<line x1=\"%1\" y1=\"%2\" x2=\"%3\" y2=\"%4\" style=\"%5\" />\n")
+           .arg(pos.x() - crossSize).arg(pos.y())
+           .arg(pos.x() + crossSize).arg(pos.y())
+           .arg(mpStyle);
+    out << indentStr << QString("<line x1=\"%1\" y1=\"%2\" x2=\"%3\" y2=\"%4\" style=\"%5\" />\n")
+           .arg(pos.x()).arg(pos.y() - crossSize)
+           .arg(pos.x()).arg(pos.y() + crossSize)
+           .arg(mpStyle);
+
+    // Draw label
+    if (!label.isEmpty()) {
+        out << indentStr << QString("<text x=\"%1\" y=\"%2\" font-size=\"4\" fill=\"#FF00FF\">%3</text>\n")
+               .arg(pos.x() + crossSize + 1)
+               .arg(pos.y() + 1.5)
+               .arg(label);
+    }
+
+    return svg;
+}
+
 } // namespace IO
 } // namespace PatternCAD
+

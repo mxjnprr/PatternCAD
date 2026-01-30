@@ -19,6 +19,9 @@ namespace Geometry {
     struct PolylineVertex;
 }
 
+class Notch;
+class MatchPoint;
+
 namespace IO {
 
 /**
@@ -55,6 +58,8 @@ private:
     // Export helpers
     QString generateSVG(const Document* document) const;
     QString geometryToSVG(const Geometry::GeometryObject* object, int indent = 2) const;
+    QString notchToSVG(const Notch* notch, int indent = 2) const;
+    QString matchPointToSVG(const MatchPoint* mp, int indent = 2) const;
     QString formatIndent(int level) const;
     QRectF calculateBounds(const Document* document) const;
 

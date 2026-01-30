@@ -51,7 +51,11 @@
       "Bash(Drag to scale)",
       "Bash(U=Toggle uniform/non-uniform)",
       "Bash(Enter=Apply)",
-      "Bash(Esc=Cancel\"\n\n- Remove generic tool description message from MainWindow::onToolSelected\\(\\)\n  * Was overwriting detailed help from activate\\(\\)\n  * Each tool now shows its own detailed help\n\n- Update TEST-PLAN: TEST-22 and TEST-23 validated\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(Esc=Cancel\"\n\n- Remove generic tool description message from MainWindow::onToolSelected\\(\\)\n  * Was overwriting detailed help from activate\\(\\)\n  * Each tool now shows its own detailed help\n\n- Update TEST-PLAN: TEST-22 and TEST-23 validated\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(head:*)",
+      "Bash(do echo \"=== $epic ===\" grep -H \"^# Story\\\\|^**Status:\" $epic/story-*.md)",
+      "Bash(do head -4 \"$epic\")",
+      "Bash(git check-ignore:*)"
     ]
   }
 }

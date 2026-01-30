@@ -31,6 +31,9 @@
 #include "../tools/RotateTool.h"
 #include "../tools/MirrorTool.h"
 #include "../tools/ScaleTool.h"
+#include "../tools/SeamAllowanceTool.h"
+#include "../tools/NotchTool.h"
+#include "../tools/MatchPointTool.h"
 
 #include <QMenuBar>
 #include <QToolBar>
@@ -116,6 +119,9 @@ MainWindow::MainWindow(QWidget* parent)
     m_tools["Rotate"] = new Tools::RotateTool(this);
     m_tools["Mirror"] = new Tools::MirrorTool(this);
     m_tools["Scale"] = new Tools::ScaleTool(this);
+    m_tools["SeamAllowance"] = new Tools::SeamAllowanceTool(this);
+    m_tools["Notch"] = new Tools::NotchTool(this);
+    m_tools["MatchPoint"] = new Tools::MatchPointTool(this);
 
     // Connect SelectTool's toolChangeRequested signal
     auto* selectTool = qobject_cast<Tools::SelectTool*>(m_tools["Select"]);
@@ -288,6 +294,10 @@ void MainWindow::setupMenuBar()
     toolsMenu->addAction(tr("&Polyline (P)"), [this]() { onToolSelected("Polyline"); });
     toolsMenu->addAction(tr("&Add Point on Contour (A)"), [this]() { onToolSelected("AddPointOnContour"); });
     toolsMenu->addSeparator();
+    toolsMenu->addAction(tr("Seam &Allowance (S)"), [this]() { onToolSelected("SeamAllowance"); });
+    toolsMenu->addAction(tr("&Notch (N)"), [this]() { onToolSelected("Notch"); });
+    toolsMenu->addAction(tr("&Match Point (T)"), [this]() { onToolSelected("MatchPoint"); });
+    toolsMenu->addSeparator();
     toolsMenu->addAction(tr("&Rotate (R)"), this, &MainWindow::onModifyRotate);
     toolsMenu->addAction(tr("&Mirror (M)"), this, &MainWindow::onModifyMirror);
     toolsMenu->addAction(tr("&Scale (S)"), this, &MainWindow::onModifyScale);
@@ -326,9 +336,24 @@ void MainWindow::setupMenuBar()
     addAction(mirrorToolAction);
 
     QAction* scaleToolAction = new QAction(tr("&Scale Tool"), this);
-    scaleToolAction->setShortcut(QKeySequence(Qt::Key_S));
+    scaleToolAction->setShortcut(QKeySequence(Qt::SHIFT | Qt::Key_S));
     connect(scaleToolAction, &QAction::triggered, this, &MainWindow::onModifyScale);
     addAction(scaleToolAction);
+
+    QAction* seamAllowanceToolAction = new QAction(tr("&Seam Allowance Tool"), this);
+    seamAllowanceToolAction->setShortcut(QKeySequence(Qt::Key_S));
+    connect(seamAllowanceToolAction, &QAction::triggered, [this]() { onToolSelected("SeamAllowance"); });
+    addAction(seamAllowanceToolAction);
+
+    QAction* notchToolAction = new QAction(tr("&Notch Tool"), this);
+    notchToolAction->setShortcut(QKeySequence(Qt::Key_N));
+    connect(notchToolAction, &QAction::triggered, [this]() { onToolSelected("Notch"); });
+    addAction(notchToolAction);
+
+    QAction* matchPointToolAction = new QAction(tr("&Match Point Tool"), this);
+    // No shortcut - access via menu only (M is used by Mirror Tool)
+    connect(matchPointToolAction, &QAction::triggered, [this]() { onToolSelected("MatchPoint"); });
+    addAction(matchPointToolAction);
 
     // Additional global shortcuts (not in menus)
 

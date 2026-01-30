@@ -13,8 +13,10 @@
 
 namespace PatternCAD {
 
-// Forward declaration
+// Forward declarations
 class SeamAllowance;
+class Notch;
+class MatchPoint;
 
 namespace Geometry {
 
@@ -94,6 +96,25 @@ public:
     // Seam allowance
     SeamAllowance* seamAllowance() const { return m_seamAllowance; }
 
+    // Notches (story-004-02)
+    QVector<Notch*> notches() const { return m_notches; }
+    void addNotch(Notch* notch);
+    void removeNotch(Notch* notch);
+    Notch* notchAt(int index) const;
+    int notchCount() const { return m_notches.size(); }
+    void clearNotches();
+
+    // Match Points (story-004-03)
+    QVector<MatchPoint*> matchPoints() const { return m_matchPoints; }
+    void addMatchPoint(MatchPoint* mp);
+    void removeMatchPoint(MatchPoint* mp);
+    MatchPoint* matchPointAt(int index) const;
+    int matchPointCount() const { return m_matchPoints.size(); }
+    void clearMatchPoints();
+
+    // Clone for pattern duplication (story-004-07)
+    Polyline* clone(QObject* parent = nullptr) const;
+
     // Geometry interface
     QRectF boundingRect() const override;
     bool contains(const QPointF& point) const override;
@@ -109,6 +130,8 @@ private:
     QVector<PolylineVertex> m_vertices;
     bool m_closed;
     SeamAllowance* m_seamAllowance;
+    QVector<Notch*> m_notches;
+    QVector<MatchPoint*> m_matchPoints;
 
     // Helper methods
     QPainterPath createPath() const;

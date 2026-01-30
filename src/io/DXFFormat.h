@@ -15,6 +15,9 @@
 
 namespace PatternCAD {
 
+class Notch;
+class MatchPoint;
+
 namespace Geometry {
     class GeometryObject;
 }
@@ -91,6 +94,8 @@ private:
     void writeRectangle(QTextStream& stream, const Geometry::GeometryObject* obj) const;
     void writeCubicBezier(QTextStream& stream, const Geometry::GeometryObject* obj) const;
     void writePoint(QTextStream& stream, const Geometry::GeometryObject* obj) const;
+    void writeNotch(QTextStream& stream, const Notch* notch, const QString& layer) const;
+    void writeMatchPoint(QTextStream& stream, const MatchPoint* mp, const QString& layer) const;
 };
 
 } // namespace IO

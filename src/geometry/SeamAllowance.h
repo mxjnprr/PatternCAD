@@ -11,14 +11,10 @@
 #include <QPointF>
 #include <QVector>
 #include <QPainter>
-#include <set>
+#include "Polyline.h"
+#include <clipper2/clipper.h>
 
 namespace PatternCAD {
-
-namespace Geometry {
-    class GeometryObject;
-    class Polyline;
-}
 
 /**
  * Corner type for seam allowance offsetting
@@ -30,8 +26,28 @@ enum class CornerType {
 };
 
 /**
+ * A single seam allowance range on a polyline
+ */
+struct SeamRange {
+    int startVertexIndex = -1;
+    int endVertexIndex = -1;
+    double width = 10.0;
+    bool isFullContour = false;
+    
+    bool isValid() const { 
+        return isFullContour || (startVertexIndex >= 0 && endVertexIndex >= 0); 
+    }
+};
+
+/**
  * SeamAllowance generates offset outlines for pattern pieces.
  * Uses Clipper2 library for polygon offsetting.
+ * 
+ * Supports MULTIPLE range-based selections on a single piece:
+ * - addRange(start, end, width): adds a seam allowance from startVertex to endVertex
+ * - addFullContour(width): adds seam allowance to entire contour
+ * - removeRange(index): removes a specific range
+ * - clearRanges(): removes all ranges
  */
 class SeamAllowance : public QObject
 {
@@ -42,9 +58,6 @@ public:
     ~SeamAllowance();
 
     // Configuration
-    void setWidth(double width);
-    double width() const { return m_width; }
-
     void setCornerType(CornerType type);
     CornerType cornerType() const { return m_cornerType; }
 
@@ -55,13 +68,29 @@ public:
     void setSourcePolyline(Geometry::Polyline* polyline);
     Geometry::Polyline* sourcePolyline() const { return m_sourcePolyline; }
 
-    // Edge exclusion (for future use)
-    void excludeEdge(int edgeIndex);
-    void includeEdge(int edgeIndex);
-    bool isEdgeExcluded(int edgeIndex) const;
-    void clearExcludedEdges();
+    // Multiple ranges support
+    void addRange(int startVertexIndex, int endVertexIndex, double width);
+    void addFullContour(double width);
+    void removeRange(int index);
+    void clearRanges();
+    int rangeCount() const { return m_ranges.size(); }
+    const SeamRange& range(int index) const { return m_ranges[index]; }
+    
+    // Legacy single-range API (deprecated, for compatibility)
+    void setRange(int startVertexIndex, int endVertexIndex);
+    void setFullContour(bool full);
+    void setWidth(double width);
+    double width() const { return m_width; }
+    bool isFullContour() const;
+    int startVertexIndex() const;
+    int endVertexIndex() const;
+    bool isEdgeInRange(int edgeIndex) const;
+    void clearRange();
 
-    // Computation
+    // Computation - returns all offset polygons
+    QVector<QVector<QPointF>> computeAllOffsets() const;
+    
+    // Legacy single offset (returns first range only)
     QVector<QPointF> computeOffset() const;
 
     // Rendering
@@ -72,14 +101,22 @@ signals:
 
 private:
     Geometry::Polyline* m_sourcePolyline;
-    double m_width;
     CornerType m_cornerType;
     bool m_enabled;
-    std::set<int> m_excludedEdges;
-
-    // Helper to convert Clipper2 types
-    void convertToClipper(const QVector<QPointF>& points, void* clipperPath) const;
-    QVector<QPointF> convertFromClipper(const void* clipperPath) const;
+    
+    // Multiple ranges
+    QVector<SeamRange> m_ranges;
+    
+    // Legacy single range (for compatibility)
+    double m_width;
+    
+    // Helper methods
+    QVector<QPointF> computeRangeOffset(const SeamRange& range) const;
+    void addCurvePoints(Clipper2Lib::PathD& path, 
+                        const Geometry::PolylineVertex& current,
+                        const Geometry::PolylineVertex& next,
+                        int currentIdx,
+                        const QVector<Geometry::PolylineVertex>& vertices) const;
 };
 
 } // namespace PatternCAD

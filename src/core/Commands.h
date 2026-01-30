@@ -40,7 +40,12 @@ enum class DistributeMode {
 
 namespace Geometry {
     class GeometryObject;
+    class Polyline;
 }
+
+// Forward declarations for pattern features
+class Notch;
+class MatchPoint;
 
 /**
  * AddObjectCommand - Command to add an object to the document
@@ -396,6 +401,176 @@ private:
     int m_vertexIndex;
     int m_oldType;  // Stored as int to avoid including Polyline.h
     int m_newType;
+};
+
+// =============================================================================
+// Story 004-02: Notch Commands
+// =============================================================================
+
+/**
+ * AddNotchCommand - Command to add a notch to a polyline
+ */
+class AddNotchCommand : public QUndoCommand
+{
+public:
+    AddNotchCommand(Geometry::Polyline* polyline, Notch* notch,
+                    QUndoCommand* parent = nullptr);
+    ~AddNotchCommand();
+
+    void undo() override;
+    void redo() override;
+
+private:
+    Geometry::Polyline* m_polyline;
+    Notch* m_notch;
+    bool m_ownsNotch;
+};
+
+/**
+ * RemoveNotchCommand - Command to remove a notch from a polyline
+ */
+class RemoveNotchCommand : public QUndoCommand
+{
+public:
+    RemoveNotchCommand(Geometry::Polyline* polyline, Notch* notch,
+                       QUndoCommand* parent = nullptr);
+    ~RemoveNotchCommand();
+
+    void undo() override;
+    void redo() override;
+
+private:
+    Geometry::Polyline* m_polyline;
+    Notch* m_notch;
+    bool m_ownsNotch;
+};
+
+/**
+ * ModifyNotchCommand - Command to modify notch properties
+ */
+class ModifyNotchCommand : public QUndoCommand
+{
+public:
+    ModifyNotchCommand(Notch* notch, int newStyle, double newDepth,
+                       int newSegmentIndex, double newPosition,
+                       QUndoCommand* parent = nullptr);
+
+    void undo() override;
+    void redo() override;
+
+private:
+    Notch* m_notch;
+    int m_oldStyle, m_newStyle;
+    double m_oldDepth, m_newDepth;
+    int m_oldSegmentIndex, m_newSegmentIndex;
+    double m_oldPosition, m_newPosition;
+};
+
+// =============================================================================
+// Story 004-03: MatchPoint Commands
+// =============================================================================
+
+/**
+ * AddMatchPointCommand - Command to add a match point to a polyline
+ */
+class AddMatchPointCommand : public QUndoCommand
+{
+public:
+    AddMatchPointCommand(Geometry::Polyline* polyline, MatchPoint* matchPoint,
+                         QUndoCommand* parent = nullptr);
+    ~AddMatchPointCommand();
+
+    void undo() override;
+    void redo() override;
+
+private:
+    Geometry::Polyline* m_polyline;
+    MatchPoint* m_matchPoint;
+    bool m_ownsMatchPoint;
+};
+
+/**
+ * RemoveMatchPointCommand - Command to remove a match point from a polyline
+ */
+class RemoveMatchPointCommand : public QUndoCommand
+{
+public:
+    RemoveMatchPointCommand(Geometry::Polyline* polyline, MatchPoint* matchPoint,
+                            QUndoCommand* parent = nullptr);
+    ~RemoveMatchPointCommand();
+
+    void undo() override;
+    void redo() override;
+
+private:
+    Geometry::Polyline* m_polyline;
+    MatchPoint* m_matchPoint;
+    bool m_ownsMatchPoint;
+    QVector<MatchPoint*> m_linkedPointsBackup;  // For restoring links on undo
+};
+
+/**
+ * ModifyMatchPointCommand - Command to modify match point properties
+ */
+class ModifyMatchPointCommand : public QUndoCommand
+{
+public:
+    ModifyMatchPointCommand(MatchPoint* matchPoint, const QString& newLabel,
+                            int newSegmentIndex, double newSegmentPosition,
+                            QUndoCommand* parent = nullptr);
+
+    void undo() override;
+    void redo() override;
+
+private:
+    MatchPoint* m_matchPoint;
+    QString m_oldLabel, m_newLabel;
+    int m_oldSegmentIndex, m_newSegmentIndex;
+    double m_oldSegmentPosition, m_newSegmentPosition;
+};
+
+/**
+ * LinkMatchPointsCommand - Command to link/unlink two match points
+ */
+class LinkMatchPointsCommand : public QUndoCommand
+{
+public:
+    LinkMatchPointsCommand(MatchPoint* pointA, MatchPoint* pointB, bool link,
+                           QUndoCommand* parent = nullptr);
+
+    void undo() override;
+    void redo() override;
+
+private:
+    MatchPoint* m_pointA;
+    MatchPoint* m_pointB;
+    bool m_link;  // true = link, false = unlink
+};
+
+// =============================================================================
+// Story 004-07: Duplicate Pattern Command
+// =============================================================================
+
+/**
+ * DuplicatePolylineCommand - Command to duplicate a polyline (pattern piece)
+ */
+class DuplicatePolylineCommand : public QUndoCommand
+{
+public:
+    DuplicatePolylineCommand(Document* document, Geometry::Polyline* original,
+                             QUndoCommand* parent = nullptr);
+    ~DuplicatePolylineCommand();
+
+    void undo() override;
+    void redo() override;
+
+    Geometry::Polyline* duplicatedPolyline() const { return m_duplicate; }
+
+private:
+    Document* m_document;
+    Geometry::Polyline* m_original;
+    Geometry::Polyline* m_duplicate;
+    bool m_ownsDuplicate;
 };
 
 } // namespace PatternCAD

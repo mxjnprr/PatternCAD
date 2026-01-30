@@ -60,6 +60,7 @@ set(SOURCES
     src/ui/KeyboardShortcutsDialog.cpp
     src/ui/PreferencesDialog.cpp
     src/ui/RecoveryDialog.cpp
+    src/ui/SeamAllowanceWidget.cpp
     src/geometry/GeometryObject.cpp
     src/geometry/Point2D.cpp
     src/geometry/Line.cpp
@@ -68,6 +69,8 @@ set(SOURCES
     src/geometry/Polyline.cpp
     src/geometry/CubicBezier.cpp
     src/geometry/SeamAllowance.cpp
+    src/geometry/Notch.cpp
+    src/geometry/MatchPoint.cpp
     src/tools/Tool.cpp
     src/tools/SelectTool.cpp
     src/tools/PolylineTool.cpp
@@ -75,6 +78,9 @@ set(SOURCES
     src/tools/RotateTool.cpp
     src/tools/MirrorTool.cpp
     src/tools/ScaleTool.cpp
+    src/tools/SeamAllowanceTool.cpp
+    src/tools/NotchTool.cpp
+    src/tools/MatchPointTool.cpp
     src/io/FileFormat.cpp
     src/io/NativeFormat.cpp
     src/io/SVGFormat.cpp
@@ -103,6 +109,7 @@ set(HEADERS
     src/ui/KeyboardShortcutsDialog.h
     src/ui/PreferencesDialog.h
     src/ui/RecoveryDialog.h
+    src/ui/SeamAllowanceWidget.h
     src/geometry/GeometryObject.h
     src/geometry/Point2D.h
     src/geometry/Line.h
@@ -111,6 +118,8 @@ set(HEADERS
     src/geometry/Polyline.h
     src/geometry/CubicBezier.h
     src/geometry/SeamAllowance.h
+    src/geometry/Notch.h
+    src/geometry/MatchPoint.h
     src/tools/Tool.h
     src/tools/SelectTool.h
     src/tools/PolylineTool.h
@@ -118,6 +127,9 @@ set(HEADERS
     src/tools/RotateTool.h
     src/tools/MirrorTool.h
     src/tools/ScaleTool.h
+    src/tools/SeamAllowanceTool.h
+    src/tools/NotchTool.h
+    src/tools/MatchPointTool.h
     src/io/FileFormat.h
     src/io/NativeFormat.h
     src/io/SVGFormat.h

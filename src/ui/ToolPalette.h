@@ -64,6 +64,7 @@ private:
     // Tool buttons
     QToolButton* m_selectButton;
     QToolButton* m_polylineButton;
+    QToolButton* m_seamAllowanceButton;
 };
 
 } // namespace UI

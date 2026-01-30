@@ -13,6 +13,8 @@
 #include "../geometry/Rectangle.h"
 #include "../geometry/Polyline.h"
 #include "../geometry/CubicBezier.h"
+#include "../geometry/Notch.h"
+#include "../geometry/MatchPoint.h"
 #include <QDebug>
 
 namespace PatternCAD {
@@ -1021,6 +1023,284 @@ void ChangeVertexTypeCommand::redo()
     if (auto* polyline = qobject_cast<Geometry::Polyline*>(m_object)) {
         polyline->setVertexType(m_vertexIndex, static_cast<Geometry::VertexType>(m_newType));
     }
+}
+
+// ============================================================================
+// Story 004-02: Notch Commands
+// ============================================================================
+
+AddNotchCommand::AddNotchCommand(Geometry::Polyline* polyline, Notch* notch,
+                                 QUndoCommand* parent)
+    : QUndoCommand(parent)
+    , m_polyline(polyline)
+    , m_notch(notch)
+    , m_ownsNotch(true)
+{
+    setText(QObject::tr("Add Notch"));
+}
+
+AddNotchCommand::~AddNotchCommand()
+{
+    if (m_ownsNotch) {
+        delete m_notch;
+    }
+}
+
+void AddNotchCommand::undo()
+{
+    m_polyline->removeNotch(m_notch);
+    m_ownsNotch = true;
+}
+
+void AddNotchCommand::redo()
+{
+    m_polyline->addNotch(m_notch);
+    m_ownsNotch = false;
+}
+
+RemoveNotchCommand::RemoveNotchCommand(Geometry::Polyline* polyline, Notch* notch,
+                                       QUndoCommand* parent)
+    : QUndoCommand(parent)
+    , m_polyline(polyline)
+    , m_notch(notch)
+    , m_ownsNotch(false)
+{
+    setText(QObject::tr("Remove Notch"));
+}
+
+RemoveNotchCommand::~RemoveNotchCommand()
+{
+    if (m_ownsNotch) {
+        delete m_notch;
+    }
+}
+
+void RemoveNotchCommand::undo()
+{
+    m_polyline->addNotch(m_notch);
+    m_ownsNotch = false;
+}
+
+void RemoveNotchCommand::redo()
+{
+    m_polyline->removeNotch(m_notch);
+    m_ownsNotch = true;
+}
+
+ModifyNotchCommand::ModifyNotchCommand(Notch* notch, int newStyle, double newDepth,
+                                       int newSegmentIndex, double newPosition,
+                                       QUndoCommand* parent)
+    : QUndoCommand(parent)
+    , m_notch(notch)
+    , m_newStyle(newStyle)
+    , m_newDepth(newDepth)
+    , m_newSegmentIndex(newSegmentIndex)
+    , m_newPosition(newPosition)
+{
+    // Store old values
+    m_oldStyle = static_cast<int>(notch->style());
+    m_oldDepth = notch->depth();
+    m_oldSegmentIndex = notch->segmentIndex();
+    m_oldPosition = notch->position();
+    
+    setText(QObject::tr("Modify Notch"));
+}
+
+void ModifyNotchCommand::undo()
+{
+    m_notch->setStyle(static_cast<NotchStyle>(m_oldStyle));
+    m_notch->setDepth(m_oldDepth);
+    m_notch->setSegmentIndex(m_oldSegmentIndex);
+    m_notch->setPosition(m_oldPosition);
+}
+
+void ModifyNotchCommand::redo()
+{
+    m_notch->setStyle(static_cast<NotchStyle>(m_newStyle));
+    m_notch->setDepth(m_newDepth);
+    m_notch->setSegmentIndex(m_newSegmentIndex);
+    m_notch->setPosition(m_newPosition);
+}
+
+// ============================================================================
+// Story 004-03: MatchPoint Commands
+// ============================================================================
+
+AddMatchPointCommand::AddMatchPointCommand(Geometry::Polyline* polyline, MatchPoint* matchPoint,
+                                           QUndoCommand* parent)
+    : QUndoCommand(parent)
+    , m_polyline(polyline)
+    , m_matchPoint(matchPoint)
+    , m_ownsMatchPoint(true)
+{
+    setText(QObject::tr("Add Match Point '%1'").arg(matchPoint->label()));
+}
+
+AddMatchPointCommand::~AddMatchPointCommand()
+{
+    if (m_ownsMatchPoint) {
+        delete m_matchPoint;
+    }
+}
+
+void AddMatchPointCommand::undo()
+{
+    m_polyline->removeMatchPoint(m_matchPoint);
+    m_ownsMatchPoint = true;
+}
+
+void AddMatchPointCommand::redo()
+{
+    m_polyline->addMatchPoint(m_matchPoint);
+    m_ownsMatchPoint = false;
+}
+
+RemoveMatchPointCommand::RemoveMatchPointCommand(Geometry::Polyline* polyline, MatchPoint* matchPoint,
+                                                 QUndoCommand* parent)
+    : QUndoCommand(parent)
+    , m_polyline(polyline)
+    , m_matchPoint(matchPoint)
+    , m_ownsMatchPoint(false)
+{
+    setText(QObject::tr("Remove Match Point '%1'").arg(matchPoint->label()));
+    
+    // Backup linked points for restoration on undo
+    m_linkedPointsBackup = matchPoint->linkedPoints();
+}
+
+RemoveMatchPointCommand::~RemoveMatchPointCommand()
+{
+    if (m_ownsMatchPoint) {
+        delete m_matchPoint;
+    }
+}
+
+void RemoveMatchPointCommand::undo()
+{
+    m_polyline->addMatchPoint(m_matchPoint);
+    
+    // Restore links
+    for (MatchPoint* other : m_linkedPointsBackup) {
+        m_matchPoint->linkTo(other);
+    }
+    
+    m_ownsMatchPoint = false;
+}
+
+void RemoveMatchPointCommand::redo()
+{
+    // Links will be automatically broken by unlinkAll when removed
+    m_polyline->removeMatchPoint(m_matchPoint);
+    m_ownsMatchPoint = true;
+}
+
+ModifyMatchPointCommand::ModifyMatchPointCommand(MatchPoint* matchPoint, const QString& newLabel,
+                                                 int newSegmentIndex, double newSegmentPosition,
+                                                 QUndoCommand* parent)
+    : QUndoCommand(parent)
+    , m_matchPoint(matchPoint)
+    , m_newLabel(newLabel)
+    , m_newSegmentIndex(newSegmentIndex)
+    , m_newSegmentPosition(newSegmentPosition)
+{
+    // Store old values
+    m_oldLabel = matchPoint->label();
+    m_oldSegmentIndex = matchPoint->segmentIndex();
+    m_oldSegmentPosition = matchPoint->segmentPosition();
+    
+    setText(QObject::tr("Modify Match Point"));
+}
+
+void ModifyMatchPointCommand::undo()
+{
+    m_matchPoint->setLabel(m_oldLabel);
+    m_matchPoint->setSegmentIndex(m_oldSegmentIndex);
+    m_matchPoint->setSegmentPosition(m_oldSegmentPosition);
+}
+
+void ModifyMatchPointCommand::redo()
+{
+    m_matchPoint->setLabel(m_newLabel);
+    m_matchPoint->setSegmentIndex(m_newSegmentIndex);
+    m_matchPoint->setSegmentPosition(m_newSegmentPosition);
+}
+
+LinkMatchPointsCommand::LinkMatchPointsCommand(MatchPoint* pointA, MatchPoint* pointB, bool link,
+                                               QUndoCommand* parent)
+    : QUndoCommand(parent)
+    , m_pointA(pointA)
+    , m_pointB(pointB)
+    , m_link(link)
+{
+    if (link) {
+        setText(QObject::tr("Link Match Points '%1' ↔ '%2'").arg(pointA->label()).arg(pointB->label()));
+    } else {
+        setText(QObject::tr("Unlink Match Points '%1' ↔ '%2'").arg(pointA->label()).arg(pointB->label()));
+    }
+}
+
+void LinkMatchPointsCommand::undo()
+{
+    if (m_link) {
+        // Was linking, so unlink
+        m_pointA->unlinkFrom(m_pointB);
+    } else {
+        // Was unlinking, so re-link
+        m_pointA->linkTo(m_pointB);
+    }
+}
+
+void LinkMatchPointsCommand::redo()
+{
+    if (m_link) {
+        m_pointA->linkTo(m_pointB);
+    } else {
+        m_pointA->unlinkFrom(m_pointB);
+    }
+}
+
+// ============================================================================
+// Story 004-07: Duplicate Pattern Command
+// ============================================================================
+
+DuplicatePolylineCommand::DuplicatePolylineCommand(Document* document, Geometry::Polyline* original,
+                                                   QUndoCommand* parent)
+    : QUndoCommand(parent)
+    , m_document(document)
+    , m_original(original)
+    , m_duplicate(nullptr)
+    , m_ownsDuplicate(true)
+{
+    setText(QObject::tr("Duplicate Pattern '%1'").arg(original->name()));
+}
+
+DuplicatePolylineCommand::~DuplicatePolylineCommand()
+{
+    if (m_ownsDuplicate && m_duplicate) {
+        delete m_duplicate;
+    }
+}
+
+void DuplicatePolylineCommand::undo()
+{
+    if (m_duplicate) {
+        m_document->removeObjectDirect(m_duplicate);
+        m_ownsDuplicate = true;
+    }
+}
+
+void DuplicatePolylineCommand::redo()
+{
+    if (!m_duplicate) {
+        // First execution: create the duplicate
+        m_duplicate = m_original->clone();
+        
+        // Offset the duplicate slightly so it's visible
+        m_duplicate->translate(QPointF(20, 20));
+    }
+    
+    m_document->addObjectDirect(m_duplicate);
+    m_ownsDuplicate = false;
 }
 
 } // namespace PatternCAD

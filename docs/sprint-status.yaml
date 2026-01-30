@@ -676,18 +676,25 @@ epics:
           - User can edit, move, or delete notches
           - Notches are saved with pattern
           - Notches export correctly to DXF, SVG, PDF
-        status: "not-started"
+        status: "in-progress"
         file: "docs/stories/epic-004/story-004-02.md"
         assigned_to: ""
         estimate: "5 points"
         actual: ""
         technical_notes: |
-          - Implement Notch class (position, style, depth)
-          - Create NotchTool for placing notches
-          - Implement snap-to-edge logic
-          - Render notches as QGraphicsItems
-          - Add notch editing (move, delete)
-          - Store notches in Pattern
+          - [DONE] Implement Notch class (position, style, depth)
+          - [DONE] Implement NotchStyle enum (VNotch, Slit, Dot)
+          - [DONE] Implement rendering for all styles
+          - [DONE] Implement JSON serialization
+          - [DONE] Implement clone for duplication
+          - [DONE] Add Notch collection to Polyline
+          - [DONE] Add undo/redo commands (AddNotch, RemoveNotch, ModifyNotch)
+          - [DONE] Create NotchTool with click-to-place, drag, delete
+          - [DONE] Add keyboard shortcuts (N key, 1/2/3 for styles)
+          - [DONE] Add context menu
+          - [DONE] Export notches to DXF (V-notch, Slit, Dot styles)
+          - [DONE] Export notches to SVG (path, line, circle elements)
+          - [TODO] Export notches to PDF
         dependencies: []
 
       - id: "story-004-03"
@@ -704,18 +711,26 @@ epics:
           - Match points are visually distinct (circle, cross, label)
           - User can edit or delete match points
           - Match points are saved and exported
-        status: "not-started"
+        status: "in-progress"
         file: "docs/stories/epic-004/story-004-03.md"
         assigned_to: ""
         estimate: "5 points"
         actual: ""
         technical_notes: |
-          - Implement MatchPoint class (position, label, linked points)
-          - Create MatchPointTool
-          - Implement snap-to-edge logic
-          - Render match points with labels
-          - Add linking UI (right-click to link)
-          - Store match points and links
+          - [DONE] Implement MatchPoint class (position, label, linked points)
+          - [DONE] Implement bidirectional linking
+          - [DONE] Implement rendering with links
+          - [DONE] Implement JSON serialization
+          - [DONE] Implement clone for duplication
+          - [DONE] Add MatchPoint collection to Polyline
+          - [DONE] Add undo/redo commands (Add, Remove, Modify, Link)
+          - [DONE] Create MatchPointTool with click-to-place, drag, delete
+          - [DONE] Add linking UI (Shift+click, L key)
+          - [DONE] Add label editing (double-click, E key)
+          - [DONE] Add keyboard shortcut (T key)
+          - [DONE] Export match points to DXF (cross + TEXT label)
+          - [DONE] Export match points to SVG (cross + text elements)
+          - [TODO] Export match points to PDF
         dependencies: []
 
       - id: "story-004-04"
@@ -810,17 +825,19 @@ epics:
           - Duplicated pattern has unique name (e.g., "Pattern 1 Copy")
           - User can choose whether to link parameters to original
           - Duplication is undoable
-        status: "not-started"
+        status: "in-progress"
         file: "docs/stories/epic-004/story-004-07.md"
         assigned_to: ""
         estimate: "3 points"
         actual: ""
         technical_notes: |
-          - Implement Pattern::clone() method
-          - Deep copy all geometry, parameters, constraints
-          - Generate unique name
-          - Optional: Parameter linking for shared parameters
-          - Create DuplicatePatternCommand
+          - [DONE] Implement Polyline::clone() method
+          - [DONE] Deep copy all geometry (vertices, seam allowance, notches, match points)
+          - [DONE] Generate unique name ("Pattern Copy")
+          - [DONE] Create DuplicatePolylineCommand with undo/redo
+          - [TODO] Add menu item for duplication
+          - [TODO] Add Ctrl+D keyboard shortcut
+          - [TODO] Optional: Parameter linking for shared parameters
         dependencies: []
 
   # =========================================================================
@@ -1817,6 +1834,7 @@ epic_story_points:
   epic-008: 68  # UI Foundation (12 stories)
 
 # Implementation Phases (Recommended Sequence)
+# NOTE: Epic-002 (Parametric System) moved to end - not priority for current use case
 phases:
   - phase: 0
     name: "Sprint 0: Foundation"
@@ -1840,39 +1858,39 @@ phases:
     goal: "Rotate, mirror, scale, align, distribute"
 
   - phase: 3
-    name: "Phase 3: Parametric System"
-    duration: "4-5 weeks"
-    epics: ["epic-002", "epic-008-partial"]
-    stories: ["epic-002-all", "story-008-06"]
-    goal: "Parameters, expressions, constraints, solver"
-
-  - phase: 4
-    name: "Phase 4: Pattern Features"
+    name: "Phase 3: Pattern Features"
     duration: "4-5 weeks"
     epics: ["epic-004"]
     stories: ["epic-004-all"]
     goal: "Seam allowance, notches, grading"
 
-  - phase: 5
-    name: "Phase 5: Layout & Isolation"
+  - phase: 4
+    name: "Phase 4: Layout & Isolation"
     duration: "3-4 weeks"
     epics: ["epic-005", "epic-008-partial"]
     stories: ["epic-005-all", "story-008-05", "story-008-09", "story-008-10"]
     goal: "Layout sheets, nesting, isolation mode, layers"
 
-  - phase: 6
-    name: "Phase 6: Measurement"
+  - phase: 5
+    name: "Phase 5: Measurement"
     duration: "2-3 weeks"
     epics: ["epic-006"]
     stories: ["epic-006-all"]
     goal: "Measurement tools, unit conversion"
 
-  - phase: 7
-    name: "Phase 7: File I/O"
+  - phase: 6
+    name: "Phase 6: File I/O"
     duration: "5-6 weeks"
     epics: ["epic-007", "epic-008-partial"]
     stories: ["epic-007-all", "story-008-12"]
     goal: "Native format, DXF, SVG, PDF, auto-save, preferences"
+
+  - phase: 7
+    name: "Phase 7: Parametric System (Optional)"
+    duration: "4-5 weeks"
+    epics: ["epic-002", "epic-008-partial"]
+    stories: ["epic-002-all", "story-008-06"]
+    goal: "Parameters, expressions, constraints, solver - OPTIONAL for advanced use"
 
   - phase: 8
     name: "Phase 8: Polish & Testing"

@@ -6,6 +6,8 @@
 
 #include "Polyline.h"
 #include "SeamAllowance.h"
+#include "Notch.h"
+#include "MatchPoint.h"
 #include <QPainter>
 #include <QPainterPath>
 #include <QtMath>
@@ -251,6 +253,23 @@ void Polyline::draw(QPainter* painter, const QColor& color) const
     // Draw seam allowance if enabled
     if (m_seamAllowance && m_seamAllowance->isEnabled()) {
         m_seamAllowance->render(painter);
+    }
+
+    // Draw notches
+    for (const Notch* notch : m_notches) {
+        notch->render(painter);
+    }
+
+    // Draw match points
+    for (const MatchPoint* mp : m_matchPoints) {
+        mp->render(painter);
+    }
+
+    // Draw match point links (only when selected to avoid clutter)
+    if (m_selected) {
+        for (const MatchPoint* mp : m_matchPoints) {
+            mp->renderLinks(painter);
+        }
     }
 
     painter->restore();
@@ -697,6 +716,119 @@ int Polyline::findClosestSegment(const QPointF& point, QPointF* closestPoint) co
     }
 
     return closestSegment;
+}
+
+// --- Notch management ---
+
+void Polyline::addNotch(Notch* notch)
+{
+    if (notch && !m_notches.contains(notch)) {
+        notch->setPolyline(this);
+        m_notches.append(notch);
+        connect(notch, &Notch::changed, this, [this]() { notifyChanged(); });
+        notifyChanged();
+    }
+}
+
+void Polyline::removeNotch(Notch* notch)
+{
+    if (m_notches.removeOne(notch)) {
+        notch->disconnect(this);
+        notifyChanged();
+    }
+}
+
+Notch* Polyline::notchAt(int index) const
+{
+    if (index >= 0 && index < m_notches.size()) {
+        return m_notches[index];
+    }
+    return nullptr;
+}
+
+void Polyline::clearNotches()
+{
+    for (Notch* notch : m_notches) {
+        notch->disconnect(this);
+        delete notch;
+    }
+    m_notches.clear();
+    notifyChanged();
+}
+
+// --- MatchPoint management ---
+
+void Polyline::addMatchPoint(MatchPoint* mp)
+{
+    if (mp && !m_matchPoints.contains(mp)) {
+        mp->setPolyline(this);
+        m_matchPoints.append(mp);
+        connect(mp, &MatchPoint::changed, this, [this]() { notifyChanged(); });
+        notifyChanged();
+    }
+}
+
+void Polyline::removeMatchPoint(MatchPoint* mp)
+{
+    if (m_matchPoints.removeOne(mp)) {
+        mp->disconnect(this);
+        notifyChanged();
+    }
+}
+
+MatchPoint* Polyline::matchPointAt(int index) const
+{
+    if (index >= 0 && index < m_matchPoints.size()) {
+        return m_matchPoints[index];
+    }
+    return nullptr;
+}
+
+void Polyline::clearMatchPoints()
+{
+    for (MatchPoint* mp : m_matchPoints) {
+        mp->disconnect(this);
+        mp->unlinkAll();  // Remove any links to other match points
+        delete mp;
+    }
+    m_matchPoints.clear();
+    notifyChanged();
+}
+
+// --- Clone for pattern duplication ---
+
+Polyline* Polyline::clone(QObject* parent) const
+{
+    Polyline* copy = new Polyline(m_vertices, parent);
+    
+    // Copy basic properties
+    copy->m_closed = m_closed;
+    copy->setName(name() + " Copy");
+    copy->setLayer(layer());
+    copy->setLineWeight(lineWeight());
+    copy->setLineColor(lineColor());
+    copy->setLineStyle(lineStyle());
+    
+    // Copy seam allowance settings
+    if (m_seamAllowance) {
+        copy->m_seamAllowance->setWidth(m_seamAllowance->width());
+        copy->m_seamAllowance->setCornerType(m_seamAllowance->cornerType());
+        copy->m_seamAllowance->setEnabled(m_seamAllowance->isEnabled());
+    }
+    
+    // Clone notches
+    for (const Notch* notch : m_notches) {
+        Notch* notchCopy = notch->clone(copy);
+        copy->addNotch(notchCopy);
+    }
+    
+    // Clone match points (without links - links must be re-established)
+    for (const MatchPoint* mp : m_matchPoints) {
+        MatchPoint* mpCopy = mp->clone(copy);
+        copy->addMatchPoint(mpCopy);
+    }
+    
+    return copy;
 }
 
 } // namespace Geometry
