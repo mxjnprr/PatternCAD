@@ -35,6 +35,7 @@
 #include "../tools/NotchTool.h"
 #include "../tools/MatchPointTool.h"
 #include "GradingDialog.h"
+#include "ScalePatternDialog.h"
 #include "../core/GradingCommands.h"
 #include "../geometry/Polyline.h"
 #include "../geometry/GradingSystem.h"
@@ -275,6 +276,7 @@ void MainWindow::setupMenuBar()
     modifyMenu->addAction(tr("&Rotate... (R)"), this, &MainWindow::onModifyRotate);
     modifyMenu->addAction(tr("&Mirror... (M)"), this, &MainWindow::onModifyMirror);
     modifyMenu->addAction(tr("&Scale... (S)"), this, &MainWindow::onModifyScale);
+    modifyMenu->addAction(tr("Scale &Pattern... (Shift+S)"), this, &MainWindow::onModifyScalePattern, QKeySequence(tr("Shift+S")));
     modifyMenu->addSeparator();
 
     // Align submenu
@@ -999,6 +1001,45 @@ void MainWindow::onModifyScale()
 {
     // Activate the Scale tool
     onToolSelected("Scale");
+}
+
+void MainWindow::onModifyScalePattern()
+{
+    Document* document = m_canvas ? m_canvas->document() : nullptr;
+    if (!document) return;
+    
+    // Get selected polyline
+    QList<Geometry::GeometryObject*> selectedObjects = document->selectedObjects();
+    Geometry::Polyline* polyline = nullptr;
+    
+    for (Geometry::GeometryObject* obj : selectedObjects) {
+        polyline = dynamic_cast<Geometry::Polyline*>(obj);
+        if (polyline) break;
+    }
+    
+    if (!polyline) {
+        statusBar()->showMessage(tr("Select a pattern piece to scale"), 3000);
+        return;
+    }
+    
+    // Open scale dialog
+    ScalePatternDialog dialog(polyline, this);
+    if (dialog.exec() == QDialog::Accepted) {
+        // Apply scaling via command
+        auto* command = new ScalePatternCommand(
+            polyline,
+            dialog.scaleX(),
+            dialog.scaleY(),
+            dialog.scaleSeamAllowance(),
+            dialog.scaleNotchDepths()
+        );
+        if (document->undoStack()) {
+            document->undoStack()->push(command);
+        }
+        statusBar()->showMessage(tr("Pattern scaled to %.0f%% × %.0f%%")
+                                .arg(dialog.scaleX() * 100)
+                                .arg(dialog.scaleY() * 100), 3000);
+    }
 }
 
 void MainWindow::onModifyGradingRules()

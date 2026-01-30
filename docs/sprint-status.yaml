@@ -811,17 +811,21 @@ epics:
           - Constraints remain valid after scaling
           - Seam allowances and notches scale appropriately
           - Scale operation is undoable
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-004/story-004-06.md"
         assigned_to: ""
         estimate: "5 points"
-        actual: ""
+        actual: "5 points"
         technical_notes: |
-          - Implement ScalePatternCommand (different from object scale)
-          - Scale all parameters by factor
-          - Update geometry via parametric system
-          - Resolve constraints after scaling
-          - Scale seam allowance widths and notch depths
+          - [DONE] Implement ScalePatternDialog UI with percentage/dimension modes
+          - [DONE] Scale by percentage (1-1000%)
+          - [DONE] Scale to fit specific width or height dimension
+          - [DONE] Uniform scaling option (maintain aspect ratio)
+          - [DONE] Option to scale seam allowance width
+          - [DONE] Option to scale notch depths
+          - [DONE] Implement ScalePatternCommand with undo/redo
+          - [DONE] Add menu item (Modify → Scale Pattern, Shift+S)
+          - [DONE] Real-time result preview in dialog
         dependencies: ["story-002-04", "story-004-01"]
 
       - id: "story-004-07"

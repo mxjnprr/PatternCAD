@@ -15,6 +15,7 @@
 #include "../geometry/CubicBezier.h"
 #include "../geometry/Notch.h"
 #include "../geometry/MatchPoint.h"
+#include "../geometry/SeamAllowance.h"
 #include <QDebug>
 
 namespace PatternCAD {
@@ -1301,6 +1302,101 @@ void DuplicatePolylineCommand::redo()
     
     m_document->addObjectDirect(m_duplicate);
     m_ownsDuplicate = false;
+}
+
+// =============================================================================
+// Story 004-06: Scale Pattern Command
+// =============================================================================
+
+ScalePatternCommand::ScalePatternCommand(Geometry::Polyline* polyline,
+                                          double scaleX, double scaleY,
+                                          bool scaleSeamAllowance,
+                                          bool scaleNotchDepths,
+                                          QUndoCommand* parent)
+    : QUndoCommand(parent)
+    , m_polyline(polyline)
+    , m_scaleX(scaleX)
+    , m_scaleY(scaleY)
+    , m_scaleSeamAllowance(scaleSeamAllowance)
+    , m_scaleNotchDepths(scaleNotchDepths)
+    , m_oldSeamWidth(0.0)
+{
+    setText(QObject::tr("Scale Pattern (%1% × %2%)").arg(scaleX * 100, 0, 'f', 0).arg(scaleY * 100, 0, 'f', 0));
+    
+    // Save original vertex positions
+    QVector<Geometry::PolylineVertex> vertices = m_polyline->vertices();
+    for (const auto& v : vertices) {
+        m_oldPositions.append(v.position);
+    }
+    
+    // Save seam allowance width
+    if (m_polyline->seamAllowance()) {
+        m_oldSeamWidth = m_polyline->seamAllowance()->width();
+    }
+    
+    // Save notch depths
+    for (Notch* notch : m_polyline->notches()) {
+        m_oldNotchDepths.append(notch->depth());
+    }
+}
+
+ScalePatternCommand::~ScalePatternCommand()
+{
+}
+
+void ScalePatternCommand::undo()
+{
+    // Restore vertex positions
+    QVector<Geometry::PolylineVertex> vertices = m_polyline->vertices();
+    for (int i = 0; i < vertices.size() && i < m_oldPositions.size(); ++i) {
+        vertices[i].position = m_oldPositions[i];
+    }
+    m_polyline->setVertices(vertices);
+    
+    // Restore seam allowance width
+    if (m_scaleSeamAllowance && m_polyline->seamAllowance()) {
+        m_polyline->seamAllowance()->setWidth(m_oldSeamWidth);
+    }
+    
+    // Restore notch depths
+    if (m_scaleNotchDepths) {
+        QVector<Notch*> notches = m_polyline->notches();
+        for (int i = 0; i < notches.size() && i < m_oldNotchDepths.size(); ++i) {
+            notches[i]->setDepth(m_oldNotchDepths[i]);
+        }
+    }
+}
+
+void ScalePatternCommand::redo()
+{
+    // Calculate scale origin (center of bounding rect)
+    QRectF bounds = m_polyline->boundingRect();
+    QPointF origin = bounds.center();
+    
+    // Scale vertex positions around origin
+    QVector<Geometry::PolylineVertex> vertices = m_polyline->vertices();
+    for (int i = 0; i < vertices.size(); ++i) {
+        QPointF pos = vertices[i].position;
+        QPointF offset = pos - origin;
+        QPointF scaledOffset(offset.x() * m_scaleX, offset.y() * m_scaleY);
+        vertices[i].position = origin + scaledOffset;
+    }
+    m_polyline->setVertices(vertices);
+    
+    // Scale seam allowance width
+    if (m_scaleSeamAllowance && m_polyline->seamAllowance()) {
+        double avgScale = (m_scaleX + m_scaleY) / 2.0;
+        m_polyline->seamAllowance()->setWidth(m_oldSeamWidth * avgScale);
+    }
+    
+    // Scale notch depths
+    if (m_scaleNotchDepths) {
+        double avgScale = (m_scaleX + m_scaleY) / 2.0;
+        QVector<Notch*> notches = m_polyline->notches();
+        for (int i = 0; i < notches.size() && i < m_oldNotchDepths.size(); ++i) {
+            notches[i]->setDepth(m_oldNotchDepths[i] * avgScale);
+        }
+    }
 }
 
 } // namespace PatternCAD

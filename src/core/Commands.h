@@ -573,6 +573,39 @@ private:
     bool m_ownsDuplicate;
 };
 
+// =============================================================================
+// Story 004-06: Scale Pattern Command
+// =============================================================================
+
+/**
+ * ScalePatternCommand - Command to scale a pattern with seam/notch options
+ */
+class ScalePatternCommand : public QUndoCommand
+{
+public:
+    ScalePatternCommand(Geometry::Polyline* polyline,
+                        double scaleX, double scaleY,
+                        bool scaleSeamAllowance = false,
+                        bool scaleNotchDepths = true,
+                        QUndoCommand* parent = nullptr);
+    ~ScalePatternCommand();
+
+    void undo() override;
+    void redo() override;
+
+private:
+    Geometry::Polyline* m_polyline;
+    double m_scaleX;
+    double m_scaleY;
+    bool m_scaleSeamAllowance;
+    bool m_scaleNotchDepths;
+    
+    // Saved state for undo
+    QVector<QPointF> m_oldPositions;
+    double m_oldSeamWidth;
+    QVector<double> m_oldNotchDepths;
+};
+
 } // namespace PatternCAD
 
 #endif // PATTERNCAD_COMMANDS_H

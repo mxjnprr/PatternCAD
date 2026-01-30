@@ -88,6 +88,7 @@ set(SOURCES
     src/io/PDFFormat.cpp
     src/io/DXFFormat.cpp
     src/ui/GradingDialog.cpp
+    src/ui/ScalePatternDialog.cpp
     src/core/GradingCommands.cpp
 )
 
