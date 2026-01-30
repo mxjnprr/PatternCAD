@@ -276,7 +276,7 @@ void MainWindow::setupMenuBar()
     modifyMenu->addAction(tr("&Rotate... (R)"), this, &MainWindow::onModifyRotate);
     modifyMenu->addAction(tr("&Mirror... (M)"), this, &MainWindow::onModifyMirror);
     modifyMenu->addAction(tr("&Scale... (S)"), this, &MainWindow::onModifyScale);
-    modifyMenu->addAction(tr("Scale &Pattern... (Shift+S)"), this, &MainWindow::onModifyScalePattern, QKeySequence(tr("Shift+S")));
+    modifyMenu->addAction(tr("Scale &Pattern... (Ctrl+Shift+S)"), this, &MainWindow::onModifyScalePattern, QKeySequence(tr("Ctrl+Shift+S")));
     modifyMenu->addSeparator();
 
     // Align submenu
@@ -296,8 +296,8 @@ void MainWindow::setupMenuBar()
     
     // Grading
     modifyMenu->addSeparator();
-    modifyMenu->addAction(tr("&Grading Rules... (G)"), this, &MainWindow::onModifyGradingRules, QKeySequence(tr("G")));
-    modifyMenu->addAction(tr("Generate Graded &Sizes (Shift+G)"), this, &MainWindow::onModifyGenerateGradedSizes, QKeySequence(tr("Shift+G")));
+    modifyMenu->addAction(tr("&Grading Rules... (Ctrl+G)"), this, &MainWindow::onModifyGradingRules, QKeySequence(tr("Ctrl+G")));
+    modifyMenu->addAction(tr("Generate Graded &Sizes (Ctrl+Shift+G)"), this, &MainWindow::onModifyGenerateGradedSizes, QKeySequence(tr("Ctrl+Shift+G")));
 
     // Tools menu (shortcuts defined as global actions below, not here)
     QMenu* toolsMenu = menuBar()->addMenu(tr("&Tools"));

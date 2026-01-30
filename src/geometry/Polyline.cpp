@@ -721,6 +721,135 @@ int Polyline::findClosestSegment(const QPointF& point, QPointF* closestPoint) co
     return closestSegment;
 }
 
+int Polyline::findClosestSegmentWithT(const QPointF& point, QPointF* closestPoint, double* tParam) const
+{
+    if (m_vertices.size() < 2) {
+        return -1;
+    }
+
+    int closestSegment = -1;
+    double minDistance = std::numeric_limits<double>::max();
+    QPointF bestPoint;
+    double bestT = 0.0;
+
+    int n = m_vertices.size();
+    int numSegments = m_closed ? n : (n - 1);
+
+    for (int i = 0; i < numSegments; ++i) {
+        int nextIdx = (i + 1) % n;
+        const PolylineVertex& current = m_vertices[i];
+        const PolylineVertex& next = m_vertices[nextIdx];
+
+        bool needsCurve = (current.type == VertexType::Smooth) ||
+                          (next.type == VertexType::Smooth);
+
+        QPointF segmentClosestPoint;
+        double distance;
+        double segmentT = 0.0;
+
+        if (needsCurve) {
+            QPointF p1 = current.position;
+            QPointF p2 = next.position;
+
+            QPointF segment = p2 - p1;
+            double dist = std::sqrt(segment.x() * segment.x() + segment.y() * segment.y());
+            double controlDistance = dist / 3.0;
+
+            QPointF c1, c2;
+
+            if (current.type == VertexType::Smooth && current.tangent != QPointF()) {
+                c1 = p1 + current.tangent * controlDistance * current.outgoingTension;
+            } else if (current.type == VertexType::Smooth) {
+                int prevIdx = (i - 1 + n) % n;
+                QPointF p0 = m_vertices[prevIdx].position;
+                if (!m_closed && i == 0) p0 = p1;
+                c1 = p1 + (p2 - p0) * (current.outgoingTension / 3.0);
+            } else {
+                c1 = p1 + (p2 - p1) * 0.01;
+            }
+
+            if (next.type == VertexType::Smooth && next.tangent != QPointF()) {
+                c2 = p2 - next.tangent * controlDistance * next.incomingTension;
+            } else if (next.type == VertexType::Smooth) {
+                int nextNextIdx = (i + 2) % n;
+                QPointF p3 = m_vertices[nextNextIdx].position;
+                if (!m_closed && nextIdx == n - 1) p3 = p2;
+                c2 = p2 - (p3 - p1) * (next.incomingTension / 3.0);
+            } else {
+                c2 = p2 - (p2 - p1) * 0.01;
+            }
+
+            double minDistOnCurve = std::numeric_limits<double>::max();
+            QPointF closestOnCurve;
+            double closestT = 0.0;
+
+            const int samples = 20;
+            for (int s = 0; s <= samples; ++s) {
+                double t = static_cast<double>(s) / samples;
+                double u = 1.0 - t;
+                double tt = t * t;
+                double uu = u * u;
+                double uuu = uu * u;
+                double ttt = tt * t;
+
+                QPointF curvePoint = uuu * p1 + 3.0 * uu * t * c1 + 3.0 * u * tt * c2 + ttt * p2;
+
+                QPointF delta = point - curvePoint;
+                double d = std::sqrt(delta.x() * delta.x() + delta.y() * delta.y());
+
+                if (d < minDistOnCurve) {
+                    minDistOnCurve = d;
+                    closestOnCurve = curvePoint;
+                    closestT = t;
+                }
+            }
+
+            segmentClosestPoint = closestOnCurve;
+            distance = minDistOnCurve;
+            segmentT = closestT;
+
+        } else {
+            QPointF p1 = current.position;
+            QPointF p2 = next.position;
+
+            QPointF segment = p2 - p1;
+            QPointF toPoint = point - p1;
+
+            double segmentLength = segment.x() * segment.x() + segment.y() * segment.y();
+
+            if (segmentLength < 0.0001) {
+                continue;
+            }
+
+            double t = (toPoint.x() * segment.x() + toPoint.y() * segment.y()) / segmentLength;
+            t = qBound(0.0, t, 1.0);
+
+            QPointF projected = p1 + segment * t;
+            QPointF delta = point - projected;
+            distance = std::sqrt(delta.x() * delta.x() + delta.y() * delta.y());
+
+            segmentClosestPoint = projected;
+            segmentT = t;
+        }
+
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestSegment = i;
+            bestPoint = segmentClosestPoint;
+            bestT = segmentT;
+        }
+    }
+
+    if (closestPoint) {
+        *closestPoint = bestPoint;
+    }
+    if (tParam) {
+        *tParam = bestT;
+    }
+
+    return closestSegment;
+}
+
 // --- Notch management ---
 
 void Polyline::addNotch(Notch* notch)

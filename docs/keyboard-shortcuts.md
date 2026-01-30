@@ -15,6 +15,9 @@
 | - | Zoom Out | ✅ Used |
 | Backspace | Delete (alternative) | ✅ Used |
 | Delete | Delete objects/vertices | ✅ Used |
+| Ctrl+G | Grading Rules Dialog | ✅ Used |
+| Ctrl+Shift+G | Generate Graded Sizes | ✅ Used |
+| Ctrl+Shift+S | Scale Pattern Precisely | ✅ Used |
 
 ## Tool-Specific Shortcuts (within tool context)
 | Key | Context | Action |
@@ -53,3 +56,4 @@
 - MatchPointTool removed from global shortcuts (no single-key shortcut)
 - T is reserved for in-tool vertex type toggle - DO NOT reassign globally
 - M is reserved for Mirror Tool
+- G is reserved for Grab in SelectTool - use Ctrl+G for Grading

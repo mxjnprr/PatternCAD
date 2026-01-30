@@ -119,13 +119,61 @@ QPointF Notch::getLocation() const
     }
 
     int nextIdx = (m_segmentIndex + 1) % n;
+    const Geometry::PolylineVertex& current = vertices[m_segmentIndex];
+    const Geometry::PolylineVertex& next = vertices[nextIdx];
     
-    // For now, use linear interpolation between segment endpoints
-    // TODO: Handle curved segments with proper Bezier evaluation
-    QPointF p1 = vertices[m_segmentIndex].position;
-    QPointF p2 = vertices[nextIdx].position;
-
-    return pointOnSegment(p1, p2, m_position);
+    // Check if segment is curved
+    bool needsCurve = (current.type == Geometry::VertexType::Smooth) ||
+                      (next.type == Geometry::VertexType::Smooth);
+    
+    QPointF p1 = current.position;
+    QPointF p2 = next.position;
+    
+    if (!needsCurve) {
+        // Linear segment
+        return pointOnSegment(p1, p2, m_position);
+    }
+    
+    // Curved segment - evaluate Bezier
+    QPointF segment = p2 - p1;
+    double dist = std::sqrt(segment.x() * segment.x() + segment.y() * segment.y());
+    double controlDistance = dist / 3.0;
+    
+    QPointF c1, c2;
+    
+    // Control point c1 (outgoing from current)
+    if (current.type == Geometry::VertexType::Smooth && current.tangent != QPointF()) {
+        c1 = p1 + current.tangent * controlDistance * current.outgoingTension;
+    } else if (current.type == Geometry::VertexType::Smooth) {
+        int prevIdx = (m_segmentIndex - 1 + n) % n;
+        QPointF p0 = vertices[prevIdx].position;
+        if (!m_polyline->isClosed() && m_segmentIndex == 0) p0 = p1;
+        c1 = p1 + (p2 - p0) * (current.outgoingTension / 3.0);
+    } else {
+        c1 = p1 + segment * 0.01;
+    }
+    
+    // Control point c2 (incoming to next)
+    if (next.type == Geometry::VertexType::Smooth && next.tangent != QPointF()) {
+        c2 = p2 - next.tangent * controlDistance * next.incomingTension;
+    } else if (next.type == Geometry::VertexType::Smooth) {
+        int nextNextIdx = (m_segmentIndex + 2) % n;
+        QPointF p3 = vertices[nextNextIdx].position;
+        if (!m_polyline->isClosed() && nextIdx == n - 1) p3 = p2;
+        c2 = p2 - (p3 - p1) * (next.incomingTension / 3.0);
+    } else {
+        c2 = p2 - segment * 0.01;
+    }
+    
+    // Evaluate cubic Bezier at t = m_position
+    double t = m_position;
+    double u = 1.0 - t;
+    double tt = t * t;
+    double uu = u * u;
+    double uuu = uu * u;
+    double ttt = tt * t;
+    
+    return uuu * p1 + 3.0 * uu * t * c1 + 3.0 * u * tt * c2 + ttt * p2;
 }
 
 QPointF Notch::getNormal() const
@@ -142,15 +190,61 @@ QPointF Notch::getNormal() const
     }
 
     int nextIdx = (m_segmentIndex + 1) % n;
+    const Geometry::PolylineVertex& current = vertices[m_segmentIndex];
+    const Geometry::PolylineVertex& next = vertices[nextIdx];
     
-    QPointF p1 = vertices[m_segmentIndex].position;
-    QPointF p2 = vertices[nextIdx].position;
-
-    // Direction along the edge
-    QPointF edgeDir = normalize(p2 - p1);
+    QPointF p1 = current.position;
+    QPointF p2 = next.position;
     
-    // Normal is perpendicular to edge, pointing outward
-    // For a closed polyline with CCW vertex order, outward normal is to the left
+    // Check if segment is curved
+    bool needsCurve = (current.type == Geometry::VertexType::Smooth) ||
+                      (next.type == Geometry::VertexType::Smooth);
+    
+    QPointF tangent;
+    
+    if (!needsCurve) {
+        // Linear segment - tangent is just the segment direction
+        tangent = p2 - p1;
+    } else {
+        // Curved segment - calculate tangent from Bezier derivative
+        QPointF segment = p2 - p1;
+        double dist = std::sqrt(segment.x() * segment.x() + segment.y() * segment.y());
+        double controlDistance = dist / 3.0;
+        
+        QPointF c1, c2;
+        
+        if (current.type == Geometry::VertexType::Smooth && current.tangent != QPointF()) {
+            c1 = p1 + current.tangent * controlDistance * current.outgoingTension;
+        } else if (current.type == Geometry::VertexType::Smooth) {
+            int prevIdx = (m_segmentIndex - 1 + n) % n;
+            QPointF p0 = vertices[prevIdx].position;
+            if (!m_polyline->isClosed() && m_segmentIndex == 0) p0 = p1;
+            c1 = p1 + (p2 - p0) * (current.outgoingTension / 3.0);
+        } else {
+            c1 = p1 + segment * 0.01;
+        }
+        
+        if (next.type == Geometry::VertexType::Smooth && next.tangent != QPointF()) {
+            c2 = p2 - next.tangent * controlDistance * next.incomingTension;
+        } else if (next.type == Geometry::VertexType::Smooth) {
+            int nextNextIdx = (m_segmentIndex + 2) % n;
+            QPointF p3 = vertices[nextNextIdx].position;
+            if (!m_polyline->isClosed() && nextIdx == n - 1) p3 = p2;
+            c2 = p2 - (p3 - p1) * (next.incomingTension / 3.0);
+        } else {
+            c2 = p2 - segment * 0.01;
+        }
+        
+        // Bezier derivative at t: B'(t) = 3(1-t)²(c1-p1) + 6(1-t)t(c2-c1) + 3t²(p2-c2)
+        double t = m_position;
+        double u = 1.0 - t;
+        tangent = 3.0 * u * u * (c1 - p1) + 6.0 * u * t * (c2 - c1) + 3.0 * t * t * (p2 - c2);
+    }
+    
+    // Normalize and get perpendicular
+    QPointF edgeDir = normalize(tangent);
+    
+    // Normal is perpendicular to edge, pointing outward (left side for CCW)
     QPointF normal = perpendicular(edgeDir);
     
     return normal;

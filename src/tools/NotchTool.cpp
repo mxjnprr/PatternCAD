@@ -274,7 +274,8 @@ Geometry::Polyline* NotchTool::findPolylineAt(const QPointF& point, int* segment
 
         if (auto* polyline = qobject_cast<Geometry::Polyline*>(obj)) {
             QPointF closestPoint;
-            int seg = polyline->findClosestSegment(point, &closestPoint);
+            double tParam = 0.0;
+            int seg = polyline->findClosestSegmentWithT(point, &closestPoint, &tParam);
 
             if (seg >= 0) {
                 QPointF delta = point - closestPoint;
@@ -284,22 +285,8 @@ Geometry::Polyline* NotchTool::findPolylineAt(const QPointF& point, int* segment
                     closestDistance = distance;
                     closestPolyline = polyline;
                     closestSegment = seg;
-
-                    // Calculate position along segment
-                    auto vertices = polyline->vertices();
-                    int nextIdx = (seg + 1) % vertices.size();
-                    QPointF p1 = vertices[seg].position;
-                    QPointF p2 = vertices[nextIdx].position;
-                    QPointF segVec = p2 - p1;
-                    double segLength = std::sqrt(segVec.x() * segVec.x() + segVec.y() * segVec.y());
-                    
-                    if (segLength > 0.0001) {
-                        QPointF toPoint = closestPoint - p1;
-                        closestPosition = std::sqrt(toPoint.x() * toPoint.x() + toPoint.y() * toPoint.y()) / segLength;
-                        closestPosition = std::max(0.0, std::min(1.0, closestPosition));
-                    } else {
-                        closestPosition = 0.0;
-                    }
+                    // Use the correct curve parameter directly
+                    closestPosition = tParam;
                 }
             }
         }

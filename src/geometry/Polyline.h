@@ -85,6 +85,7 @@ public:
     // Vertex hit testing
     int findVertexAt(const QPointF& point, double tolerance = 5.0) const;
     int findClosestSegment(const QPointF& point, QPointF* closestPoint = nullptr) const;
+    int findClosestSegmentWithT(const QPointF& point, QPointF* closestPoint, double* tParam) const;
 
     // Segment length calculation (accounts for curves)
     double calculateSegmentLength(int segmentIndex) const;
