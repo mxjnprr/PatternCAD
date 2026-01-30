@@ -647,19 +647,25 @@ epics:
           - Seam allowance is visually distinct (different line style/color)
           - Seam allowance updates automatically if pattern shape changes
           - Seam allowance can be toggled on/off per pattern
-        status: "not-started"
+        status: "completed"
         file: "docs/stories/epic-004/story-004-01.md"
         assigned_to: ""
         estimate: "8 points"
-        actual: ""
+        actual: "8 points"
         technical_notes: |
-          - Implement OffsetAlgorithm using Clipper or Boost.Geometry
-          - Create SeamAllowance class
-          - Add seam allowance UI (Properties Panel)
-          - Handle corner types (miter, round, bevel)
-          - Render seam allowance as separate QGraphicsItem
-          - Update when pattern geometry changes (observer)
-          - Create AddSeamAllowanceCommand
+          - [DONE] Implement SeamAllowance class with multi-range support
+          - [DONE] Implement SeamRange struct for partial contour seam allowances
+          - [DONE] Implement manual strip construction with correct miter geometry
+          - [DONE] Implement perpendicular termination at start/end points
+          - [DONE] Implement range overlap detection and splitting
+          - [DONE] Handle FullContour to partial range conversion
+          - [DONE] Create SeamAllowanceTool with interactive point-to-point selection
+          - [DONE] Add keyboard shortcuts (A key for tool, Ctrl+Shift+A for full contour)
+          - [DONE] Render seam allowance with dashed red line style
+          - [DONE] Export seam allowance to SVG
+          - [DONE] Export seam allowance to DXF
+          - [DONE] Export seam allowance to PDF
+          - Corner type selection UI (miter/round/bevel) - using miter by default
         dependencies: []
 
       - id: "story-004-02"
@@ -676,11 +682,11 @@ epics:
           - User can edit, move, or delete notches
           - Notches are saved with pattern
           - Notches export correctly to DXF, SVG, PDF
-        status: "in-progress"
+        status: "completed"
         file: "docs/stories/epic-004/story-004-02.md"
         assigned_to: ""
         estimate: "5 points"
-        actual: ""
+        actual: "5 points"
         technical_notes: |
           - [DONE] Implement Notch class (position, style, depth)
           - [DONE] Implement NotchStyle enum (VNotch, Slit, Dot)
@@ -694,7 +700,7 @@ epics:
           - [DONE] Add context menu
           - [DONE] Export notches to DXF (V-notch, Slit, Dot styles)
           - [DONE] Export notches to SVG (path, line, circle elements)
-          - [TODO] Export notches to PDF
+          - [DONE] Export notches to PDF (V-notch, Slit, Dot rendering)
         dependencies: []
 
       - id: "story-004-03"
@@ -711,11 +717,11 @@ epics:
           - Match points are visually distinct (circle, cross, label)
           - User can edit or delete match points
           - Match points are saved and exported
-        status: "in-progress"
+        status: "completed"
         file: "docs/stories/epic-004/story-004-03.md"
         assigned_to: ""
         estimate: "5 points"
-        actual: ""
+        actual: "5 points"
         technical_notes: |
           - [DONE] Implement MatchPoint class (position, label, linked points)
           - [DONE] Implement bidirectional linking
@@ -730,7 +736,7 @@ epics:
           - [DONE] Add keyboard shortcut (T key)
           - [DONE] Export match points to DXF (cross + TEXT label)
           - [DONE] Export match points to SVG (cross + text elements)
-          - [TODO] Export match points to PDF
+          - [DONE] Export match points to PDF (cross + label text)
         dependencies: []
 
       - id: "story-004-04"

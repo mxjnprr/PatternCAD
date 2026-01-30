@@ -15,6 +15,7 @@
 #include "geometry/CubicBezier.h"
 #include "geometry/Notch.h"
 #include "geometry/MatchPoint.h"
+#include "geometry/SeamAllowance.h"
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>
@@ -856,6 +857,26 @@ void DXFFormat::writePolyline(QTextStream& stream, const Geometry::GeometryObjec
     // Export match points as separate geometry
     for (MatchPoint* mp : polyline->matchPoints()) {
         writeMatchPoint(stream, mp, obj->layer());
+    }
+    
+    // Export seam allowance as separate LWPOLYLINE
+    SeamAllowance* seam = polyline->seamAllowance();
+    if (seam && seam->isEnabled()) {
+        QVector<QVector<QPointF>> allOffsets = seam->computeAllOffsets();
+        for (const QVector<QPointF>& offsetPoints : allOffsets) {
+            if (offsetPoints.size() < 2) continue;
+            
+            writePair(stream, 0, "LWPOLYLINE");
+            writePair(stream, 8, obj->layer());  // Same layer
+            writePair(stream, 62, 1);  // Color: red (1)
+            writePair(stream, 90, static_cast<int>(offsetPoints.size()));
+            writePair(stream, 70, 1);  // Closed polyline
+            
+            for (const QPointF& point : offsetPoints) {
+                writePair(stream, 10, point.x());
+                writePair(stream, 20, point.y());
+            }
+        }
     }
 }
 

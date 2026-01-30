@@ -15,6 +15,7 @@
 #include "geometry/CubicBezier.h"
 #include "geometry/Notch.h"
 #include "geometry/MatchPoint.h"
+#include "geometry/SeamAllowance.h"
 #include <QFile>
 #include <QTextStream>
 #include <QDateTime>
@@ -648,6 +649,29 @@ QString SVGFormat::geometryToSVG(const Geometry::GeometryObject* object, int ind
         // Export match points
         for (const MatchPoint* mp : polyline->matchPoints()) {
             out << matchPointToSVG(mp, indent);
+        }
+        
+        // Export seam allowance
+        SeamAllowance* seam = polyline->seamAllowance();
+        if (seam && seam->isEnabled()) {
+            QVector<QVector<QPointF>> allOffsets = seam->computeAllOffsets();
+            for (const QVector<QPointF>& offsetPoints : allOffsets) {
+                if (offsetPoints.size() < 2) continue;
+                
+                QString seamPath;
+                QTextStream seamStream(&seamPath);
+                seamStream << "M " << offsetPoints[0].x() << "," << offsetPoints[0].y();
+                for (int i = 1; i < offsetPoints.size(); ++i) {
+                    seamStream << " L " << offsetPoints[i].x() << "," << offsetPoints[i].y();
+                }
+                seamStream << " Z";  // Close the seam allowance path
+                
+                // Seam allowance style: dashed red line
+                QString seamStyle = "fill:none;stroke:#FF0000;stroke-width:0.3;stroke-dasharray:2,1";
+                out << indentStr << QString("<path d=\"%1\" style=\"%2\" />\n")
+                       .arg(seamPath)
+                       .arg(seamStyle);
+            }
         }
     }
     else if (auto* bezier = dynamic_cast<const Geometry::CubicBezier*>(object)) {

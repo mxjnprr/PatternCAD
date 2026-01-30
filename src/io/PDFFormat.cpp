@@ -13,6 +13,9 @@
 #include "geometry/Rectangle.h"
 #include "geometry/Polyline.h"
 #include "geometry/CubicBezier.h"
+#include "geometry/Notch.h"
+#include "geometry/MatchPoint.h"
+#include "geometry/SeamAllowance.h"
 #include <QPdfWriter>
 #include <QPainter>
 #include <QPageLayout>
@@ -212,6 +215,85 @@ void PDFFormat::renderGeometry(QPainter* painter, const Geometry::GeometryObject
         }
 
         painter->drawPath(path);
+        
+        // Save current pen for restoration
+        QPen savedPen = painter->pen();
+        
+        // Render notches
+        for (const Notch* notch : polyline->notches()) {
+            QPointF pos = notch->getLocation();
+            QPointF normal = notch->getNormal();
+            double depth = notch->depth();
+            
+            // Calculate perpendicular for V-notch (tangent direction)
+            QPointF perp(-normal.y(), normal.x());
+            double halfWidth = depth * 0.5;
+            
+            switch (notch->style()) {
+                case NotchStyle::VNotch: {
+                    QPointF tip = pos + normal * depth;
+                    QPointF left = pos + perp * halfWidth;
+                    QPointF right = pos - perp * halfWidth;
+                    painter->drawLine(left, tip);
+                    painter->drawLine(tip, right);
+                    break;
+                }
+                case NotchStyle::Slit: {
+                    painter->drawLine(pos, pos + normal * depth);
+                    break;
+                }
+                case NotchStyle::Dot: {
+                    painter->setBrush(Qt::black);
+                    painter->drawEllipse(pos, depth * 0.3, depth * 0.3);
+                    painter->setBrush(Qt::NoBrush);
+                    break;
+                }
+            }
+        }
+        
+        // Render match points
+        for (const MatchPoint* mp : polyline->matchPoints()) {
+            QPointF pos = mp->position();
+            double size = 2.0;  // Cross size in mm
+            
+            // Draw cross
+            painter->drawLine(pos - QPointF(size, 0), pos + QPointF(size, 0));
+            painter->drawLine(pos - QPointF(0, size), pos + QPointF(0, size));
+            
+            // Draw label
+            QString label = mp->label();
+            if (!label.isEmpty()) {
+                QFont font = painter->font();
+                font.setPointSizeF(8);
+                painter->setFont(font);
+                painter->drawText(pos + QPointF(size + 1, -1), label);
+            }
+        }
+        
+        // Render seam allowance
+        SeamAllowance* seam = polyline->seamAllowance();
+        if (seam && seam->isEnabled()) {
+            QPen seamPen(Qt::red);
+            seamPen.setWidthF(0.3);
+            seamPen.setStyle(Qt::DashLine);
+            painter->setPen(seamPen);
+            
+            QVector<QVector<QPointF>> allOffsets = seam->computeAllOffsets();
+            for (const QVector<QPointF>& offsetPoints : allOffsets) {
+                if (offsetPoints.size() < 2) continue;
+                
+                QPainterPath seamPath;
+                seamPath.moveTo(offsetPoints[0]);
+                for (int i = 1; i < offsetPoints.size(); ++i) {
+                    seamPath.lineTo(offsetPoints[i]);
+                }
+                seamPath.closeSubpath();
+                painter->drawPath(seamPath);
+            }
+        }
+        
+        // Restore pen
+        painter->setPen(savedPen);
     }
     else if (auto* bezier = dynamic_cast<const Geometry::CubicBezier*>(object)) {
         // Cubic bezier
